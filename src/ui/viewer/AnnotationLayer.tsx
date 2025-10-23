@@ -54,24 +54,33 @@ export function AnnotationLayer({
   // Global mouse event handlers for dragging
   useEffect(() => {
     const handleGlobalMouseMove = (e: MouseEvent) => {
-      if (isDragging && dragAnnotation) {
-        const deltaX = e.clientX - dragStart!.x;
-        const deltaY = e.clientY - dragStart!.y;
+      if (isDragging && dragAnnotation && dragStart) {
+        const deltaX = (e.clientX - dragStart.x) / scale;
+        const deltaY = (e.clientY - dragStart.y) / scale;
+        
+        console.log('🖱️ [AnnotationLayer] Dragging:', {
+          current: { x: e.clientX, y: e.clientY },
+          start: dragStart,
+          delta: { x: deltaX, y: deltaY },
+          scale
+        });
         
         onUpdate(dragAnnotation.id, {
           bbox: {
             ...dragAnnotation.bbox,
-            x: dragAnnotation.bbox.x + deltaX / scale,
-            y: dragAnnotation.bbox.y + deltaY / scale,
+            x: dragAnnotation.bbox.x + deltaX,
+            y: dragAnnotation.bbox.y + deltaY,
           },
         });
         
+        // Update drag start position for next move
         setDragStart({ x: e.clientX, y: e.clientY });
       }
     };
 
     const handleGlobalMouseUp = () => {
       if (isDragging) {
+        console.log('🖱️ [AnnotationLayer] Drag ended');
         setIsDragging(false);
         setDragStart(null);
         setDragAnnotation(null);
@@ -96,7 +105,7 @@ export function AnnotationLayer({
 
   // Global drag start handler
   const handleAnnotationDragStart = useCallback((annotation: Annotation, startPos: { x: number; y: number }) => {
-    console.log('🖱️ [AnnotationLayer] Starting drag for annotation:', annotation.id);
+    console.log('🖱️ [AnnotationLayer] Starting drag for annotation:', annotation.id, 'at position:', startPos);
     setIsDragging(true);
     setDragStart(startPos);
     setDragAnnotation(annotation);
@@ -449,8 +458,8 @@ export function AnnotationLayer({
         backgroundColor: 'transparent',
       }}
       onMouseDown={(e) => {
-        // Only handle empty area clicks when using select tool
-        if (activeTool === 'select' && e.target === layerRef.current) {
+        // Only handle empty area clicks when using select tool and not dragging
+        if (activeTool === 'select' && e.target === layerRef.current && !isDragging) {
           onSelect(null);
         }
       }}
