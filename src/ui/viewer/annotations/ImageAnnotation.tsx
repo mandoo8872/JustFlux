@@ -68,7 +68,7 @@ export function ImageAnnotationComponent({
         width: annotation.bbox.width * scale,
         height: annotation.bbox.height * scale,
         cursor: isSelected ? 'grab' : 'pointer',
-        zIndex: isSelected ? 10 : 1,
+        zIndex: isSelected ? 50 : 20,
       }}
       onMouseDown={handleMouseDown}
       onMouseEnter={handleMouseEnter}

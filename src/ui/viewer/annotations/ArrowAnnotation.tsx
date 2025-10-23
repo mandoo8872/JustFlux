@@ -70,6 +70,7 @@ export function ArrowAnnotationComponent({
         height: '100%',
         pointerEvents: 'auto',
         cursor: isSelected ? 'move' : 'pointer',
+        zIndex: isSelected ? 50 : 20,
       }}
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}

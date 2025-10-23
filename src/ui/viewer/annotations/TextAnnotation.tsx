@@ -90,7 +90,7 @@ export function TextAnnotationComponent({
 
   return (
     <div
-      className={`absolute group ${isSelected ? 'z-20' : 'z-10'}`}
+      className={`absolute group ${isSelected ? 'z-50' : 'z-20'}`}
       style={{
         left: scaledBBox.x,
         top: scaledBBox.y,

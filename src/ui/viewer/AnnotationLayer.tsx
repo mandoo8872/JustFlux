@@ -445,7 +445,7 @@ export function AnnotationLayer({
         left: 0,
         right: 0,
         bottom: 0,
-        zIndex: 50,
+        zIndex: 1,
         cursor: activeTool === 'select' ? 'default' : 
                 activeTool === 'pan' ? 'grab' : 
                 activeTool === 'text' ? 'text' :
