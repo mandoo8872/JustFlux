@@ -3,7 +3,7 @@
  * PDF 페이지 위에 주석을 렌더링하고 상호작용을 처리합니다.
  */
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import type { Annotation, ToolType, BBox } from '../../core/model/types';
 import { TextAnnotationComponent } from './annotations/TextAnnotation';
 import { HighlightAnnotationComponent } from './annotations/HighlightAnnotation';
@@ -49,6 +49,44 @@ export function AnnotationLayer({
   const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
   const [dragAnnotation, setDragAnnotation] = useState<Annotation | null>(null);
   const layerRef = useRef<HTMLDivElement>(null);
+
+  // Global mouse event handlers for dragging
+  useEffect(() => {
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      if (isDragging && dragAnnotation) {
+        const deltaX = e.clientX - dragStart!.x;
+        const deltaY = e.clientY - dragStart!.y;
+        
+        onUpdate(dragAnnotation.id, {
+          bbox: {
+            ...dragAnnotation.bbox,
+            x: dragAnnotation.bbox.x + deltaX / scale,
+            y: dragAnnotation.bbox.y + deltaY / scale,
+          },
+        });
+        
+        setDragStart({ x: e.clientX, y: e.clientY });
+      }
+    };
+
+    const handleGlobalMouseUp = () => {
+      if (isDragging) {
+        setIsDragging(false);
+        setDragStart(null);
+        setDragAnnotation(null);
+      }
+    };
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleGlobalMouseMove);
+      document.addEventListener('mouseup', handleGlobalMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleGlobalMouseMove);
+      document.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
+  }, [isDragging, dragStart, dragAnnotation, scale, onUpdate]);
 
   // Convert screen coordinates to page coordinates
   const screenToPage = useCallback((clientX: number, clientY: number) => {
@@ -748,6 +786,11 @@ export function AnnotationLayer({
                     onSelect={() => onSelect(annotation.id)}
                     onUpdate={(updates) => onUpdate(annotation.id, updates)}
                     onDelete={() => onDelete(annotation.id)}
+                    onDragStart={(annotation, startPos) => {
+                      setIsDragging(true);
+                      setDragStart(startPos);
+                      setDragAnnotation(annotation);
+                    }}
                   />
                 </div>
               );
