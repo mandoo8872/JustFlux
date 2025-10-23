@@ -16,11 +16,9 @@ import {
   StarFour,
   Heart,
   LightningSlash,
-  Smiley,
   MagnifyingGlass,
   Crop,
   Copy,
-  Scissors,
 } from 'phosphor-react';
 import type { ToolType } from '../../core/model/types';
 

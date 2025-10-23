@@ -161,6 +161,7 @@ export function Shell() {
   const removePage = useDocumentStore((state) => state.removePage);
   const reorderPages = useDocumentStore((state) => state.reorderPages);
   const duplicatePage = useDocumentStore((state) => state.duplicatePage);
+  const addHistoryPatch = useDocumentStore((state) => state.addHistoryPatch);
 
   // View state
   const view = useDocumentStore((state) => state.view);
@@ -654,7 +655,7 @@ export function Shell() {
             e.preventDefault();
             setActiveTool('eraser');
             break;
-          case 'h':
+          case 'j':
             e.preventDefault();
             setActiveTool('heart');
             break;
@@ -1193,12 +1194,12 @@ export function Shell() {
                           
                           if (annotation) {
                             // Create history patch for style change
-                            const forward = [
-                              { op: 'replace', path: `/document/pages/${document.pages.findIndex(p => p.layers.annotations.some(a => a.id === id))}/layers/annotations/${document.pages.find(p => p.layers.annotations.some(a => a.id === id))?.layers.annotations.findIndex(a => a.id === id)}`, value: { ...annotation, style: { ...annotation.style, ...style } } }
-                            ];
-                            const backward = [
-                              { op: 'replace', path: `/document/pages/${document.pages.findIndex(p => p.layers.annotations.some(a => a.id === id))}/layers/annotations/${document.pages.find(p => p.layers.annotations.some(a => a.id === id))?.layers.annotations.findIndex(a => a.id === id)}`, value: annotation }
-                            ];
+                          const forward = [
+                            { op: 'replace' as const, path: `/document/pages/${document.pages.findIndex(p => p.layers.annotations.some(a => a.id === id))}/layers/annotations/${document.pages.find(p => p.layers.annotations.some(a => a.id === id))?.layers.annotations.findIndex(a => a.id === id)}`, value: { ...annotation, style: { ...annotation.style, ...style } } }
+                          ];
+                          const backward = [
+                            { op: 'replace' as const, path: `/document/pages/${document.pages.findIndex(p => p.layers.annotations.some(a => a.id === id))}/layers/annotations/${document.pages.find(p => p.layers.annotations.some(a => a.id === id))?.layers.annotations.findIndex(a => a.id === id)}`, value: annotation }
+                          ];
                             
                             addHistoryPatch('주석 스타일 변경', forward, backward);
                           }
@@ -1361,10 +1362,10 @@ export function Shell() {
                             if (annotation) {
                               // Create history patch for update
                               const forward = [
-                                { op: 'replace', path: `/document/pages/${document.pages.findIndex(p => p.layers.annotations.some(a => a.id === annotationId))}/layers/annotations/${document.pages.find(p => p.layers.annotations.some(a => a.id === annotationId))?.layers.annotations.findIndex(a => a.id === annotationId)}`, value: { ...annotation, ...updates } }
+                                { op: 'replace' as const, path: `/document/pages/${document.pages.findIndex(p => p.layers.annotations.some(a => a.id === annotationId))}/layers/annotations/${document.pages.find(p => p.layers.annotations.some(a => a.id === annotationId))?.layers.annotations.findIndex(a => a.id === annotationId)}`, value: { ...annotation, ...updates } }
                               ];
                               const backward = [
-                                { op: 'replace', path: `/document/pages/${document.pages.findIndex(p => p.layers.annotations.some(a => a.id === annotationId))}/layers/annotations/${document.pages.find(p => p.layers.annotations.some(a => a.id === annotationId))?.layers.annotations.findIndex(a => a.id === annotationId)}`, value: annotation }
+                                { op: 'replace' as const, path: `/document/pages/${document.pages.findIndex(p => p.layers.annotations.some(a => a.id === annotationId))}/layers/annotations/${document.pages.find(p => p.layers.annotations.some(a => a.id === annotationId))?.layers.annotations.findIndex(a => a.id === annotationId)}`, value: annotation }
                               ];
                               
                               addHistoryPatch('주석 수정', forward, backward);
@@ -1384,10 +1385,10 @@ export function Shell() {
                               
                               // Create history patch for deletion
                               const forward = [
-                                { op: 'remove', path: `/document/pages/${pageIndex}/layers/annotations/${annotationIndex}` }
+                                { op: 'remove' as const, path: `/document/pages/${pageIndex}/layers/annotations/${annotationIndex}` }
                               ];
                               const backward = [
-                                { op: 'add', path: `/document/pages/${pageIndex}/layers/annotations/${annotationIndex}`, value: annotation }
+                                { op: 'add' as const, path: `/document/pages/${pageIndex}/layers/annotations/${annotationIndex}`, value: annotation }
                               ];
                               
                               addHistoryPatch('주석 삭제', forward, backward);
@@ -1400,10 +1401,10 @@ export function Shell() {
                             
                             // Add to history
                             const forward = [
-                              { op: 'add', path: `/document/pages/${document.pages.findIndex(p => p.id === annotation.pageId)}/layers/annotations/-`, value: annotation }
+                              { op: 'add' as const, path: `/document/pages/${document.pages.findIndex(p => p.id === annotation.pageId)}/layers/annotations/-`, value: annotation }
                             ];
                             const backward = [
-                              { op: 'remove', path: `/document/pages/${document.pages.findIndex(p => p.id === annotation.pageId)}/layers/annotations/${document.pages.find(p => p.id === annotation.pageId)?.layers.annotations.length || 0}` }
+                              { op: 'remove' as const, path: `/document/pages/${document.pages.findIndex(p => p.id === annotation.pageId)}/layers/annotations/${document.pages.find(p => p.id === annotation.pageId)?.layers.annotations.length || 0}` }
                             ];
                             
                             addHistoryPatch('주석 추가', forward, backward);

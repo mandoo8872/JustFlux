@@ -259,19 +259,8 @@ export function ThumbnailSidebar({
     const [draggedPage] = visibleNewOrder.splice(draggedIndex, 1);
     visibleNewOrder.splice(targetIndex, 0, draggedPage);
     
-    // Reconstruct full order including deleted pages
-    const fullNewOrder = allPages.map(p => {
-      if (p.deleted) {
-        return p.id; // Keep deleted pages in their original positions
-      }
-      // Find the new position for this page in the reordered visible pages
-      const visibleIndex = visibleNewOrder.findIndex(vp => vp.id === p.id);
-      return visibleIndex >= 0 ? visibleNewOrder[visibleIndex].id : p.id;
-    });
-    
     // Remove duplicates and use only the reordered IDs
     const visibleIds = visibleNewOrder.map(p => p.id);
-    const deletedIds = allPages.filter(p => p.deleted).map(p => p.id);
     
     // Merge: insert deleted pages at their relative positions
     const finalOrder: string[] = [];

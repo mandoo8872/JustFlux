@@ -3,11 +3,10 @@
  * Right-click menu for page operations
  */
 
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import {
   Copy,
   Trash,
-  FilePlus,
   FileArrowUp,
   File,
 } from 'phosphor-react';

@@ -44,6 +44,7 @@ export interface Page {
   pdfRef?: PdfPageRef;
   layers: PageLayers;
   thumbnail?: ThumbnailRef;
+  deleted?: boolean; // Soft delete flag
 }
 
 export interface PdfPageRef {

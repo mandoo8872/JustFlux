@@ -2,7 +2,7 @@
  * ArrowAnnotation Component - 화살표 주석 렌더링
  */
 
-import { useState } from 'react';
+import React from 'react';
 import type { ArrowAnnotation as ArrowAnnotationType } from '../../../core/model/types';
 
 interface ArrowAnnotationProps {
@@ -19,17 +19,14 @@ export function ArrowAnnotationComponent({
   isSelected,
   scale,
   onSelect,
-  onUpdate,
   onDelete,
 }: ArrowAnnotationProps) {
-  const [isEditing, setIsEditing] = useState(false);
 
   const { startPoint, endPoint, arrowHeadSize = 10, style } = annotation;
   const { stroke = '#000000', strokeWidth = 2 } = style || {};
 
-  // Calculate arrow direction and length
+  // Calculate arrow direction
   const angle = Math.atan2(endPoint.y - startPoint.y, endPoint.x - startPoint.x);
-  const length = Math.sqrt((endPoint.x - startPoint.x) ** 2 + (endPoint.y - startPoint.y) ** 2);
 
   // Calculate arrow head points
   const headSize = arrowHeadSize * scale;
@@ -53,14 +50,11 @@ export function ArrowAnnotationComponent({
 
   const handleDoubleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsEditing(true);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Delete' || e.key === 'Backspace') {
       onDelete();
-    } else if (e.key === 'Escape') {
-      setIsEditing(false);
     }
   };
 

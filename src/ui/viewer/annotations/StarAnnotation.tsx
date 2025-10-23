@@ -125,9 +125,15 @@ export function StarAnnotationComponent({
 
       {isSelected && (
         <ResizeHandles
-          bbox={bbox}
-          scale={scale}
-          onResize={(newBbox) => onUpdate({ bbox: newBbox })}
+          width={bbox.width}
+          height={bbox.height}
+          onResize={(width, height) => onUpdate({ 
+            bbox: { 
+              ...bbox, 
+              width, 
+              height 
+            } 
+          })}
         />
       )}
     </div>

@@ -4,12 +4,9 @@
 
 import { useState } from 'react';
 import { 
-  PaintBrush, 
   TextT, 
   Circle, 
-  Square, 
-  Minus,
-  Plus
+  Minus
 } from 'phosphor-react';
 import type { AnnotationStyle } from '../../core/model/types';
 

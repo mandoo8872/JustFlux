@@ -427,9 +427,8 @@ export function AnnotationLayer({
       const endX = drawCurrent.x * scale;
       const endY = drawCurrent.y * scale;
       
-      // Calculate arrow direction and length
+      // Calculate arrow direction
       const angle = Math.atan2(endY - startY, endX - startX);
-      const length = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2);
       
       return (
         <svg
