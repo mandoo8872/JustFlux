@@ -54,10 +54,15 @@ export function ThumbnailSidebar({
     const generateAll = async () => {
       const newThumbnails: Record<string, string> = {};
       // Calculate thumbnail width: sidebar width - padding (16px on each side) - container padding (24px total)
-      const thumbnailWidth = Math.max(120, sidebarWidth - 40);
+      const maxThumbnailWidth = Math.max(120, sidebarWidth - 40);
       
       for (const page of pages) {
         try {
+          // Calculate thumbnail dimensions based on page aspect ratio
+          const pageAspectRatio = page.height / page.width;
+          const thumbnailWidth = Math.min(maxThumbnailWidth, maxThumbnailWidth);
+          const thumbnailHeight = thumbnailWidth * pageAspectRatio;
+          
           // Check if page has PDF reference (not a blank page)
           if (page.pdfRef && pdfProxy && !insertedPdfPages.has(page.id)) {
             try {
@@ -67,9 +72,8 @@ export function ThumbnailSidebar({
               console.warn(`⚠️ [ThumbnailSidebar] Failed to generate thumbnail for page ${page.index + 1} (PDF page ${page.pdfRef.sourceIndex}):`, error);
               // Generate placeholder thumbnail for pages that can't be rendered
               const canvas = document.createElement('canvas');
-              const aspectRatio = page.height / page.width;
               canvas.width = thumbnailWidth;
-              canvas.height = thumbnailWidth * aspectRatio;
+              canvas.height = thumbnailHeight;
               
               const ctx = canvas.getContext('2d');
               if (ctx) {
@@ -102,9 +106,8 @@ export function ThumbnailSidebar({
                 console.warn(`⚠️ [ThumbnailSidebar] Failed to generate thumbnail for inserted PDF page ${page.index + 1}:`, error);
                 // Generate placeholder thumbnail
                 const canvas = document.createElement('canvas');
-                const aspectRatio = page.height / page.width;
                 canvas.width = thumbnailWidth;
-                canvas.height = thumbnailWidth * aspectRatio;
+                canvas.height = thumbnailHeight;
                 
                 const ctx = canvas.getContext('2d');
                 if (ctx) {
@@ -124,9 +127,8 @@ export function ThumbnailSidebar({
             } else {
               // No proxy available, generate placeholder thumbnail
               const canvas = document.createElement('canvas');
-              const aspectRatio = page.height / page.width;
               canvas.width = thumbnailWidth;
-              canvas.height = thumbnailWidth * aspectRatio;
+              canvas.height = thumbnailHeight;
               
               const ctx = canvas.getContext('2d');
               if (ctx) {
@@ -146,9 +148,8 @@ export function ThumbnailSidebar({
           } else {
             // Generate blank page thumbnail
             const canvas = document.createElement('canvas');
-            const aspectRatio = page.height / page.width;
             canvas.width = thumbnailWidth;
-            canvas.height = thumbnailWidth * aspectRatio;
+            canvas.height = thumbnailHeight;
             
             const ctx = canvas.getContext('2d');
             if (ctx) {
@@ -395,7 +396,7 @@ export function ThumbnailSidebar({
                     <div style={{ padding: '10px' }}>
                       {/* Thumbnail */}
                       <div style={{
-                        aspectRatio: '8.5 / 11',
+                        aspectRatio: `${page.width} / ${page.height}`,
                         background: 'linear-gradient(to bottom right, rgb(249, 250, 251), rgb(243, 244, 246))',
                         borderRadius: '12px',
                         overflow: 'hidden',
