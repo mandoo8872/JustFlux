@@ -208,7 +208,9 @@ export function Shell() {
     
     // Use MINIMUM to fit - NO multiplier for maximum fill
     const optimalScale = Math.min(scaleWidth, scaleHeight);
-    const finalScale = Math.max(Math.min(optimalScale, 3.0), 0.25);
+    // For fit mode, use a much lower minimum to ensure proper fitting
+    const minScale = view.fitMode === 'page' ? 0.05 : 0.25;
+    const finalScale = Math.max(Math.min(optimalScale, 3.0), minScale);
 
     console.log('🎯 [FIT] CANVAS-FILL MODE:', { 
       window: { w: window.innerWidth, h: window.innerHeight },
@@ -1334,7 +1336,7 @@ export function Shell() {
                                   borderRadius: '8px'
                                 }}>
                                   PDF 페이지
-                                </div>
+                </div>
                               );
                             }
                           } else {
@@ -1352,7 +1354,7 @@ export function Shell() {
                                 fontWeight: 500
                               }}>
                                 빈 페이지
-                              </div>
+              </div>
                             );
                           }
                         })()}

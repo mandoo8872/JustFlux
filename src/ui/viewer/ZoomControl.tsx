@@ -11,7 +11,7 @@ interface ZoomControlProps {
   fitMode?: string;
 }
 
-const ZOOM_MIN = 0.25;
+const ZOOM_MIN = 0.05;
 const ZOOM_MAX = 4.0;
 const ZOOM_STEP = 0.1;
 
