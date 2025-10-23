@@ -113,88 +113,6 @@ export function AnnotationLayer({
     };
   }, [scale]);
 
-  // Handle mouse down for creating annotations, selection, or panning
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    console.log('🖱️ [AnnotationLayer] Mouse down with tool:', activeTool);
-    
-    if (activeTool === 'select') {
-      // Selection tool: only handle empty area clicks
-      const point = screenToPage(e.clientX, e.clientY);
-      
-      // Check if clicking on an annotation
-      const clickedAnnotation = annotations.find(ann => {
-        const { x, y, width, height } = ann.bbox;
-        return point.x >= x && point.x <= x + width && 
-               point.y >= y && point.y <= y + height;
-      });
-      
-      if (!clickedAnnotation) {
-        // Clear selection if clicking on empty area
-        onSelect(null);
-      }
-      // If clicking on annotation, let the individual component handle it
-      return;
-    }
-    
-    if (activeTool === 'pan') {
-      // Pan tool: start panning
-      e.preventDefault();
-      setPanStart({ x: e.clientX, y: e.clientY });
-      setIsPanning(true);
-      return;
-    }
-    
-    if (activeTool === 'eraser') {
-      // Eraser tool: delete annotation under cursor
-      const point = screenToPage(e.clientX, e.clientY);
-      const annotationToDelete = annotations.find(ann => {
-        const { x, y, width, height } = ann.bbox;
-        return point.x >= x && point.x <= x + width && 
-               point.y >= y && point.y <= y + height;
-      });
-      
-      if (annotationToDelete) {
-        onDelete(annotationToDelete.id);
-      }
-      return;
-    }
-    
-    // For drawing tools (text, highlight, rect, ellipse, arrow, line, star, heart, lightning)
-    if (['text', 'highlight', 'rect', 'ellipse', 'arrow', 'line', 'star', 'heart', 'lightning', 'brush'].includes(activeTool)) {
-      console.log('🎨 [AnnotationLayer] Starting to draw with tool:', activeTool);
-      e.preventDefault();
-      const point = screenToPage(e.clientX, e.clientY);
-      console.log('📍 [AnnotationLayer] Draw start point:', point);
-      setDrawStart(point);
-      setDrawCurrent(point);
-      setIsDrawing(true);
-      
-      // For text tool, create annotation immediately on click
-      if (activeTool === 'text') {
-        const now = Date.now();
-        const annotation: Annotation = {
-          id: `ann-${now}-${Math.random().toString(36).slice(2, 9)}`,
-          type: 'text',
-          pageId,
-          bbox: { x: point.x, y: point.y, width: 200, height: 40 },
-          content: '텍스트 입력',
-          style: {
-            fontFamily: 'sans-serif',
-            fontSize: 16,
-            stroke: '#000000',
-            strokeWidth: 1,
-          },
-          createdAt: now,
-          modifiedAt: now,
-        } as any;
-        console.log('📝 [AnnotationLayer] Creating text annotation immediately:', annotation);
-        onCreate(annotation);
-        setIsDrawing(false);
-        setDrawStart(null);
-        setDrawCurrent(null);
-      }
-    }
-  }, [activeTool, screenToPage, onSelect, annotations, onDelete]);
 
   // Handle mouse move
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
@@ -530,7 +448,12 @@ export function AnnotationLayer({
         pointerEvents: 'auto',
         backgroundColor: 'transparent',
       }}
-      onMouseDown={handleMouseDown}
+      onMouseDown={(e) => {
+        // Only handle empty area clicks when using select tool
+        if (activeTool === 'select' && e.target === layerRef.current) {
+          onSelect(null);
+        }
+      }}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={() => {
