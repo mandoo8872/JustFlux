@@ -28,6 +28,7 @@ import {
 } from '../../state/documentStore';
 import { loadPdfFile } from '../../core/pdf/pdfLoader';
 import { createPage } from '../../core/model/factories';
+import type { ImageAnnotation, TextAnnotation } from '../../core/model/types';
 import { PageView } from '../viewer/PageView';
 import { ZoomControl } from '../viewer/ZoomControl';
 import { PageNavigator } from '../viewer/PageNavigator';
@@ -154,6 +155,7 @@ export function Shell() {
   const canRedo = useCanRedo();
   const pdfProxy = usePdfProxy();
   const currentPage = useCurrentPage();
+  const currentPageId = useDocumentStore((state) => state.currentPageId);
   const currentPageIndex = useCurrentPageIndex();
 
   // Page actions
@@ -525,6 +527,186 @@ export function Shell() {
     [document, addPage, reorderPages, setCurrentPage]
   );
 
+  // Copy selected annotations to clipboard
+  const handleCopy = useCallback(async () => {
+    if (!document || !currentPageId || selection.selectedAnnotationIds.length === 0) {
+      return;
+    }
+
+    const currentPageData = document.pages.find(p => p.id === currentPageId);
+    if (!currentPageData) return;
+
+    const selectedAnnotations = currentPageData.layers.annotations.filter(
+      annotation => selection.selectedAnnotationIds.includes(annotation.id)
+    );
+
+    if (selectedAnnotations.length === 0) return;
+
+    try {
+      // Create clipboard data
+      const clipboardData = {
+        type: 'annotations',
+        annotations: selectedAnnotations,
+        pageId: currentPageId,
+        timestamp: Date.now()
+      };
+
+      // Copy to clipboard as JSON
+      await navigator.clipboard.writeText(JSON.stringify(clipboardData));
+      console.log(`📋 [Copy] Copied ${selectedAnnotations.length} annotations to clipboard`);
+    } catch (error) {
+      console.error('❌ [Copy] Failed to copy annotations:', error);
+    }
+  }, [document, currentPageId, selection.selectedAnnotationIds]);
+
+  // Paste from clipboard
+  const handlePaste = useCallback(async () => {
+    if (!document || !currentPageId) {
+      return;
+    }
+
+    try {
+      // Try to read clipboard as text first (for annotations)
+      const clipboardText = await navigator.clipboard.readText();
+      
+      try {
+        const clipboardData = JSON.parse(clipboardText);
+        if (clipboardData.type === 'annotations' && clipboardData.annotations) {
+          // Paste annotations
+          const annotations = clipboardData.annotations;
+          const currentPageData = document.pages.find(p => p.id === currentPageId);
+          if (!currentPageData) return;
+
+          // Create new annotations with updated IDs and positions
+          const newAnnotations = annotations.map((annotation: any) => ({
+            ...annotation,
+            id: `annotation-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            // Offset position slightly to avoid overlap
+            x: annotation.x + 20,
+            y: annotation.y + 20
+          }));
+
+          // Add annotations to current page
+          const updatedPage = {
+            ...currentPageData,
+            layers: {
+              ...currentPageData.layers,
+              annotations: [...currentPageData.layers.annotations, ...newAnnotations]
+            }
+          };
+
+          // Update document
+          const updatedPages = document.pages.map(p => 
+            p.id === currentPageId ? updatedPage : p
+          );
+
+          useDocumentStore.setState({
+            document: {
+              ...document,
+              pages: updatedPages
+            }
+          });
+
+          console.log(`📋 [Paste] Pasted ${newAnnotations.length} annotations`);
+          return;
+        }
+      } catch (jsonError) {
+        // Not JSON, try as plain text
+      }
+
+      // Try to read clipboard as image
+      const clipboardItems = await navigator.clipboard.read();
+      for (const item of clipboardItems) {
+        if (item.types.includes('image/png') || item.types.includes('image/jpeg')) {
+          const blob = await item.getType('image/png');
+          const imageUrl = URL.createObjectURL(blob);
+          
+          // Create image annotation
+          const currentPageData = document.pages.find(p => p.id === currentPageId);
+          if (!currentPageData) return;
+
+          const imageAnnotation: ImageAnnotation = {
+            id: `annotation-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            type: 'image',
+            pageId: currentPageId,
+            bbox: { x: 100, y: 100, width: 200, height: 150 },
+            imageData: imageUrl,
+            originalWidth: 200,
+            originalHeight: 150,
+            createdAt: Date.now(),
+            modifiedAt: Date.now()
+          };
+
+          const updatedPage = {
+            ...currentPageData,
+            layers: {
+              ...currentPageData.layers,
+              annotations: [...currentPageData.layers.annotations, imageAnnotation]
+            }
+          };
+
+          const updatedPages = document.pages.map(p => 
+            p.id === currentPageId ? updatedPage : p
+          );
+
+          useDocumentStore.setState({
+            document: {
+              ...document,
+              pages: updatedPages
+            }
+          });
+
+          console.log('📋 [Paste] Pasted image from clipboard');
+          return;
+        }
+      }
+
+      // If it's plain text, create a text annotation
+      if (clipboardText.trim()) {
+        const currentPageData = document.pages.find(p => p.id === currentPageId);
+        if (!currentPageData) return;
+
+        const textAnnotation: TextAnnotation = {
+          id: `annotation-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          type: 'text',
+          pageId: currentPageId,
+          bbox: { x: 100, y: 100, width: 200, height: 50 },
+          content: clipboardText,
+          style: {
+            fontFamily: 'Arial',
+            fontSize: 14,
+            fill: '#000000'
+          },
+          createdAt: Date.now(),
+          modifiedAt: Date.now()
+        };
+
+        const updatedPage = {
+          ...currentPageData,
+          layers: {
+            ...currentPageData.layers,
+            annotations: [...currentPageData.layers.annotations, textAnnotation]
+          }
+        };
+
+        const updatedPages = document.pages.map(p => 
+          p.id === currentPageId ? updatedPage : p
+        );
+
+        useDocumentStore.setState({
+          document: {
+            ...document,
+            pages: updatedPages
+          }
+        });
+
+        console.log('📋 [Paste] Pasted text from clipboard');
+      }
+    } catch (error) {
+      console.error('❌ [Paste] Failed to paste from clipboard:', error);
+    }
+  }, [document, currentPageId]);
+
   // Sidebar resizing
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -616,6 +798,12 @@ export function Shell() {
       } else if (cmdKey && e.key === '0') {
         e.preventDefault();
         setZoom(1.0);
+      } else if (cmdKey && e.key === 'c') {
+        e.preventDefault();
+        handleCopy();
+      } else if (cmdKey && e.key === 'v') {
+        e.preventDefault();
+        handlePaste();
       }
 
       // Tool shortcuts (single key)
