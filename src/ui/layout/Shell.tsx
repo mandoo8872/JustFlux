@@ -277,7 +277,7 @@ export function Shell() {
         fitView('page'); // Set fitMode first
         setTimeout(() => {
           calculateFitToPageZoom(); // Calculate and apply zoom
-        }, 200); // Increased delay for PDF rendering
+        }, 500); // Increased delay for PDF rendering
       } catch (err) {
         useDocumentStore.setState({
           error: err instanceof Error ? err.message : 'Failed to load PDF',
@@ -1287,6 +1287,14 @@ export function Shell() {
                                 pageIndex={page.pdfRef.sourceIndex - 1}
                                 pdfProxy={pdfProxy}
                                 scale={view.zoom}
+                                onRenderComplete={() => {
+                                  // Recalculate zoom after page render for fit mode
+                                  if (view.fitMode === 'page') {
+                                    setTimeout(() => {
+                                      calculateFitToPageZoom();
+                                    }, 100);
+                                  }
+                                }}
                               />
                             );
                           } else if (page.pdfRef && insertedPdfPages.has(page.id)) {
@@ -1299,6 +1307,14 @@ export function Shell() {
                                   pageIndex={page.pdfRef.sourceIndex - 1}
                                   pdfProxy={insertedPdfProxy}
                                   scale={view.zoom}
+                                  onRenderComplete={() => {
+                                    // Recalculate zoom after page render for fit mode
+                                    if (view.fitMode === 'page') {
+                                      setTimeout(() => {
+                                        calculateFitToPageZoom();
+                                      }, 100);
+                                    }
+                                  }}
                                 />
                               );
                             } else {

@@ -13,9 +13,10 @@ interface PageViewProps {
   pdfProxy: PDFDocumentProxy;
   scale: number;
   onPageChange?: (pageNum: number) => void;
+  onRenderComplete?: () => void;
 }
 
-export function PageView({ pageId, pageIndex, pdfProxy, scale }: PageViewProps) {
+export function PageView({ pageId, pageIndex, pdfProxy, scale, onRenderComplete }: PageViewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const renderTaskRef = useRef<RenderTask | null>(null);
   const mountedRef = useRef(true);
@@ -94,6 +95,10 @@ export function PageView({ pageId, pageIndex, pdfProxy, scale }: PageViewProps) 
         // Check if still valid after render
         if (!isCancelled && currentRenderId === renderIdRef.current && mountedRef.current) {
           setIsLoading(false);
+          // Call render complete callback
+          if (onRenderComplete) {
+            setTimeout(() => onRenderComplete(), 50); // Small delay to ensure DOM is updated
+          }
         }
       } catch (err: any) {
         // Ignore cancellation errors
