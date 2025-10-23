@@ -123,6 +123,7 @@ export function ArrowAnnotationComponent({
             }}
             onMouseDown={(e) => {
               e.stopPropagation();
+              e.preventDefault();
               onSelect();
               if (onDragStart) {
                 onDragStart(annotation, { x: e.clientX, y: e.clientY });
@@ -146,6 +147,7 @@ export function ArrowAnnotationComponent({
             }}
             onMouseDown={(e) => {
               e.stopPropagation();
+              e.preventDefault();
               onSelect();
               if (onDragStart) {
                 onDragStart(annotation, { x: e.clientX, y: e.clientY });

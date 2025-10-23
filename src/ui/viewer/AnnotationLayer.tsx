@@ -94,6 +94,14 @@ export function AnnotationLayer({
     setHoveredAnnotationId(annotationId);
   }, []);
 
+  // Global drag start handler
+  const handleAnnotationDragStart = useCallback((annotation: Annotation, startPos: { x: number; y: number }) => {
+    console.log('🖱️ [AnnotationLayer] Starting drag for annotation:', annotation.id);
+    setIsDragging(true);
+    setDragStart(startPos);
+    setDragAnnotation(annotation);
+  }, []);
+
   // Convert screen coordinates to page coordinates
   const screenToPage = useCallback((clientX: number, clientY: number) => {
     if (!layerRef.current) return { x: 0, y: 0 };
@@ -110,7 +118,7 @@ export function AnnotationLayer({
     console.log('🖱️ [AnnotationLayer] Mouse down with tool:', activeTool);
     
     if (activeTool === 'select') {
-      // Selection tool: handle annotation selection and dragging
+      // Selection tool: only handle empty area clicks
       const point = screenToPage(e.clientX, e.clientY);
       
       // Check if clicking on an annotation
@@ -120,17 +128,11 @@ export function AnnotationLayer({
                point.y >= y && point.y <= y + height;
       });
       
-      if (clickedAnnotation) {
-        // Select the annotation and start dragging
-        onSelect(clickedAnnotation.id);
-        setDragAnnotation(clickedAnnotation);
-        setDragStart(point);
-        setIsDragging(true);
-        e.preventDefault();
-      } else {
+      if (!clickedAnnotation) {
         // Clear selection if clicking on empty area
         onSelect(null);
       }
+      // If clicking on annotation, let the individual component handle it
       return;
     }
     
@@ -564,11 +566,7 @@ export function AnnotationLayer({
                 onDelete={() => onDelete(annotation.id)}
                 onHover={() => handleAnnotationHover(annotation.id)}
                 onHoverEnd={() => handleAnnotationHover(null)}
-                onDragStart={(annotation, startPos) => {
-                  setIsDragging(true);
-                  setDragStart(startPos);
-                  setDragAnnotation(annotation);
-                }}
+                onDragStart={handleAnnotationDragStart}
               />
               {/* Selection border */}
               {isSelected && (
@@ -627,11 +625,7 @@ export function AnnotationLayer({
                 onSelect={() => onSelect(annotation.id)}
                 onUpdate={(updates) => onUpdate(annotation.id, updates)}
                 onDelete={() => onDelete(annotation.id)}
-                onDragStart={(annotation, startPos) => {
-                  setIsDragging(true);
-                  setDragStart(startPos);
-                  setDragAnnotation(annotation);
-                }}
+                onDragStart={handleAnnotationDragStart}
               />
               {/* Selection border */}
               {isSelected && (

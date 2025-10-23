@@ -32,6 +32,7 @@ export function ImageAnnotationComponent({
 }: ImageAnnotationProps) {
   const handleMouseDown = (e: React.MouseEvent) => {
     e.stopPropagation();
+    e.preventDefault();
     onSelect();
     
     // Start dragging using AnnotationLayer's drag system

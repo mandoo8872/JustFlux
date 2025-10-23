@@ -69,6 +69,7 @@ export function TextAnnotationComponent({
     if (isEditing) return;
     
     e.stopPropagation();
+    e.preventDefault();
     onSelect();
     
     // Start dragging using AnnotationLayer's drag system
