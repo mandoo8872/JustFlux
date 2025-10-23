@@ -2,30 +2,34 @@
  * ImageAnnotation Component - 이미지 주석 렌더링
  */
 
-import React, { useState } from 'react';
+import React from 'react';
 import type { ImageAnnotation } from '../../../core/model/types';
 import { ResizeHandles } from './ResizeHandles';
 
 interface ImageAnnotationProps {
   annotation: ImageAnnotation;
   isSelected: boolean;
+  isHovered: boolean;
   scale: number;
   onSelect: () => void;
   onUpdate: (updates: Partial<ImageAnnotation>) => void;
   onDelete: () => void;
+  onHover: () => void;
+  onHoverEnd: () => void;
   onDragStart?: (annotation: ImageAnnotation, startPos: { x: number; y: number }) => void;
 }
 
 export function ImageAnnotationComponent({
   annotation,
   isSelected,
+  isHovered,
   scale,
   onSelect,
   onUpdate,
+  onHover,
+  onHoverEnd,
   onDragStart,
 }: ImageAnnotationProps) {
-  const [isHovered, setIsHovered] = useState(false);
-
   const handleMouseDown = (e: React.MouseEvent) => {
     e.stopPropagation();
     onSelect();
@@ -37,11 +41,11 @@ export function ImageAnnotationComponent({
   };
 
   const handleMouseEnter = () => {
-    setIsHovered(true);
+    onHover();
   };
 
   const handleMouseLeave = () => {
-    setIsHovered(false);
+    onHoverEnd();
   };
 
   const handleResize = (newWidth: number, newHeight: number) => {

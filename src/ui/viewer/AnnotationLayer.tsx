@@ -48,6 +48,7 @@ export function AnnotationLayer({
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
   const [dragAnnotation, setDragAnnotation] = useState<Annotation | null>(null);
+  const [hoveredAnnotationId, setHoveredAnnotationId] = useState<string | null>(null);
   const layerRef = useRef<HTMLDivElement>(null);
 
   // Global mouse event handlers for dragging
@@ -87,6 +88,11 @@ export function AnnotationLayer({
       document.removeEventListener('mouseup', handleGlobalMouseUp);
     };
   }, [isDragging, dragStart, dragAnnotation, scale, onUpdate]);
+
+  // Global hover handlers
+  const handleAnnotationHover = useCallback((annotationId: string | null) => {
+    setHoveredAnnotationId(annotationId);
+  }, []);
 
   // Convert screen coordinates to page coordinates
   const screenToPage = useCallback((clientX: number, clientY: number) => {
@@ -543,6 +549,7 @@ export function AnnotationLayer({
       {/* Render existing annotations */}
       {annotations.map((annotation) => {
         const isSelected = selectedAnnotationIds.includes(annotation.id);
+        const isHovered = hoveredAnnotationId === annotation.id;
 
         if (annotation.type === 'text') {
           return (
@@ -550,10 +557,13 @@ export function AnnotationLayer({
               <TextAnnotationComponent
                 annotation={annotation as any}
                 isSelected={isSelected}
+                isHovered={isHovered}
                 scale={scale}
                 onSelect={() => onSelect(annotation.id)}
                 onUpdate={(updates) => onUpdate(annotation.id, updates)}
                 onDelete={() => onDelete(annotation.id)}
+                onHover={() => handleAnnotationHover(annotation.id)}
+                onHoverEnd={() => handleAnnotationHover(null)}
               />
               {/* Selection border */}
               {isSelected && (
@@ -782,10 +792,13 @@ export function AnnotationLayer({
                   <ImageAnnotationComponent
                     annotation={annotation as any}
                     isSelected={isSelected}
+                    isHovered={isHovered}
                     scale={scale}
                     onSelect={() => onSelect(annotation.id)}
                     onUpdate={(updates) => onUpdate(annotation.id, updates)}
                     onDelete={() => onDelete(annotation.id)}
+                    onHover={() => handleAnnotationHover(annotation.id)}
+                    onHoverEnd={() => handleAnnotationHover(null)}
                     onDragStart={(annotation, startPos) => {
                       setIsDragging(true);
                       setDragStart(startPos);

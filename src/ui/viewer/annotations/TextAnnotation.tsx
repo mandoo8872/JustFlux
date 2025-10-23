@@ -9,18 +9,24 @@ import { ResizeHandles } from './ResizeHandles';
 interface TextAnnotationProps {
   annotation: TextAnnotationType;
   isSelected: boolean;
+  isHovered: boolean;
   scale: number;
   onSelect: () => void;
   onUpdate: (updates: Partial<TextAnnotationType>) => void;
   onDelete: () => void;
+  onHover: () => void;
+  onHoverEnd: () => void;
 }
 
 export function TextAnnotationComponent({
   annotation,
   isSelected,
+  isHovered,
   scale,
   onSelect,
   onUpdate,
+  onHover,
+  onHoverEnd,
 }: TextAnnotationProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -129,11 +135,14 @@ export function TextAnnotationComponent({
       }}
       onMouseDown={handleMouseDown}
       onDoubleClick={handleDoubleClick}
+      onMouseEnter={onHover}
+      onMouseLeave={onHoverEnd}
     >
       {/* Background */}
       <div
         className={`absolute inset-0 bg-white/90 backdrop-blur-sm rounded shadow-sm transition-all ${
-          isSelected ? 'ring-2 ring-blue-500 ring-offset-1' : 'hover:ring-1 hover:ring-gray-300'
+          isSelected ? 'ring-2 ring-blue-500 ring-offset-1' : 
+          isHovered ? 'ring-1 ring-blue-300' : ''
         }`}
       />
 
