@@ -12,6 +12,7 @@ import { ArrowAnnotationComponent } from './annotations/ArrowAnnotation';
 import { StarAnnotationComponent } from './annotations/StarAnnotation';
 import { HeartAnnotationComponent } from './annotations/HeartAnnotation';
 import { LightningAnnotationComponent } from './annotations/LightningAnnotation';
+import { ImageAnnotationComponent } from './annotations/ImageAnnotation';
 
 interface AnnotationLayerProps {
   annotations: Annotation[];
@@ -735,6 +736,19 @@ export function AnnotationLayer({
                       }}
                     />
                   )}
+                </div>
+              );
+            } else if (annotation.type === 'image') {
+              return (
+                <div key={annotation.id} style={{ position: 'relative' }}>
+                  <ImageAnnotationComponent
+                    annotation={annotation as any}
+                    isSelected={isSelected}
+                    scale={scale}
+                    onSelect={() => onSelect(annotation.id)}
+                    onUpdate={(updates) => onUpdate(annotation.id, updates)}
+                    onDelete={() => onDelete(annotation.id)}
+                  />
                 </div>
               );
             }
