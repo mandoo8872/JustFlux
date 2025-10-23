@@ -743,6 +743,29 @@ export function Shell() {
     return () => window.removeEventListener('wheel', handleWheel);
   }, [view.zoom, setZoom]);
 
+  // Handle file drop events from HTML
+  useEffect(() => {
+    const handleFileDrop = (e: CustomEvent) => {
+      const files = e.detail.files as File[];
+      if (files.length > 0) {
+        // Use the first file and trigger the same logic as file input
+        const file = files[0];
+        if (file.type === 'application/pdf') {
+          // Create a synthetic event to reuse existing handleFileSelect logic
+          const syntheticEvent = {
+            target: { files: [file] }
+          } as unknown as React.ChangeEvent<HTMLInputElement>;
+          handleFileSelect(syntheticEvent);
+        } else {
+          alert('PDF 파일만 지원됩니다.');
+        }
+      }
+    };
+
+    window.addEventListener('fileDrop', handleFileDrop as EventListener);
+    return () => window.removeEventListener('fileDrop', handleFileDrop as EventListener);
+  }, [handleFileSelect]);
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: '#f8f9fa' }}>
       {/* Minimal Top Bar with Tabs - Inline Styles */}
