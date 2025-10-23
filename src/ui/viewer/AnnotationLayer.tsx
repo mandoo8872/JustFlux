@@ -564,6 +564,11 @@ export function AnnotationLayer({
                 onDelete={() => onDelete(annotation.id)}
                 onHover={() => handleAnnotationHover(annotation.id)}
                 onHoverEnd={() => handleAnnotationHover(null)}
+                onDragStart={(annotation, startPos) => {
+                  setIsDragging(true);
+                  setDragStart(startPos);
+                  setDragAnnotation(annotation);
+                }}
               />
               {/* Selection border */}
               {isSelected && (
@@ -622,6 +627,11 @@ export function AnnotationLayer({
                 onSelect={() => onSelect(annotation.id)}
                 onUpdate={(updates) => onUpdate(annotation.id, updates)}
                 onDelete={() => onDelete(annotation.id)}
+                onDragStart={(annotation, startPos) => {
+                  setIsDragging(true);
+                  setDragStart(startPos);
+                  setDragAnnotation(annotation);
+                }}
               />
               {/* Selection border */}
               {isSelected && (
@@ -651,6 +661,11 @@ export function AnnotationLayer({
                     onSelect={() => onSelect(annotation.id)}
                     onUpdate={(updates) => onUpdate(annotation.id, updates)}
                     onDelete={() => onDelete(annotation.id)}
+                    onDragStart={(annotation, startPos) => {
+                      setIsDragging(true);
+                      setDragStart(startPos);
+                      setDragAnnotation(annotation);
+                    }}
                   />
                   {/* Selection border for arrow */}
                   {isSelected && (

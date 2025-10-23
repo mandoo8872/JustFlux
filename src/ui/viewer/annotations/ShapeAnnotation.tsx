@@ -2,7 +2,7 @@
  * ShapeAnnotation Component - 도형 주석 (Rect, Ellipse)
  */
 
-import { useState, useEffect } from 'react';
+import React from 'react';
 import type { RectAnnotation, EllipseAnnotation } from '../../../core/model/types';
 import { ResizeHandles } from './ResizeHandles';
 
@@ -15,6 +15,7 @@ interface ShapeAnnotationProps {
   onSelect: () => void;
   onUpdate: (updates: Partial<ShapeAnnotationType>) => void;
   onDelete: () => void;
+  onDragStart?: (annotation: ShapeAnnotationType, startPos: { x: number; y: number }) => void;
 }
 
 export function ShapeAnnotationComponent({
@@ -23,9 +24,8 @@ export function ShapeAnnotationComponent({
   scale,
   onSelect,
   onUpdate,
+  onDragStart,
 }: ShapeAnnotationProps) {
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
 
   const bbox = annotation.bbox;
   const scaledBBox = {
@@ -39,47 +39,11 @@ export function ShapeAnnotationComponent({
     e.stopPropagation();
     onSelect();
     
-    setIsDragging(true);
-    setDragStart({
-      x: e.clientX,
-      y: e.clientY,
-    });
+    // Start dragging using AnnotationLayer's drag system
+    if (onDragStart) {
+      onDragStart(annotation, { x: e.clientX, y: e.clientY });
+    }
   };
-
-  useEffect(() => {
-    if (!isDragging || !dragStart) return;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const dx = (e.clientX - dragStart.x) / scale;
-      const dy = (e.clientY - dragStart.y) / scale;
-
-      onUpdate({
-        bbox: {
-          ...bbox,
-          x: bbox.x + dx,
-          y: bbox.y + dy,
-        },
-      });
-
-      setDragStart({
-        x: e.clientX,
-        y: e.clientY,
-      });
-    };
-
-    const handleMouseUp = () => {
-      setIsDragging(false);
-      setDragStart(null);
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
-
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [isDragging, dragStart, scale, bbox, onUpdate]);
 
   const handleResize = (newWidth: number, newHeight: number) => {
     onUpdate({
@@ -102,7 +66,7 @@ export function ShapeAnnotationComponent({
         top: scaledBBox.y,
         width: scaledBBox.width,
         height: scaledBBox.height,
-        cursor: isDragging ? 'grabbing' : 'grab',
+        cursor: 'grab',
       }}
       onMouseDown={handleMouseDown}
     >

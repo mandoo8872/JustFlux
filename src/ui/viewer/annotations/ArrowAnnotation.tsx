@@ -12,6 +12,7 @@ interface ArrowAnnotationProps {
   onSelect: () => void;
   onUpdate: (updates: Partial<ArrowAnnotationType>) => void;
   onDelete: () => void;
+  onDragStart?: (annotation: ArrowAnnotationType, startPos: { x: number; y: number }) => void;
 }
 
 export function ArrowAnnotationComponent({
@@ -20,6 +21,7 @@ export function ArrowAnnotationComponent({
   scale,
   onSelect,
   onDelete,
+  onDragStart,
 }: ArrowAnnotationProps) {
 
   const { startPoint, endPoint, arrowHeadSize = 10, style } = annotation;
@@ -121,7 +123,10 @@ export function ArrowAnnotationComponent({
             }}
             onMouseDown={(e) => {
               e.stopPropagation();
-              // TODO: Implement drag to move start point
+              onSelect();
+              if (onDragStart) {
+                onDragStart(annotation, { x: e.clientX, y: e.clientY });
+              }
             }}
           />
           
@@ -141,7 +146,10 @@ export function ArrowAnnotationComponent({
             }}
             onMouseDown={(e) => {
               e.stopPropagation();
-              // TODO: Implement drag to move end point
+              onSelect();
+              if (onDragStart) {
+                onDragStart(annotation, { x: e.clientX, y: e.clientY });
+              }
             }}
           />
         </>

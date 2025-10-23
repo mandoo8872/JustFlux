@@ -16,6 +16,7 @@ interface TextAnnotationProps {
   onDelete: () => void;
   onHover: () => void;
   onHoverEnd: () => void;
+  onDragStart?: (annotation: TextAnnotationType, startPos: { x: number; y: number }) => void;
 }
 
 export function TextAnnotationComponent({
@@ -27,10 +28,9 @@ export function TextAnnotationComponent({
   onUpdate,
   onHover,
   onHoverEnd,
+  onDragStart,
 }: TextAnnotationProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
   const textRef = useRef<HTMLTextAreaElement>(null);
 
   const bbox = annotation.bbox;
@@ -71,47 +71,11 @@ export function TextAnnotationComponent({
     e.stopPropagation();
     onSelect();
     
-    setIsDragging(true);
-    setDragStart({
-      x: e.clientX,
-      y: e.clientY,
-    });
+    // Start dragging using AnnotationLayer's drag system
+    if (onDragStart) {
+      onDragStart(annotation, { x: e.clientX, y: e.clientY });
+    }
   };
-
-  useEffect(() => {
-    if (!isDragging || !dragStart) return;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const dx = (e.clientX - dragStart.x) / scale;
-      const dy = (e.clientY - dragStart.y) / scale;
-
-      onUpdate({
-        bbox: {
-          ...bbox,
-          x: bbox.x + dx,
-          y: bbox.y + dy,
-        },
-      });
-
-      setDragStart({
-        x: e.clientX,
-        y: e.clientY,
-      });
-    };
-
-    const handleMouseUp = () => {
-      setIsDragging(false);
-      setDragStart(null);
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
-
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [isDragging, dragStart, scale, bbox, onUpdate]);
 
   const handleResize = (newWidth: number, newHeight: number) => {
     onUpdate({
@@ -131,7 +95,7 @@ export function TextAnnotationComponent({
         top: scaledBBox.y,
         width: scaledBBox.width,
         height: scaledBBox.height,
-        cursor: isDragging ? 'grabbing' : isEditing ? 'text' : 'grab',
+        cursor: isEditing ? 'text' : 'grab',
       }}
       onMouseDown={handleMouseDown}
       onDoubleClick={handleDoubleClick}
