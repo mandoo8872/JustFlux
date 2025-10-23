@@ -716,6 +716,33 @@ export function Shell() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [undo, redo, view.zoom, setZoom, document, currentPageIndex, handlePageChange, setActiveTool]);
 
+  // Handle wheel events for zoom (Ctrl + wheel)
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      // Only handle wheel events when Ctrl is pressed
+      if (e.ctrlKey) {
+        e.preventDefault(); // Prevent browser zoom
+        e.stopPropagation();
+        
+        const zoomStep = 0.1;
+        const currentZoom = view.zoom;
+        
+        if (e.deltaY < 0) {
+          // Zoom in
+          const newZoom = Math.min(currentZoom + zoomStep, 4.0);
+          setZoom(newZoom);
+        } else if (e.deltaY > 0) {
+          // Zoom out
+          const newZoom = Math.max(currentZoom - zoomStep, 0.05);
+          setZoom(newZoom);
+        }
+      }
+    };
+
+    window.addEventListener('wheel', handleWheel, { passive: false });
+    return () => window.removeEventListener('wheel', handleWheel);
+  }, [view.zoom, setZoom]);
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: '#f8f9fa' }}>
       {/* Minimal Top Bar with Tabs - Inline Styles */}
