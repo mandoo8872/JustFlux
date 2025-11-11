@@ -88,7 +88,7 @@ const toolGroups: ToolGroup[] = [
     name: '도형',
     tools: [
       { 
-        id: 'rect', 
+        id: 'rectangle', 
         icon: Rectangle, 
         label: '사각형', 
         shortcut: 'O',
@@ -210,107 +210,66 @@ const toolGroups: ToolGroup[] = [
 ];
 
 export function AnnotationToolbox({ activeTool, onToolChange }: AnnotationToolboxProps) {
+  const handleToolChange = (tool: ToolType) => {
+    console.log('🔧 [AnnotationToolbox] Tool changed to:', tool);
+    onToolChange(tool);
+  };
+  
+  // Adobe 스타일: 주요 도구만 가로로 배치
+  const mainTools = [
+    toolGroups[0].tools[0], // select
+    toolGroups[0].tools[1], // pan
+    toolGroups[0].tools[2], // text
+    toolGroups[0].tools[3], // highlight
+    toolGroups[1].tools[0], // rectangle
+    toolGroups[1].tools[1], // ellipse
+    toolGroups[1].tools[2], // arrow
+  ];
+
   return (
     <div style={{ 
       display: 'flex', 
-      flexDirection: 'column', 
-      gap: '8px',
-      width: '100px', // 플로팅 컨테이너 너비
-      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-      backdropFilter: 'blur(24px)',
-      borderRadius: '16px',
-      boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-      border: '1px solid rgba(216, 180, 254, 0.5)',
-      padding: '12px',
-      transition: 'box-shadow 0.2s ease-in-out'
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '4px'
     }}>
-      {/* 이동 핸들 */}
-      <div style={{
-        width: '100%',
-        height: '4px',
-        backgroundColor: 'rgb(216, 180, 254)',
-        borderRadius: '2px',
-        marginBottom: '8px',
-        cursor: 'grab',
-        opacity: 0.6,
-        transition: 'opacity 0.2s ease-in-out'
-      }} 
-      onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-      onMouseLeave={(e) => e.currentTarget.style.opacity = '0.6'}
-      title="드래그하여 이동"
-      />
-      
-      {toolGroups.map((group, groupIndex) => (
-        <div key={group.name} style={{ marginBottom: groupIndex < toolGroups.length - 1 ? '12px' : '0' }}>
-          {/* 그룹 헤더 */}
-          <div style={{
-            fontSize: '10px',
-            fontWeight: '600',
-            color: 'rgb(107, 114, 128)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
-            marginBottom: '6px',
-            textAlign: 'center'
-          }}>
-            {group.name}
-          </div>
-          
-          {/* 그룹 도구들 - 두 줄 배치 */}
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: '1fr 1fr', 
-            gap: '4px',
-            width: '100%'
-          }}>
-            {group.tools.map((tool) => {
-              const Icon = tool.icon;
-              const isActive = activeTool === tool.id;
+      {mainTools.map((tool) => {
+        const Icon = tool.icon;
+        const isActive = activeTool === tool.id;
 
-              return (
-                <button
-                  key={tool.id}
-                  onClick={() => onToolChange(tool.id)}
-                  style={{
-                    width: '32px',
-                    height: '32px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: '8px',
-                    transition: 'all 0.2s ease-in-out',
-                    background: isActive 
-                      ? `linear-gradient(to bottom right, ${tool.gradient.from}, ${tool.gradient.to})` 
-                      : 'transparent',
-                    color: isActive ? 'white' : 'rgb(75, 85, 99)',
-                    boxShadow: isActive 
-                      ? `0 4px 8px -2px ${tool.shadowColor}, 0 2px 4px -1px rgba(0, 0, 0, 0.05)` 
-                      : 'none',
-                    transform: isActive ? 'scale(1.1)' : 'scale(1)',
-                    border: 'none',
-                    cursor: 'pointer',
-                    position: 'relative'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.backgroundColor = 'rgb(243, 244, 246)';
-                      e.currentTarget.style.transform = 'scale(1.05)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                      e.currentTarget.style.transform = 'scale(1)';
-                    }
-                  }}
-                  title={`${tool.label} - ${tool.description}${tool.shortcut ? ` (${tool.shortcut})` : ''}`}
-                >
-                  <Icon size={16} weight={isActive ? 'fill' : 'duotone'} />
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      ))}
+        return (
+          <button
+            key={tool.id}
+            onClick={() => handleToolChange(tool.id)}
+            style={{
+              width: '36px',
+              height: '36px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.15s ease-in-out',
+              background: isActive ? '#0078D4' : 'transparent',
+              color: isActive ? 'white' : '#333333',
+              border: 'none',
+              cursor: 'pointer',
+              borderRadius: '4px',
+            }}
+            onMouseEnter={(e) => {
+              if (!isActive) {
+                e.currentTarget.style.backgroundColor = '#E0E0E0';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isActive) {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }
+            }}
+            title={tool.label}
+          >
+            <Icon size={20} weight={isActive ? 'fill' : 'regular'} />
+          </button>
+        );
+      })}
     </div>
   );
 }

@@ -2,7 +2,7 @@
  * LightningAnnotation Component - 번개 모양 주석
  */
 
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import type { LightningAnnotation as LightningAnnotationType } from '../../../core/model/types';
 import { ResizeHandles } from './ResizeHandles';
 
@@ -13,6 +13,7 @@ interface LightningAnnotationProps {
   onSelect: () => void;
   onUpdate: (updates: Partial<LightningAnnotationType>) => void;
   onDelete: () => void;
+  onDragStart?: (annotation: LightningAnnotationType, startPos: { x: number; y: number }) => void;
 }
 
 export function LightningAnnotationComponent({
@@ -21,9 +22,8 @@ export function LightningAnnotationComponent({
   scale,
   onSelect,
   onUpdate,
+  onDragStart,
 }: LightningAnnotationProps) {
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
 
   const { bbox, style } = annotation;
 
@@ -35,33 +35,19 @@ export function LightningAnnotationComponent({
   };
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    // Always stop propagation to prevent AnnotationLayer from handling this event
     e.stopPropagation();
+    e.preventDefault();
+    e.nativeEvent.stopImmediatePropagation();
+    
+    // Select the annotation
     onSelect();
-    setDragStart({ x: e.clientX, y: e.clientY });
-    setIsDragging(true);
-  }, [onSelect]);
-
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!isDragging || !dragStart) return;
-
-    const deltaX = (e.clientX - dragStart.x) / scale;
-    const deltaY = (e.clientY - dragStart.y) / scale;
-
-    const newBbox = {
-      x: bbox.x + deltaX,
-      y: bbox.y + deltaY,
-      width: bbox.width,
-      height: bbox.height,
-    };
-
-    onUpdate({ bbox: newBbox });
-    setDragStart({ x: e.clientX, y: e.clientY });
-  }, [isDragging, dragStart, bbox, onUpdate, scale]);
-
-  const handleMouseUp = useCallback(() => {
-    setIsDragging(false);
-    setDragStart(null);
-  }, []);
+    
+    // Start dragging using AnnotationLayer's drag system
+    if (onDragStart) {
+      onDragStart(annotation, { x: e.clientX, y: e.clientY });
+    }
+  }, [onSelect, onDragStart, annotation]);
 
   // Generate lightning path
   const generateLightningPath = () => {
@@ -103,9 +89,6 @@ export function LightningAnnotationComponent({
         cursor: isSelected ? 'grab' : 'pointer',
       }}
       onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
     >
       <svg
         style={{

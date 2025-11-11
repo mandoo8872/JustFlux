@@ -8,6 +8,7 @@ import type { PDFDocumentProxy } from 'pdfjs-dist';
 import type { Page } from '../../core/model/types';
 import { generateThumbnail } from '../../core/pdf/pdfLoader';
 import { PageContextMenu } from './PageContextMenu';
+import { ThumbnailList } from './thumbnails/ThumbnailList';
 
 interface ThumbnailSidebarProps {
   pages: Page[];
@@ -319,17 +320,32 @@ export function ThumbnailSidebar({
 
   return (
     <>
-      <div 
-        ref={scrollContainerRef}
-        style={{
-          height: '100%',
-          overflowY: 'auto',
-          padding: '16px',
-          backgroundColor: 'white'
-        }}
-      >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            {pages.map((page, index) => {
+      <ThumbnailList
+        pages={pages}
+        currentPageId={currentPageId}
+        pdfProxy={pdfProxy}
+        onPageSelect={onPageSelect}
+        onReorder={onReorder}
+        onDuplicate={onDuplicate}
+        onDelete={onDelete}
+        onAddBlankPage={onAddBlankPage}
+        onAddPdfPages={onAddPdfPages}
+        sidebarWidth={sidebarWidth}
+      />
+      
+      {/* 기존 렌더링 코드는 주석 처리 */}
+      {false && (
+        <div 
+          ref={scrollContainerRef}
+          style={{
+            height: '100%',
+            overflowY: 'auto',
+            padding: '16px',
+            backgroundColor: 'white'
+          }}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              {pages.map((page, index) => {
               const isSelected = page.id === currentPageId;
               const isDragging = draggedPageId === page.id;
               const isDropTarget = dropTargetIndex === index;
@@ -461,6 +477,7 @@ export function ThumbnailSidebar({
             })}
         </div>
       </div>
+      )}
 
       {/* Hidden file input for PDF insertion */}
       <input

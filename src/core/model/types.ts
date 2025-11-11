@@ -65,132 +65,48 @@ export interface ThumbnailRef {
 
 export interface PageLayers {
   /** Vector annotations (text, shapes, highlights) */
-  annotations: Annotation[];
+  annotations: any[]; // 임시로 any 사용
   /** Raster layers (brush, erase, blur, etc.) */
   rasters: RasterLayer[];
 }
 
 // ============================================
-// Vector Annotations
+// Vector Annotations - 새로운 타입 시스템으로 통합
 // ============================================
 
-export type AnnotationType =
-  | 'text'
-  | 'highlight'
-  | 'rect'
-  | 'ellipse'
-  | 'arrow'
-  | 'line'
-  | 'star'
-  | 'heart'
-  | 'lightning'
-  | 'image'
-  | 'stamp';
+// 새로운 타입 시스템 import
+export type {
+  Annotation,
+  BaseAnnotation,
+  BBox,
+  AnnotationStyle,
+  TextAnnotation,
+  HighlightAnnotation,
+  EllipseAnnotation,
+  RectangleAnnotation,
+  ArrowAnnotation,
+  StarAnnotation,
+  HeartAnnotation,
+  LightningAnnotation,
+  ImageAnnotation,
+  StampAnnotation,
+  OCRAnnotation,
+  AIAnnotation
+} from '../../types/annotation';
 
-export interface BaseAnnotation {
-  id: string;
-  type: AnnotationType;
-  pageId: string;
-  bbox: BBox; // [x, y, width, height] in PDF points
-  style?: AnnotationStyle;
-  locked?: boolean;
-  opacity?: number; // 0-1
-  createdAt: number;
-  modifiedAt: number;
-}
-
-export interface BBox {
+// Point 타입은 기존 것을 사용 (중복 방지)
+export interface Point {
   x: number;
   y: number;
-  width: number;
-  height: number;
 }
 
-export interface AnnotationStyle {
-  stroke?: string; // hex color
-  strokeWidth?: number;
-  fill?: string; // hex color
-  fontFamily?: string;
-  fontSize?: number;
-  fontWeight?: 'normal' | 'bold';
-  textAlign?: 'left' | 'center' | 'right';
-}
+// 기존 코드 호환성을 위한 별칭
+export type AnnotationType = 'text' | 'highlight' | 'rect' | 'ellipse' | 'arrow' | 'line' | 'star' | 'heart' | 'lightning' | 'image' | 'stamp';
 
-// Specific annotation types
-export interface TextAnnotation extends BaseAnnotation {
-  type: 'text';
-  content: string;
-  style: Required<Pick<AnnotationStyle, 'fontFamily' | 'fontSize'>> & AnnotationStyle;
-}
-
-export interface HighlightAnnotation extends BaseAnnotation {
-  type: 'highlight';
-  style: Required<Pick<AnnotationStyle, 'fill'>> & AnnotationStyle;
-}
-
-export interface RectAnnotation extends BaseAnnotation {
-  type: 'rect';
-  cornerRadius?: number;
-}
-
-export interface EllipseAnnotation extends BaseAnnotation {
-  type: 'ellipse';
-}
-
-export interface ArrowAnnotation extends BaseAnnotation {
-  type: 'arrow';
-  startPoint: Point;
-  endPoint: Point;
-  arrowHeadSize?: number;
-}
-
-export interface LineAnnotation extends BaseAnnotation {
-  type: 'line';
-  startPoint: Point;
-  endPoint: Point;
-}
-
-export interface StarAnnotation extends BaseAnnotation {
-  type: 'star';
-  points: number; // number of star points (5, 6, 8, etc.)
-  innerRadius?: number; // ratio of inner radius to outer radius
-}
-
-export interface HeartAnnotation extends BaseAnnotation {
-  type: 'heart';
-  // Heart shape is defined by bbox
-}
-
-export interface LightningAnnotation extends BaseAnnotation {
-  type: 'lightning';
-  // Lightning shape is defined by bbox
-}
-
-export interface ImageAnnotation extends BaseAnnotation {
-  type: 'image';
-  imageData: string; // base64 or blob URL
-  originalWidth: number;
-  originalHeight: number;
-}
-
-export interface StampAnnotation extends BaseAnnotation {
-  type: 'stamp';
-  stampType: 'approved' | 'rejected' | 'draft' | 'confidential' | 'custom';
-  text?: string;
-}
-
-export type Annotation =
-  | TextAnnotation
-  | HighlightAnnotation
-  | RectAnnotation
-  | EllipseAnnotation
-  | ArrowAnnotation
-  | LineAnnotation
-  | StarAnnotation
-  | HeartAnnotation
-  | LightningAnnotation
-  | ImageAnnotation
-  | StampAnnotation;
+// Import한 타입을 다시 export하여 사용 가능하게 함
+import type { RectangleAnnotation as RectangleAnnotationType, ArrowAnnotation as ArrowAnnotationType } from '../../types/annotation';
+export type RectAnnotation = RectangleAnnotationType;
+export type LineAnnotation = ArrowAnnotationType; // Line은 Arrow로 통합
 
 // ============================================
 // Raster Layer System
@@ -295,10 +211,10 @@ export type ToolType =
   | 'pan'
   | 'text'
   | 'highlight'
-  | 'rect'
+  | 'rectangle' // 'rect'에서 'rectangle'으로 변경
   | 'ellipse'
   | 'arrow'
-  | 'line'
+  | 'line' // 직선 도구 추가
   | 'star'
   | 'heart'
   | 'lightning'
@@ -322,7 +238,7 @@ export interface ToolOptions {
   brush?: BrushTool;
   eraser?: EraseTool;
   blur?: BlurTool;
-  annotationStyle?: AnnotationStyle;
+  annotationStyle?: any; // 임시로 any 사용
 }
 
 // ============================================

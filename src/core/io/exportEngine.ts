@@ -3,7 +3,7 @@
  */
 
 import type { PDFDocumentProxy } from 'pdfjs-dist';
-import type { Document, ExportOptions } from '../model/types';
+import type { Document, ExportOptions, Page } from '../model/types';
 import { exportAsPdf } from './pdfExport';
 import { exportAsPng, exportAsJpeg } from './imageExport';
 
@@ -28,25 +28,25 @@ export function resolvePageSelection(
  * 문서 내보내기 메인 함수
  */
 export async function exportDocument(
-  document: Document,
+  pages: Page[],
   pdfProxy: PDFDocumentProxy,
   options: ExportOptions,
   insertedPdfProxies?: Map<string, PDFDocumentProxy>
 ): Promise<Uint8Array | Blob | Blob[]> {
-  const { format, pages = 'all' } = options;
+  const { format, pages: pageSelection = 'all' } = options;
 
   // 페이지 선택 범위 결정
-  const pageIndices = resolvePageSelection(pages, document.pages.length);
+  const pageIndices = resolvePageSelection(pageSelection, pages.length);
 
   console.log(`📤 [Export] Starting ${format} export for ${pageIndices.length} pages...`);
 
   switch (format) {
     case 'pdf':
-      return await exportAsPdf(document, pdfProxy, pageIndices, options, insertedPdfProxies);
+      return await exportAsPdf(pages, pdfProxy, pageIndices, options, insertedPdfProxies);
     case 'png':
-      return await exportAsPng(document, pdfProxy, pageIndices, options);
+      return await exportAsPng(pages, pdfProxy, pageIndices, options);
     case 'jpeg':
-      return await exportAsJpeg(document, pdfProxy, pageIndices, options);
+      return await exportAsJpeg(pages, pdfProxy, pageIndices, options);
     default:
       throw new Error(`Unsupported format: ${format}`);
   }

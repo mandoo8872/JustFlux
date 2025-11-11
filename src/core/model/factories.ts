@@ -125,9 +125,11 @@ export function createHighlightAnnotation(params: {
       style: { fill: params.color || '#FFFF00' },
     }),
     type: 'highlight',
+    content: '', // HighlightAnnotation에 content 속성 추가
     opacity: 0.3,
     style: {
       fill: params.color || '#FFFF00',
+      opacity: 0.3,
     },
   };
 }
@@ -139,9 +141,15 @@ export function createRectAnnotation(params: {
   style?: AnnotationStyle;
 }): RectAnnotation {
   return {
-    ...createBaseAnnotation({ ...params, type: 'rect' }),
-    type: 'rect',
+    ...createBaseAnnotation({ ...params, type: 'rectangle' }),
+    type: 'rectangle',
     cornerRadius: params.cornerRadius || 0,
+    style: {
+      fill: params.style?.fill || '#FFFFFF',
+      stroke: params.style?.stroke || '#000000',
+      strokeWidth: params.style?.strokeWidth || 2,
+      ...params.style,
+    },
   };
 }
 

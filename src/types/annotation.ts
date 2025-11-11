@@ -1,0 +1,264 @@
+/**
+ * Annotation Type System - Discriminated Union 기반
+ * 구조적 안정성과 확장성을 위한 타입 시스템
+ */
+
+// ============================================
+// Base Annotation Interface
+// ============================================
+
+export interface BaseAnnotation {
+  id: string;
+  type: string;
+  bbox: BBox;
+  pageId: string;
+  createdAt: number;
+  modifiedAt: number;
+  style: AnnotationStyle;
+}
+
+export interface BBox {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface AnnotationStyle {
+  stroke?: string;
+  strokeWidth?: number;
+  fill?: string;
+  opacity?: number;
+  fontSize?: number;
+  fontFamily?: string;
+  fontWeight?: string;
+  fontStyle?: string;
+  textAlign?: 'left' | 'center' | 'right';
+  textDecoration?: string;
+}
+
+// ============================================
+// Text Annotation Types
+// ============================================
+
+export interface TextAnnotation extends BaseAnnotation {
+  type: 'text';
+  content: string;
+  style: AnnotationStyle & {
+    fontSize: number;
+    fontFamily: string;
+  };
+}
+
+export interface HighlightAnnotation extends BaseAnnotation {
+  type: 'highlight';
+  content: string;
+  opacity?: number; // 기존 코드 호환성을 위한 추가
+  style: AnnotationStyle & {
+    fill: string;
+    opacity: number;
+  };
+}
+
+// ============================================
+// Shape Annotation Types
+// ============================================
+
+export interface EllipseAnnotation extends BaseAnnotation {
+  type: 'ellipse';
+  style: AnnotationStyle & {
+    fill: string;
+    stroke: string;
+    strokeWidth: number;
+  };
+}
+
+export interface RectangleAnnotation extends BaseAnnotation {
+  type: 'rectangle';
+  cornerRadius?: number; // 기존 코드 호환성을 위한 추가
+  style: AnnotationStyle & {
+    fill: string;
+    stroke: string;
+    strokeWidth: number;
+  };
+}
+
+export interface ArrowAnnotation extends BaseAnnotation {
+  type: 'arrow';
+  startPoint: Point;
+  endPoint: Point;
+  arrowHeadSize?: number; // 기존 코드 호환성을 위한 추가
+  style: AnnotationStyle & {
+    stroke: string;
+    strokeWidth: number;
+  };
+}
+
+export interface StarAnnotation extends BaseAnnotation {
+  type: 'star';
+  points: Point[];
+  innerRadius?: number; // 기존 코드 호환성을 위한 추가
+  style: AnnotationStyle & {
+    fill: string;
+    stroke: string;
+    strokeWidth: number;
+  };
+}
+
+export interface HeartAnnotation extends BaseAnnotation {
+  type: 'heart';
+  style: AnnotationStyle & {
+    fill: string;
+    stroke: string;
+    strokeWidth: number;
+  };
+}
+
+export interface LightningAnnotation extends BaseAnnotation {
+  type: 'lightning';
+  points: Point[];
+  style: AnnotationStyle & {
+    fill: string;
+    stroke: string;
+    strokeWidth: number;
+  };
+}
+
+// ============================================
+// Image Annotation Types
+// ============================================
+
+export interface ImageAnnotation extends BaseAnnotation {
+  type: 'image';
+  imageData: string; // base64 or URL
+  originalWidth: number;
+  originalHeight: number;
+  style: AnnotationStyle;
+}
+
+// ============================================
+// Stamp Annotation Types
+// ============================================
+
+export interface StampAnnotation extends BaseAnnotation {
+  type: 'stamp';
+  stampType: 'approved' | 'rejected' | 'pending' | 'custom';
+  content?: string;
+  style: AnnotationStyle & {
+    fill: string;
+    stroke: string;
+    strokeWidth: number;
+  };
+}
+
+// ============================================
+// OCR Annotation Types (미래 확장)
+// ============================================
+
+export interface OCRAnnotation extends BaseAnnotation {
+  type: 'ocr';
+  content: string;
+  confidence: number;
+  language: string;
+  style: AnnotationStyle & {
+    fontSize: number;
+    fontFamily: string;
+  };
+}
+
+// ============================================
+// AI Annotation Types (미래 확장)
+// ============================================
+
+export interface AIAnnotation extends BaseAnnotation {
+  type: 'ai';
+  aiType: 'summary' | 'translation' | 'analysis';
+  content: string;
+  confidence: number;
+  model: string;
+  style: AnnotationStyle & {
+    fontSize: number;
+    fontFamily: string;
+  };
+}
+
+// ============================================
+// Utility Types
+// ============================================
+
+export interface Point {
+  x: number;
+  y: number;
+}
+
+// ============================================
+// Discriminated Union
+// ============================================
+
+export type Annotation = 
+  | TextAnnotation
+  | HighlightAnnotation
+  | EllipseAnnotation
+  | RectangleAnnotation
+  | ArrowAnnotation
+  | StarAnnotation
+  | HeartAnnotation
+  | LightningAnnotation
+  | ImageAnnotation
+  | StampAnnotation
+  | OCRAnnotation
+  | AIAnnotation;
+
+// ============================================
+// Type Guards
+// ============================================
+
+export function isTextAnnotation(annotation: Annotation): annotation is TextAnnotation {
+  return annotation.type === 'text';
+}
+
+export function isHighlightAnnotation(annotation: Annotation): annotation is HighlightAnnotation {
+  return annotation.type === 'highlight';
+}
+
+export function isShapeAnnotation(annotation: Annotation): annotation is 
+  | EllipseAnnotation 
+  | RectangleAnnotation 
+  | ArrowAnnotation 
+  | StarAnnotation 
+  | HeartAnnotation 
+  | LightningAnnotation {
+  return ['ellipse', 'rectangle', 'arrow', 'star', 'heart', 'lightning'].includes(annotation.type);
+}
+
+export function isImageAnnotation(annotation: Annotation): annotation is ImageAnnotation {
+  return annotation.type === 'image';
+}
+
+export function isStampAnnotation(annotation: Annotation): annotation is StampAnnotation {
+  return annotation.type === 'stamp';
+}
+
+export function isOCRAnnotation(annotation: Annotation): annotation is OCRAnnotation {
+  return annotation.type === 'ocr';
+}
+
+export function isAIAnnotation(annotation: Annotation): annotation is AIAnnotation {
+  return annotation.type === 'ai';
+}
+
+// ============================================
+// Render Props Interface
+// ============================================
+
+export interface AnnotationRenderProps {
+  annotation: Annotation;
+  isSelected: boolean;
+  isHovered: boolean;
+  scale: number;
+  onSelect: (id: string) => void;
+  onUpdate: (id: string, updates: Partial<Annotation>) => void;
+  onDelete: (id: string) => void;
+  onHover?: (id: string) => void;
+  onHoverEnd?: (id: string) => void;
+}

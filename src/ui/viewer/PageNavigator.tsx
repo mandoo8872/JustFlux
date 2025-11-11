@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { CaretLeft, CaretRight } from 'phosphor-react';
+import { CaretUp, CaretDown } from 'phosphor-react';
 
 interface PageNavigatorProps {
   currentPage: number;
@@ -44,24 +44,21 @@ export function PageNavigator({ currentPage, totalPages, onPageChange }: PageNav
   };
 
   const buttonStyle = {
-    width: '32px',
-    height: '32px',
+    width: '36px',
+    height: '36px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: '8px',
     border: 'none',
-    background: 'white',
+    background: 'transparent',
     cursor: 'pointer',
-    transition: 'all 0.2s',
-    color: '#6b7280'
+    transition: 'background-color 0.15s ease-in-out',
+    color: '#666666',
+    borderRadius: '4px',
   };
 
   const buttonHoverStyle = {
-    background: 'linear-gradient(135deg, #a855f7, #3b82f6)',
-    color: 'white',
-    transform: 'scale(1.05)',
-    boxShadow: '0 4px 12px rgba(168, 85, 247, 0.3)'
+    backgroundColor: '#E0E0E0'
   };
 
   const buttonDisabledStyle = {
@@ -73,10 +70,11 @@ export function PageNavigator({ currentPage, totalPages, onPageChange }: PageNav
   return (
     <div style={{
       display: 'flex',
+      flexDirection: 'column',
       alignItems: 'center',
-      gap: '8px'
+      gap: '2px'
     }}>
-      {/* Previous Button */}
+      {/* Previous Button (위 화살표) */}
       <button
         onClick={handlePrev}
         disabled={currentPage === 0}
@@ -84,28 +82,26 @@ export function PageNavigator({ currentPage, totalPages, onPageChange }: PageNav
         title="이전 페이지"
         onMouseEnter={(e) => {
           if (currentPage > 0) {
-            Object.assign(e.currentTarget.style, buttonHoverStyle);
+            e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor;
           }
         }}
         onMouseLeave={(e) => {
-          if (currentPage > 0) {
-            Object.assign(e.currentTarget.style, buttonStyle);
-          }
+          e.currentTarget.style.backgroundColor = buttonStyle.background;
         }}
       >
-        <CaretLeft size={18} weight="bold" />
+        <CaretUp size={20} weight="regular" />
       </button>
 
       {/* Page Input */}
       <div style={{
         display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
-        gap: '4px',
-        padding: '4px 12px',
-        background: 'white',
-        borderRadius: '8px',
-        border: '1px solid #e5e7eb'
+        gap: '2px',
+        minHeight: '40px',
+        justifyContent: 'center'
       }}>
+        {/* Current Page Number */}
         <input
           type="text"
           value={inputValue}
@@ -117,26 +113,35 @@ export function PageNavigator({ currentPage, totalPages, onPageChange }: PageNav
             }
           }}
           style={{
-            width: '32px',
+            width: '28px',
             textAlign: 'center',
             border: 'none',
             outline: 'none',
             fontSize: '14px',
-            fontWeight: '600',
-            color: '#1f2937',
-            background: 'transparent'
+            fontWeight: 600,
+            color: '#333333',
+            background: 'transparent',
+            padding: 0
           }}
         />
+        {/* Divider Line */}
+        <div style={{
+          width: '20px',
+          height: '1px',
+          backgroundColor: '#CCCCCC',
+          margin: '4px 0'
+        }} />
+        {/* Total Pages */}
         <span style={{
-          fontSize: '14px',
-          color: '#9ca3af',
-          fontWeight: '500'
+          fontSize: '12px',
+          color: '#666666',
+          fontWeight: 500
         }}>
-          / {totalPages}
+          {totalPages}
         </span>
       </div>
 
-      {/* Next Button */}
+      {/* Next Button (아래 화살표) */}
       <button
         onClick={handleNext}
         disabled={currentPage === totalPages - 1}
@@ -144,16 +149,14 @@ export function PageNavigator({ currentPage, totalPages, onPageChange }: PageNav
         title="다음 페이지"
         onMouseEnter={(e) => {
           if (currentPage < totalPages - 1) {
-            Object.assign(e.currentTarget.style, buttonHoverStyle);
+            e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor;
           }
         }}
         onMouseLeave={(e) => {
-          if (currentPage < totalPages - 1) {
-            Object.assign(e.currentTarget.style, buttonStyle);
-          }
+          e.currentTarget.style.backgroundColor = buttonStyle.background;
         }}
       >
-        <CaretRight size={18} weight="bold" />
+        <CaretDown size={20} weight="regular" />
       </button>
     </div>
   );

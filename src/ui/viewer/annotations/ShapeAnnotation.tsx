@@ -36,12 +36,20 @@ export function ShapeAnnotationComponent({
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
+    console.log('🔷 [ShapeAnnotation] Mouse down for annotation:', annotation.id);
+    
+    // Always stop propagation to prevent AnnotationLayer from handling this event
     e.stopPropagation();
     e.preventDefault();
+    e.nativeEvent.stopImmediatePropagation();
+    
+    // Select the annotation
+    console.log('🔷 [ShapeAnnotation] Selecting annotation:', annotation.id);
     onSelect();
     
     // Start dragging using AnnotationLayer's drag system
     if (onDragStart) {
+      console.log('🔷 [ShapeAnnotation] Starting drag for annotation:', annotation.id);
       onDragStart(annotation, { x: e.clientX, y: e.clientY });
     }
   };
@@ -70,6 +78,20 @@ export function ShapeAnnotationComponent({
         cursor: 'grab',
       }}
       onMouseDown={handleMouseDown}
+      onMouseDownCapture={(e) => {
+        console.log('🔷 [ShapeAnnotation] Mouse down capture, stopping propagation');
+        e.stopPropagation();
+        e.preventDefault();
+        e.nativeEvent.stopImmediatePropagation();
+        return false; // Additional event blocking
+      }}
+      onMouseUpCapture={(e) => {
+        console.log('🔷 [ShapeAnnotation] Mouse up capture, stopping propagation');
+        e.stopPropagation();
+        e.preventDefault();
+        e.nativeEvent.stopImmediatePropagation();
+        return false; // Additional event blocking
+      }}
     >
       {/* SVG Shape */}
       <svg

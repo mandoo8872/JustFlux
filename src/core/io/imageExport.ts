@@ -3,14 +3,14 @@
  */
 
 import type { PDFDocumentProxy } from 'pdfjs-dist';
-import type { Document, ExportOptions } from '../model/types';
+import type { Document, ExportOptions, Page } from '../model/types';
 import { renderPageToCanvas } from './pageRenderer';
 
 /**
  * PNG로 내보내기
  */
 export async function exportAsPng(
-  document: Document,
+  pages: Page[],
   pdfProxy: PDFDocumentProxy,
   pageIndices: number[],
   options: ExportOptions
@@ -19,7 +19,7 @@ export async function exportAsPng(
 
   if (pageIndices.length === 1) {
     // Single page - return directly
-    const page = document.pages[pageIndices[0]];
+    const page = pages[pageIndices[0]];
     const canvas = await renderPageToCanvas(page, pdfProxy, options);
 
     return new Promise((resolve, reject) => {
@@ -39,7 +39,7 @@ export async function exportAsPng(
 
     for (let i = 0; i < pageIndices.length; i++) {
       const pageIndex = pageIndices[i];
-      const page = document.pages[pageIndex];
+      const page = pages[pageIndex];
       
       console.log(`  Rendering page ${i + 1}/${pageIndices.length}...`);
       const canvas = await renderPageToCanvas(page, pdfProxy, options);
@@ -66,7 +66,7 @@ export async function exportAsPng(
  * JPEG로 내보내기
  */
 export async function exportAsJpeg(
-  document: Document,
+  pages: Page[],
   pdfProxy: PDFDocumentProxy,
   pageIndices: number[],
   options: ExportOptions
@@ -77,7 +77,7 @@ export async function exportAsJpeg(
 
   if (pageIndices.length === 1) {
     // Single page - return directly
-    const page = document.pages[pageIndices[0]];
+    const page = pages[pageIndices[0]];
     const canvas = await renderPageToCanvas(page, pdfProxy, options);
 
     return new Promise((resolve, reject) => {
@@ -101,7 +101,7 @@ export async function exportAsJpeg(
 
     for (let i = 0; i < pageIndices.length; i++) {
       const pageIndex = pageIndices[i];
-      const page = document.pages[pageIndex];
+      const page = pages[pageIndex];
       
       console.log(`  Rendering page ${i + 1}/${pageIndices.length}...`);
       const canvas = await renderPageToCanvas(page, pdfProxy, options);

@@ -25,110 +25,108 @@ export function ZoomControl({ zoom, onZoomChange, onFitMode }: ZoomControlProps)
   };
 
   const buttonBaseStyle = {
-    width: '44px',
-    height: '44px',
+    width: '20px',
+    height: '20px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: '12px',
     border: 'none',
-    background: 'white',
+    background: 'transparent',
     cursor: 'pointer',
-    transition: 'all 0.2s',
-    color: '#6b7280'
-  };
-
-  const buttonHoverStyle = {
-    background: 'linear-gradient(135deg, #a855f7, #3b82f6)',
-    color: 'white',
-    transform: 'scale(1.05)',
-    boxShadow: '0 4px 12px rgba(168, 85, 247, 0.3)'
+    transition: 'background-color 0.15s ease-in-out',
+    color: '#333333'
   };
 
   return (
     <div style={{
       display: 'flex',
       flexDirection: 'column',
-      gap: '6px'
+      alignItems: 'center',
+      gap: '2px'
     }}>
-      {/* Zoom In */}
+      {/* Zoom In (+) */}
       <button
         onClick={handleZoomIn}
         disabled={zoom >= ZOOM_MAX}
         style={{
           ...buttonBaseStyle,
+          width: '36px',
+          height: '36px',
           opacity: zoom >= ZOOM_MAX ? 0.3 : 1,
-          cursor: zoom >= ZOOM_MAX ? 'not-allowed' : 'pointer'
+          cursor: zoom >= ZOOM_MAX ? 'not-allowed' : 'pointer',
+          borderRadius: '4px',
         }}
         title="확대"
         onMouseEnter={(e) => {
           if (zoom < ZOOM_MAX) {
-            Object.assign(e.currentTarget.style, buttonHoverStyle);
+            e.currentTarget.style.backgroundColor = '#E0E0E0';
           }
         }}
         onMouseLeave={(e) => {
-          Object.assign(e.currentTarget.style, buttonBaseStyle);
+          e.currentTarget.style.backgroundColor = 'transparent';
         }}
       >
-        <MagnifyingGlassPlus size={22} weight="duotone" />
+        <MagnifyingGlassPlus size={20} weight="regular" />
       </button>
 
-      {/* Fit Page */}
-      <button
-        onClick={() => onFitMode('page')}
-        style={buttonBaseStyle}
-        title="페이지 맞춤"
-        onMouseEnter={(e) => Object.assign(e.currentTarget.style, buttonHoverStyle)}
-        onMouseLeave={(e) => Object.assign(e.currentTarget.style, buttonBaseStyle)}
-      >
-        <ArrowsOut size={22} weight="duotone" />
-      </button>
+      {/* Zoom Level Display */}
+      <div style={{
+        width: '36px',
+        height: '24px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '11px',
+        color: '#333333',
+        fontWeight: 500
+      }}>
+        {Math.round(zoom * 100)}%
+      </div>
 
-      {/* Zoom Out */}
+      {/* Zoom Out (-) */}
       <button
         onClick={handleZoomOut}
         disabled={zoom <= ZOOM_MIN}
         style={{
           ...buttonBaseStyle,
+          width: '36px',
+          height: '36px',
           opacity: zoom <= ZOOM_MIN ? 0.3 : 1,
-          cursor: zoom <= ZOOM_MIN ? 'not-allowed' : 'pointer'
+          cursor: zoom <= ZOOM_MIN ? 'not-allowed' : 'pointer',
+          borderRadius: '4px',
         }}
         title="축소"
         onMouseEnter={(e) => {
           if (zoom > ZOOM_MIN) {
-            Object.assign(e.currentTarget.style, buttonHoverStyle);
+            e.currentTarget.style.backgroundColor = '#E0E0E0';
           }
         }}
         onMouseLeave={(e) => {
-          Object.assign(e.currentTarget.style, buttonBaseStyle);
+          e.currentTarget.style.backgroundColor = 'transparent';
         }}
       >
-        <MagnifyingGlassMinus size={22} weight="duotone" />
+        <MagnifyingGlassMinus size={20} weight="regular" />
       </button>
 
-      {/* Zoom Level Display */}
-      <div style={{
-        width: '44px',
-        height: '32px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'linear-gradient(135deg, #f9fafb, #f3f4f6)',
-        borderRadius: '10px',
-        marginTop: '4px',
-        border: '1px solid #e5e7eb'
-      }}>
-        <span style={{
-          fontSize: '10px',
-          fontWeight: 'bold',
-          background: 'linear-gradient(135deg, #a855f7, #3b82f6)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text'
-        }}>
-          {Math.round(zoom * 100)}%
-        </span>
-      </div>
+      {/* Fit Page (*) */}
+      <button
+        onClick={() => onFitMode('page')}
+        style={{
+          ...buttonBaseStyle,
+          width: '36px',
+          height: '36px',
+          borderRadius: '4px',
+        }}
+        title="페이지 맞춤"
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = '#E0E0E0';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = 'transparent';
+        }}
+      >
+        <ArrowsOut size={20} weight="regular" />
+      </button>
     </div>
   );
 }

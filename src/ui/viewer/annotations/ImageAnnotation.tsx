@@ -31,12 +31,20 @@ export function ImageAnnotationComponent({
   onDragStart,
 }: ImageAnnotationProps) {
   const handleMouseDown = (e: React.MouseEvent) => {
+    console.log('🖼️ [ImageAnnotation] Mouse down for annotation:', annotation.id);
+    
+    // Always stop propagation to prevent AnnotationLayer from handling this event
     e.stopPropagation();
     e.preventDefault();
+    e.nativeEvent.stopImmediatePropagation();
+    
+    // Select the annotation
+    console.log('🖼️ [ImageAnnotation] Selecting annotation:', annotation.id);
     onSelect();
     
     // Start dragging using AnnotationLayer's drag system
     if (onDragStart) {
+      console.log('🖼️ [ImageAnnotation] Starting drag for annotation:', annotation.id);
       onDragStart(annotation, { x: e.clientX, y: e.clientY });
     }
   };
@@ -71,6 +79,20 @@ export function ImageAnnotationComponent({
         zIndex: isSelected ? 50 : 20,
       }}
       onMouseDown={handleMouseDown}
+      onMouseDownCapture={(e) => {
+        console.log('🖼️ [ImageAnnotation] Mouse down capture, stopping propagation');
+        e.stopPropagation();
+        e.preventDefault();
+        e.nativeEvent.stopImmediatePropagation();
+        return false; // Additional event blocking
+      }}
+      onMouseUpCapture={(e) => {
+        console.log('🖼️ [ImageAnnotation] Mouse up capture, stopping propagation');
+        e.stopPropagation();
+        e.preventDefault();
+        e.nativeEvent.stopImmediatePropagation();
+        return false; // Additional event blocking
+      }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >

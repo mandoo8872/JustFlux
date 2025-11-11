@@ -67,13 +67,13 @@ export function StarAnnotationComponent({
   const centerX = scaledBBox.width / 2;
   const centerY = scaledBBox.height / 2;
   const outerRadius = Math.min(scaledBBox.width, scaledBBox.height) / 2 - 5;
-  const innerRadiusValue = outerRadius * innerRadius;
+  const innerRadiusValue = outerRadius * (innerRadius || 0.5);
 
   const generateStarPath = () => {
-    const angleStep = (Math.PI * 2) / points;
+    const angleStep = (Math.PI * 2) / (points as number || 5);
     const path = [];
     
-    for (let i = 0; i < points * 2; i++) {
+    for (let i = 0; i < (points as number || 5) * 2; i++) {
       const radius = i % 2 === 0 ? outerRadius : innerRadiusValue;
       const angle = i * angleStep / 2 - Math.PI / 2; // Start from top
       const x = centerX + radius * Math.cos(angle);

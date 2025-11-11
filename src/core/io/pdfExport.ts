@@ -4,7 +4,7 @@
 
 import { PDFDocument } from 'pdf-lib';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
-import type { Document, ExportOptions } from '../model/types';
+import type { Document, ExportOptions, Page } from '../model/types';
 import { renderPageToCanvas, canvasToImageBytes } from './pageRenderer';
 
 /**
@@ -12,7 +12,7 @@ import { renderPageToCanvas, canvasToImageBytes } from './pageRenderer';
  * 편집된 페이지만 재렌더링하고, 편집되지 않은 페이지는 원본 그대로 복사
  */
 export async function exportAsPdf(
-  document: Document,
+  pages: Page[],
   pdfProxy: PDFDocumentProxy,
   pageIndices: number[],
   options: ExportOptions,
@@ -26,7 +26,7 @@ export async function exportAsPdf(
 
     for (let i = 0; i < pageIndices.length; i++) {
       const pageIndex = pageIndices[i];
-      const page = document.pages[pageIndex];
+      const page = pages[pageIndex];
 
       if (!page) {
         console.warn(`  Page ${pageIndex + 1} not found, skipping...`);

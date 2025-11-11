@@ -129,7 +129,7 @@ function drawAnnotation(
       break;
     }
 
-    case 'rect': {
+    case 'rectangle': {
       ctx.strokeStyle = annotation.style?.stroke || '#000000';
       ctx.lineWidth = (annotation.style?.strokeWidth || 2) * scale;
 

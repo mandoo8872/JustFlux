@@ -24,9 +24,19 @@ export function PageView({ pageId, pageIndex, pdfProxy, scale, onRenderComplete 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  console.log(`🔍 [PageView] Component mounted: pageId=${pageId}, pageIndex=${pageIndex}, pdfProxy=${pdfProxy ? 'exists' : 'null'}, scale=${scale}`);
+
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || !pdfProxy) return;
+    console.log(`🔍 [PageView] useEffect triggered: canvas=${canvas ? 'exists' : 'null'}, pdfProxy=${pdfProxy ? 'exists' : 'null'}, pageIndex=${pageIndex}`);
+    if (!canvas) {
+      console.error(`❌ [PageView] Canvas ref is null!`);
+      return;
+    }
+    if (!pdfProxy) {
+      console.error(`❌ [PageView] pdfProxy is null!`);
+      return;
+    }
 
     // Increment render ID for this effect
     const currentRenderId = ++renderIdRef.current;
@@ -56,6 +66,7 @@ export function PageView({ pageId, pageIndex, pdfProxy, scale, onRenderComplete 
         }
 
         // Get PDF page
+        console.log(`🔍 [PageView] Rendering page: pageIndex=${pageIndex}, PDF page number=${pageIndex + 1}`);
         const pdfPage = await pdfProxy.getPage(pageIndex + 1);
         
         // Check again before continuing
@@ -76,6 +87,8 @@ export function PageView({ pageId, pageIndex, pdfProxy, scale, onRenderComplete 
         // Set CSS display size explicitly
         canvas.style.width = `${displayWidth}px`;
         canvas.style.height = `${displayHeight}px`;
+        
+        console.log(`✅ [PageView] Canvas size set: ${displayWidth}x${displayHeight}px (bitmap: ${viewport.width}x${viewport.height})`);
 
         const context = canvas.getContext('2d');
         if (!context) {
@@ -94,11 +107,14 @@ export function PageView({ pageId, pageIndex, pdfProxy, scale, onRenderComplete 
 
         // Check if still valid after render
         if (!isCancelled && currentRenderId === renderIdRef.current && mountedRef.current) {
+          console.log(`✅ [PageView] Render complete for page ${pageIndex + 1}, canvas size: ${canvas.width}x${canvas.height}`);
           setIsLoading(false);
           // Call render complete callback
           if (onRenderComplete) {
             setTimeout(() => onRenderComplete(), 50); // Small delay to ensure DOM is updated
           }
+        } else {
+          console.warn(`⚠️ [PageView] Render cancelled or invalid: cancelled=${isCancelled}, renderId=${currentRenderId}/${renderIdRef.current}, mounted=${mountedRef.current}`);
         }
       } catch (err: any) {
         // Ignore cancellation errors
@@ -142,29 +158,75 @@ export function PageView({ pageId, pageIndex, pdfProxy, scale, onRenderComplete 
   }, []);
 
   return (
-    <div className="relative flex items-center justify-center">
+    <div style={{ 
+      position: 'relative', 
+      display: 'block',
+      width: 'fit-content',
+      height: 'fit-content'
+    }}>
       {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-50/80 backdrop-blur-sm rounded-lg z-10">
-          <div className="flex flex-col items-center gap-3">
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: 'rgba(249, 250, 251, 0.9)',
+          zIndex: 1000,
+          pointerEvents: 'none'
+        }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
             <Spinner size={32} className="animate-spin text-blue-500" weight="bold" />
-            <p className="text-sm text-gray-600 font-medium">페이지 렌더링 중...</p>
+            <p style={{ fontSize: '14px', color: '#4b5563', fontWeight: 500 }}>페이지 렌더링 중...</p>
           </div>
         </div>
       )}
 
       {error && (
-        <div className="absolute inset-0 flex items-center justify-center bg-red-50/80 backdrop-blur-sm rounded-lg z-10">
-          <div className="text-center px-6 py-4 bg-white rounded-lg shadow-lg border border-red-200">
-            <p className="text-red-600 font-medium mb-2">렌더링 오류</p>
-            <p className="text-sm text-gray-600">{error}</p>
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: 'rgba(254, 242, 242, 0.9)',
+          zIndex: 1000,
+          pointerEvents: 'none'
+        }}>
+          <div style={{
+            textAlign: 'center',
+            padding: '24px',
+            backgroundColor: 'white',
+            borderRadius: '8px',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+            border: '1px solid #fecaca'
+          }}>
+            <p style={{ color: '#dc2626', fontWeight: 500, marginBottom: '8px' }}>렌더링 오류</p>
+            <p style={{ fontSize: '14px', color: '#4b5563' }}>{error}</p>
           </div>
         </div>
       )}
 
       <canvas
         ref={canvasRef}
-        className="shadow-2xl rounded-lg bg-white"
-        style={{ pointerEvents: 'none' }}
+        style={{
+          display: 'block !important',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          borderRadius: '8px',
+          backgroundColor: '#ffffff',
+          pointerEvents: 'none',
+          border: '1px solid #E0E0E0',
+          opacity: '1 !important',
+          visibility: 'visible !important',
+          position: 'relative',
+          zIndex: 1
+        }}
       />
     </div>
   );
