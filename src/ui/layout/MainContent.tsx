@@ -132,11 +132,16 @@ export function MainContent({
       try {
         // capture phase에서 이벤트를 먼저 캐치하여 브라우저 기본 동작 방지
         window.addEventListener('wheel', handleGlobalWheel, { passive: false, capture: true });
-        if (document && typeof document.addEventListener === 'function') {
-          document.addEventListener('wheel', handleGlobalWheel, { passive: false, capture: true });
-          if (document.body && typeof document.body.addEventListener === 'function') {
-            document.body.addEventListener('wheel', handleGlobalWheel, { passive: false, capture: true });
+        try {
+          const doc = globalThis.document;
+          if (doc) {
+            doc.addEventListener('wheel', handleGlobalWheel, { passive: false, capture: true });
+            if (doc.body) {
+              doc.body.addEventListener('wheel', handleGlobalWheel, { passive: false, capture: true });
+            }
           }
+        } catch (e) {
+          // document가 없는 환경에서는 무시
         }
         listenersRegistered = true;
         console.log('✅ [MainContent] Wheel listeners registered');
@@ -154,11 +159,16 @@ export function MainContent({
 
       try {
         window.removeEventListener('wheel', handleGlobalWheel, { capture: true });
-        if (document && typeof document.removeEventListener === 'function') {
-          document.removeEventListener('wheel', handleGlobalWheel, { capture: true });
-          if (document.body && typeof document.body.removeEventListener === 'function') {
-            document.body.removeEventListener('wheel', handleGlobalWheel, { capture: true });
+        try {
+          const doc = globalThis.document;
+          if (doc) {
+            doc.removeEventListener('wheel', handleGlobalWheel, { capture: true });
+            if (doc.body) {
+              doc.body.removeEventListener('wheel', handleGlobalWheel, { capture: true });
+            }
           }
+        } catch (e) {
+          // document가 없는 환경에서는 무시
         }
       } catch (error) {
         console.warn('Failed to remove wheel listeners:', error);
@@ -238,11 +248,16 @@ export function MainContent({
         window.addEventListener('touchend', handleTouchEnd, { passive: false, capture: true });
         window.addEventListener('touchcancel', handleTouchEnd, { passive: false, capture: true });
         
-        if (document && typeof document.addEventListener === 'function') {
-          document.addEventListener('touchstart', handleTouchStart, { passive: false, capture: true });
-          document.addEventListener('touchmove', handleTouchMove, { passive: false, capture: true });
-          document.addEventListener('touchend', handleTouchEnd, { passive: false, capture: true });
-          document.addEventListener('touchcancel', handleTouchEnd, { passive: false, capture: true });
+        try {
+          const doc = globalThis.document;
+          if (doc) {
+            doc.addEventListener('touchstart', handleTouchStart, { passive: false, capture: true });
+            doc.addEventListener('touchmove', handleTouchMove, { passive: false, capture: true });
+            doc.addEventListener('touchend', handleTouchEnd, { passive: false, capture: true });
+            doc.addEventListener('touchcancel', handleTouchEnd, { passive: false, capture: true });
+          }
+        } catch (e) {
+          // document가 없는 환경에서는 무시
         }
         
         const container = containerRef.current;
@@ -272,11 +287,16 @@ export function MainContent({
         window.removeEventListener('touchend', handleTouchEnd, { capture: true });
         window.removeEventListener('touchcancel', handleTouchEnd, { capture: true });
         
-        if (document && typeof document.removeEventListener === 'function') {
-          document.removeEventListener('touchstart', handleTouchStart, { capture: true });
-          document.removeEventListener('touchmove', handleTouchMove, { capture: true });
-          document.removeEventListener('touchend', handleTouchEnd, { capture: true });
-          document.removeEventListener('touchcancel', handleTouchEnd, { capture: true });
+        try {
+          const doc = globalThis.document;
+          if (doc) {
+            doc.removeEventListener('touchstart', handleTouchStart, { capture: true });
+            doc.removeEventListener('touchmove', handleTouchMove, { capture: true });
+            doc.removeEventListener('touchend', handleTouchEnd, { capture: true });
+            doc.removeEventListener('touchcancel', handleTouchEnd, { capture: true });
+          }
+        } catch (e) {
+          // document가 없는 환경에서는 무시
         }
         
         const container = containerRef.current;
