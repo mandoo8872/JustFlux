@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>justflux-v2</title>
   </head>
   <body>
@@ -36,6 +36,8 @@
           window.dispatchEvent(event);
         }
       });
+
+      // 브라우저 확대/축소 방지는 React 컴포넌트에서 처리
     </script>
   </body>
 </html>

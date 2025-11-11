@@ -17,13 +17,21 @@ html, body, #root {
 }
 
 /* 브라우저 기본 줌 방지 */
+html {
+  touch-action: manipulation; /* 더블탭 줌 차단, 핀치 줌은 이벤트 핸들러로 차단 */
+  -ms-touch-action: manipulation;
+  -webkit-touch-callout: none;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  touch-action: pan-x pan-y; /* 핀치 줌 방지, 팬만 허용 */
+  touch-action: manipulation; /* 더블탭 줌 차단, 핀치 줌은 이벤트 핸들러로 차단 */
+  -ms-touch-action: manipulation;
+  -webkit-touch-callout: none;
 }
 
 /* Custom scrollbar */

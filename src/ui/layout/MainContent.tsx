@@ -93,40 +93,96 @@ export function MainContent({
     }
   }, [view.zoom, onZoomChange]);
 
-  // 전역 휠 이벤트 리스너 (핀치 줌 방지)
+  // 현재 줌 값을 ref로 관리하여 최신 값 사용
+  const zoomRef = useRef(view.zoom);
   useEffect(() => {
+    zoomRef.current = view.zoom;
+  }, [view.zoom]);
+
+  // 전역 휠 이벤트 리스너 (브라우저 확대/축소 방지)
+  useEffect(() => {
+    // 브라우저 환경이 아닌 경우 (테스트 등) 스킵
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return;
+    }
+
     const handleGlobalWheel = (e: WheelEvent) => {
-      // Ctrl+휠 또는 핀치 줌 방지
+      // Ctrl+휠 또는 Meta+휠 조합에서 브라우저 확대/축소 방지
       if (e.ctrlKey || e.metaKey) {
+        // 즉시 preventDefault 호출하여 브라우저 기본 동작 차단
         e.preventDefault();
         e.stopPropagation();
+        e.stopImmediatePropagation();
         
-        if (containerRef.current) {
-          // 줌 변경
-          const zoomDelta = e.deltaY > 0 ? -0.1 : 0.1;
-          const newZoom = Math.max(0.1, Math.min(5.0, view.zoom + zoomDelta));
-          onZoomChange(newZoom);
-        }
+        // 앱 내부 줌 변경 (ref를 사용하여 최신 값 사용)
+        const zoomDelta = e.deltaY > 0 ? -0.1 : 0.1;
+        const currentZoom = zoomRef.current;
+        const newZoom = Math.max(0.1, Math.min(5.0, currentZoom + zoomDelta));
+        onZoomChange(newZoom);
+        
+        return false;
       }
     };
 
-    window.addEventListener('wheel', handleGlobalWheel, { passive: false });
+    // 리스너 등록 상태 추적
+    let listenersRegistered = false;
+
+    // 다음 틱에 실행하여 DOM이 완전히 준비된 후 등록
+    const timeoutId = setTimeout(() => {
+      try {
+        // capture phase에서 이벤트를 먼저 캐치하여 브라우저 기본 동작 방지
+        window.addEventListener('wheel', handleGlobalWheel, { passive: false, capture: true });
+        if (document && typeof document.addEventListener === 'function') {
+          document.addEventListener('wheel', handleGlobalWheel, { passive: false, capture: true });
+          if (document.body && typeof document.body.addEventListener === 'function') {
+            document.body.addEventListener('wheel', handleGlobalWheel, { passive: false, capture: true });
+          }
+        }
+        listenersRegistered = true;
+        console.log('✅ [MainContent] Wheel listeners registered');
+      } catch (error) {
+        console.warn('Failed to register wheel listeners:', error);
+      }
+    }, 0);
     
     return () => {
-      window.removeEventListener('wheel', handleGlobalWheel);
+      clearTimeout(timeoutId);
+      
+      if (!listenersRegistered) {
+        return;
+      }
+
+      try {
+        window.removeEventListener('wheel', handleGlobalWheel, { capture: true });
+        if (document && typeof document.removeEventListener === 'function') {
+          document.removeEventListener('wheel', handleGlobalWheel, { capture: true });
+          if (document.body && typeof document.body.removeEventListener === 'function') {
+            document.body.removeEventListener('wheel', handleGlobalWheel, { capture: true });
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to remove wheel listeners:', error);
+      }
     };
-  }, [view.zoom, onZoomChange]);
+  }, [onZoomChange]);
 
   // 터치 이벤트 핸들러 (핀치 줌 방지)
   useEffect(() => {
+    // 브라우저 환경이 아닌 경우 (테스트 등) 스킵
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return;
+    }
+
     let initialDistance = 0;
-    let initialZoom = view.zoom;
+    let initialZoom = zoomRef.current; // ref 사용
     let isPinching = false;
 
     const handleTouchStart = (e: TouchEvent) => {
+      // 두 손가락 터치 감지 시 즉시 차단
       if (e.touches.length === 2) {
         e.preventDefault();
         e.stopPropagation();
+        e.stopImmediatePropagation();
         isPinching = true;
         const touch1 = e.touches[0];
         const touch2 = e.touches[1];
@@ -134,47 +190,106 @@ export function MainContent({
           touch2.clientX - touch1.clientX,
           touch2.clientY - touch1.clientY
         );
-        initialZoom = view.zoom;
+        initialZoom = zoomRef.current; // ref에서 최신 값 가져오기
       } else {
         isPinching = false;
       }
     };
 
     const handleTouchMove = (e: TouchEvent) => {
-      if (e.touches.length === 2 && isPinching) {
+      // 핀치 제스처 중이거나 두 손가락 터치가 감지되면 무조건 차단
+      if (e.touches.length === 2) {
         e.preventDefault();
         e.stopPropagation();
-        const touch1 = e.touches[0];
-        const touch2 = e.touches[1];
-        const currentDistance = Math.hypot(
-          touch2.clientX - touch1.clientX,
-          touch2.clientY - touch1.clientY
-        );
+        e.stopImmediatePropagation();
         
-        const scale = currentDistance / initialDistance;
-        const newZoom = Math.max(0.1, Math.min(5.0, initialZoom * scale));
-        onZoomChange(newZoom);
+        if (isPinching && initialDistance > 0) {
+          const touch1 = e.touches[0];
+          const touch2 = e.touches[1];
+          const currentDistance = Math.hypot(
+            touch2.clientX - touch1.clientX,
+            touch2.clientY - touch1.clientY
+          );
+          
+          const scale = currentDistance / initialDistance;
+          const newZoom = Math.max(0.1, Math.min(5.0, initialZoom * scale));
+          onZoomChange(newZoom);
+        }
       }
     };
 
-    const handleTouchEnd = () => {
-      isPinching = false;
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (e.touches.length < 2) {
+        isPinching = false;
+        initialDistance = 0;
+      }
     };
 
-    const container = containerRef.current;
-    if (container) {
-      container.addEventListener('touchstart', handleTouchStart, { passive: false });
-      container.addEventListener('touchmove', handleTouchMove, { passive: false });
-      container.addEventListener('touchend', handleTouchEnd, { passive: false });
-      container.addEventListener('touchcancel', handleTouchEnd, { passive: false });
+    // 리스너 등록 상태 추적
+    let listenersRegistered = false;
+
+    // 다음 틱에 실행하여 DOM이 완전히 준비된 후 등록
+    const timeoutId = setTimeout(() => {
+      try {
+        // 최상위 레벨에서 처리하여 브라우저 기본 동작 완전 차단
+        // capture phase에서 먼저 처리하여 다른 리스너보다 우선순위 높임
+        window.addEventListener('touchstart', handleTouchStart, { passive: false, capture: true });
+        window.addEventListener('touchmove', handleTouchMove, { passive: false, capture: true });
+        window.addEventListener('touchend', handleTouchEnd, { passive: false, capture: true });
+        window.addEventListener('touchcancel', handleTouchEnd, { passive: false, capture: true });
+        
+        if (document && typeof document.addEventListener === 'function') {
+          document.addEventListener('touchstart', handleTouchStart, { passive: false, capture: true });
+          document.addEventListener('touchmove', handleTouchMove, { passive: false, capture: true });
+          document.addEventListener('touchend', handleTouchEnd, { passive: false, capture: true });
+          document.addEventListener('touchcancel', handleTouchEnd, { passive: false, capture: true });
+        }
+        
+        const container = containerRef.current;
+        if (container && typeof container.addEventListener === 'function') {
+          container.addEventListener('touchstart', handleTouchStart, { passive: false });
+          container.addEventListener('touchmove', handleTouchMove, { passive: false });
+          container.addEventListener('touchend', handleTouchEnd, { passive: false });
+          container.addEventListener('touchcancel', handleTouchEnd, { passive: false });
+        }
+        listenersRegistered = true;
+        console.log('✅ [MainContent] Touch listeners registered');
+      } catch (error) {
+        console.warn('Failed to register touch listeners:', error);
+      }
+    }, 0);
+    
+    return () => {
+      clearTimeout(timeoutId);
       
-      return () => {
-        container.removeEventListener('touchstart', handleTouchStart);
-        container.removeEventListener('touchmove', handleTouchMove);
-        container.removeEventListener('touchend', handleTouchEnd);
-        container.removeEventListener('touchcancel', handleTouchEnd);
-      };
-    }
+      if (!listenersRegistered) {
+        return;
+      }
+
+      try {
+        window.removeEventListener('touchstart', handleTouchStart, { capture: true });
+        window.removeEventListener('touchmove', handleTouchMove, { capture: true });
+        window.removeEventListener('touchend', handleTouchEnd, { capture: true });
+        window.removeEventListener('touchcancel', handleTouchEnd, { capture: true });
+        
+        if (document && typeof document.removeEventListener === 'function') {
+          document.removeEventListener('touchstart', handleTouchStart, { capture: true });
+          document.removeEventListener('touchmove', handleTouchMove, { capture: true });
+          document.removeEventListener('touchend', handleTouchEnd, { capture: true });
+          document.removeEventListener('touchcancel', handleTouchEnd, { capture: true });
+        }
+        
+        const container = containerRef.current;
+        if (container && typeof container.removeEventListener === 'function') {
+          container.removeEventListener('touchstart', handleTouchStart);
+          container.removeEventListener('touchmove', handleTouchMove);
+          container.removeEventListener('touchend', handleTouchEnd);
+          container.removeEventListener('touchcancel', handleTouchEnd);
+        }
+      } catch (error) {
+        console.warn('Failed to remove touch listeners:', error);
+      }
+    };
   }, [view.zoom, onZoomChange]);
 
   return (
@@ -189,7 +304,9 @@ export function MainContent({
         transition: 'left 0.3s ease-in-out, right 0.3s ease-in-out',
         backgroundColor: '#E5E5E5', // Adobe PDF Reader 스타일 회색 배경
         overflow: 'auto',
-        overflowX: 'hidden' // 가로 스크롤 방지
+        overflowX: 'hidden', // 가로 스크롤 방지
+        touchAction: 'pan-y pan-x', // 세로/가로 스크롤만 허용, 핀치 줌 차단
+        WebkitTouchCallout: 'none'
       }}
       onDrop={handleDrop}
       onDragOver={handleDragOver}
