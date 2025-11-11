@@ -4,7 +4,7 @@
 
 import { PDFDocument } from 'pdf-lib';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
-import type { Document, ExportOptions, Page } from '../model/types';
+import type { ExportOptions, Page } from '../model/types';
 import { renderPageToCanvas, canvasToImageBytes } from './pageRenderer';
 
 /**

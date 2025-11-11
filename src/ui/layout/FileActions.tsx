@@ -6,23 +6,17 @@
 import React from 'react';
 import {
   FileArrowUp,
-  X,
-  Plus,
   File,
 } from 'phosphor-react';
 
 interface FileActionsProps {
   onFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onExport: () => void;
-  onAddPage: () => void;
-  onClose: () => void;
 }
 
 export function FileActions({
   onFileSelect,
   onExport,
-  onAddPage,
-  onClose,
 }: FileActionsProps) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0px' }}>

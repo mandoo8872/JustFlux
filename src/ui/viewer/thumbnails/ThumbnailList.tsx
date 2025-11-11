@@ -43,11 +43,10 @@ export function ThumbnailList({
 
   // 썸네일 아이템 렌더링
   const renderThumbnailItems = useCallback(() => {
-    return visiblePages.map((page, index) => (
+    return visiblePages.map((page) => (
       <ThumbnailItem
         key={page.id}
         page={page}
-        index={index}
         isSelected={page.id === currentPageId}
         pdfProxy={pdfProxy}
         onSelect={() => onPageSelect(page.id)}

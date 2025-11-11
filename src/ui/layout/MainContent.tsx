@@ -13,8 +13,6 @@ interface MainContentProps {
   pages: Page[]; // PageStore의 pages 추가
   currentPage: Page | null;
   pdfProxy: PDFDocumentProxy | null;
-  currentPageIndex: number;
-  totalPages: number; // totalPages prop 추가
   view: {
     zoom: number;
     pan: { x: number; y: number };
@@ -29,13 +27,10 @@ interface MainContentProps {
   scrollContainerRef?: React.RefObject<HTMLDivElement>;
   onZoomChange: (zoom: number) => void;
   onPanChange: (pan: { x: number; y: number }) => void;
-  onFitView: (mode: 'page' | 'width' | 'height' | 'actual') => void;
-  onSetActiveTool: (tool: string) => void;
   onAddAnnotation: (annotation: Omit<Annotation, 'id'>) => void;
   onUpdateAnnotation: (id: string, updates: Partial<Annotation>) => void;
   onDeleteAnnotation: (id: string) => void;
   onSelectAnnotations: (ids: string[]) => void;
-  onUpdateAnnotationStyle: (style: any) => void;
   onAddHistoryPatch: (description: string, forward: any[], backward: any[]) => void;
 }
 
@@ -44,8 +39,6 @@ export function MainContent({
   pages,
   currentPage,
   pdfProxy,
-  currentPageIndex,
-  totalPages,
   view,
   selection,
   sidebarWidth,
@@ -55,12 +48,9 @@ export function MainContent({
   onPageSelect,
   onZoomChange,
   onPanChange,
-  onFitView,
-  onSetActiveTool,
   onAddAnnotation,
   onUpdateAnnotation,
   onDeleteAnnotation,
-  onUpdateAnnotationStyle,
   onAddHistoryPatch,
 }: MainContentProps) {
   // Empty state is handled by PageViewer
@@ -112,10 +102,6 @@ export function MainContent({
         e.stopPropagation();
         
         if (containerRef.current) {
-          const containerRect = containerRef.current.getBoundingClientRect();
-          const mouseX = e.clientX - containerRect.left;
-          const mouseY = e.clientY - containerRect.top;
-          
           // 줌 변경
           const zoomDelta = e.deltaY > 0 ? -0.1 : 0.1;
           const newZoom = Math.max(0.1, Math.min(5.0, view.zoom + zoomDelta));
@@ -234,7 +220,7 @@ export function MainContent({
           onDeleteAnnotation={onDeleteAnnotation}
           onAddHistoryPatch={onAddHistoryPatch}
           onPageSelect={onPageSelect}
-          scrollContainerRef={containerRef}
+          scrollContainerRef={containerRef as React.RefObject<HTMLDivElement>}
         />
       </div>
     </div>

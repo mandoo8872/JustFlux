@@ -10,7 +10,6 @@ import { PageContextMenu } from '../PageContextMenu';
 
 interface ThumbnailItemProps {
   page: Page;
-  index: number;
   isSelected: boolean;
   pdfProxy: PDFDocumentProxy | null;
   onSelect: () => void;
@@ -22,7 +21,6 @@ interface ThumbnailItemProps {
 
 export function ThumbnailItem({
   page,
-  index,
   isSelected,
   pdfProxy,
   onSelect,

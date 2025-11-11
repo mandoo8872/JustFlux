@@ -3,7 +3,7 @@
  */
 
 import type { PDFDocumentProxy } from 'pdfjs-dist';
-import type { Document, ExportOptions, Page } from '../model/types';
+import type { ExportOptions, Page } from '../model/types';
 import { renderPageToCanvas } from './pageRenderer';
 
 /**

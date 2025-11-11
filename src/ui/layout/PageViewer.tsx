@@ -66,7 +66,6 @@ export function PageViewer({
 
       const visibleRatio = entry.intersectionRatio;
       const boundingRect = entry.boundingClientRect;
-      const intersectionRect = entry.intersectionRect;
       
       // 스크롤 컨테이너 기준으로 뷰포트 중앙 계산
       const scrollContainer = scrollContainerRef?.current;
@@ -430,6 +429,7 @@ export function PageViewer({
                 activeTool={activeTool as any}
                 onCreate={(annotation: Omit<Annotation, 'id'>) => {
                 console.log('✅ [PageViewer] Creating annotation:', annotation);
+                if (!document) return;
                 const forward = [
                   { op: 'add' as const, path: `/document/pages/${document.pages.findIndex(p => p.id === annotation.pageId)}/layers/annotations/-`, value: annotation }
                 ];
@@ -440,7 +440,8 @@ export function PageViewer({
                 onAddAnnotation(annotation);
               }}
               onUpdate={(id, updates) => {
-                const annotation = document?.pages
+                if (!document) return;
+                const annotation = document.pages
                   .flatMap(p => p.layers.annotations)
                   .find(a => a.id === id);
                 if (annotation) {
@@ -455,7 +456,8 @@ export function PageViewer({
                 onUpdateAnnotation(id, updates);
               }}
               onDelete={(id) => {
-                const annotation = document?.pages
+                if (!document) return;
+                const annotation = document.pages
                   .flatMap(p => p.layers.annotations)
                   .find(a => a.id === id);
                 if (annotation) {

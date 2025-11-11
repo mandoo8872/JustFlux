@@ -190,8 +190,6 @@ export function Shell() {
         onUndo={undo}
         onRedo={redo}
         onExport={() => setExportModalOpen(true)}
-        onAddPage={handleAddBlankPage}
-        onClose={() => console.log('Close clicked')}
       />
 
       {/* Left Sidebar */}
@@ -233,7 +231,7 @@ export function Shell() {
         }}
         sidebarWidth={rightSidebarWidth}
         isCollapsed={isRightSidebarCollapsed}
-        onToggle={() => setIsRightSidebarCollapsed(!isRightSidebarCollapsed)}
+        onToggle={() => {}}
       />
 
       {/* Main Content */}
@@ -242,8 +240,6 @@ export function Shell() {
         pages={pages}
         currentPage={currentPage}
         pdfProxy={pdfProxy}
-        currentPageIndex={currentPageIndex}
-        totalPages={pages.length}
         view={{ zoom: view.scale, pan: { x: view.panX, y: view.panY }, fitMode: 'page' as const }}
         selection={selection}
         sidebarWidth={sidebarWidth}
@@ -253,12 +249,6 @@ export function Shell() {
         onPageSelect={setCurrentPage}
         onZoomChange={setScale}
         onPanChange={() => {}}
-        onFitView={() => {
-          if (currentPage) {
-            fitToPage(currentPage.width, currentPage.height);
-          }
-        }}
-        onSetActiveTool={() => {}} // ToolStore에서 처리
         onAddAnnotation={(annotation) => {
           if (currentPage) {
             const annotationWithId = {
@@ -272,11 +262,6 @@ export function Shell() {
         onUpdateAnnotation={updateAnnotation}
         onDeleteAnnotation={removeAnnotation}
         onSelectAnnotations={selectAnnotations}
-        onUpdateAnnotationStyle={(style) => {
-          selection.selectedAnnotationIds.forEach(id => {
-            updateAnnotation(id, { style: { ...style } });
-          });
-        }}
         onAddHistoryPatch={addHistoryPatch}
       />
 

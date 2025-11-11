@@ -216,17 +216,17 @@ export function PageView({ pageId, pageIndex, pdfProxy, scale, onRenderComplete 
       <canvas
         ref={canvasRef}
         style={{
-          display: 'block !important',
+          display: 'block',
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
           borderRadius: '8px',
           backgroundColor: '#ffffff',
           pointerEvents: 'none',
           border: '1px solid #E0E0E0',
-          opacity: '1 !important',
-          visibility: 'visible !important',
+          opacity: 1,
+          visibility: 'visible',
           position: 'relative',
           zIndex: 1
-        }}
+        } as React.CSSProperties}
       />
     </div>
   );

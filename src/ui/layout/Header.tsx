@@ -16,8 +16,6 @@ interface HeaderProps {
   onUndo: () => void;
   onRedo: () => void;
   onExport: () => void;
-  onAddPage: () => void;
-  onClose: () => void;
 }
 
 export function Header({
@@ -29,8 +27,6 @@ export function Header({
   onUndo,
   onRedo,
   onExport,
-  onAddPage,
-  onClose,
 }: HeaderProps) {
   return (
     <header style={{ 
@@ -76,8 +72,6 @@ export function Header({
         <FileActions
           onFileSelect={onFileSelect}
           onExport={onExport}
-          onAddPage={onAddPage}
-          onClose={onClose}
         />
       </div>
     </header>
