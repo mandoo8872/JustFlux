@@ -46,6 +46,7 @@ export function createPage(params: {
   height: number;
   rotation?: 0 | 90 | 180 | 270;
   pdfRef?: Page['pdfRef'];
+  contentType?: 'pdf' | 'blank' | 'text' | 'markdown' | 'image';
 }): Page {
   return {
     id: `page-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
@@ -55,6 +56,7 @@ export function createPage(params: {
     height: params.height,
     rotation: params.rotation || 0,
     pdfRef: params.pdfRef,
+    contentType: params.contentType || (params.pdfRef ? 'pdf' : 'blank'),
     layers: {
       annotations: [],
       rasters: [],

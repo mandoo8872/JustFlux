@@ -138,23 +138,21 @@ export function Sidebar({
 
       {/* Thumbnail List */}
       <div style={{ flex: 1, overflow: 'hidden' }}>
-        {pages && pages.length > 0 && (
-          <ThumbnailSidebar
-            pages={pages} // PageStore의 pages 사용
-            allPages={pages}
-            currentPageId={currentPage?.id || null}
-            pdfProxy={pdfProxy!}
-            onPageSelect={onPageSelect}
-            onReorder={onPageReorder}
-            onDuplicate={onPageDuplicate}
-            onDelete={onPageDelete}
-            onAddBlankPage={onAddBlankPage}
-            onAddPdfPages={onAddPdfPages}
-            sidebarWidth={sidebarWidth}
-            insertedPdfPages={insertedPdfPages}
-            insertedPdfProxies={insertedPdfProxies}
-          />
-        )}
+        <ThumbnailSidebar
+          pages={pages} // PageStore의 pages 사용
+          allPages={pages}
+          currentPageId={currentPage?.id || null}
+          pdfProxy={pdfProxy!}
+          onPageSelect={onPageSelect}
+          onReorder={onPageReorder}
+          onDuplicate={onPageDuplicate}
+          onDelete={onPageDelete}
+          onAddBlankPage={onAddBlankPage}
+          onAddPdfPages={onAddPdfPages}
+          sidebarWidth={sidebarWidth}
+          insertedPdfPages={insertedPdfPages}
+          insertedPdfProxies={insertedPdfProxies}
+        />
       </div>
 
     </div>

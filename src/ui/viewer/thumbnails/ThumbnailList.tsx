@@ -41,14 +41,18 @@ export function ThumbnailList({
     return pages;
   }, [pages]);
 
-  // 빈 페이지 추가 핸들러
-  const handleAddBlankPage = useCallback(() => {
-    // 마지막 페이지 뒤에 추가, 또는 첫 페이지로 추가
+  // 빈 페이지 추가 핸들러 (세로 A4)
+  const handleAddPortraitPage = useCallback(() => {
     const lastPage = pages[pages.length - 1];
-    const width = lastPage?.width || 595; // A4 width
-    const height = lastPage?.height || 842; // A4 height
     const afterPageId = lastPage?.id || '';
-    onAddBlankPage(afterPageId, width, height);
+    onAddBlankPage(afterPageId, 595, 842); // A4 세로: 595×842pt
+  }, [pages, onAddBlankPage]);
+
+  // 빈 페이지 추가 핸들러 (가로 A4)
+  const handleAddLandscapePage = useCallback(() => {
+    const lastPage = pages[pages.length - 1];
+    const afterPageId = lastPage?.id || '';
+    onAddBlankPage(afterPageId, 842, 595); // A4 가로: 842×595pt
   }, [pages, onAddBlankPage]);
 
   // 썸네일 아이템 렌더링
@@ -72,8 +76,6 @@ export function ThumbnailList({
     <div
       style={{
         width: sidebarWidth - 20,
-        height: 'calc(100vh - 48px - 80px)', // 헤더(48px) + BottomControls(80px) 제외
-        overflowY: 'auto',
         padding: '10px',
         paddingBottom: '20px' // 하단 여백 추가
       }}
@@ -85,57 +87,90 @@ export function ThumbnailList({
         {renderThumbnailItems()}
       </ThumbnailDragDrop>
 
-      {/* 빈 페이지 추가 버튼 */}
+      {/* 빈 페이지 추가 - 세로/가로 선택 */}
       <div
-        onClick={handleAddBlankPage}
         style={{
           width: '100%',
-          aspectRatio: '210 / 297', // A4 비율
-          marginTop: '16px',
+          marginTop: pages.length > 0 ? '8px' : '0px', // 페이지 있으면 8px 간격, 없으면 바로 위에
           border: '2px dashed #9ca3af',
           borderRadius: '12px',
+          padding: '12px',
+          backgroundColor: '#f9fafb',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'center',
-          gap: '8px',
-          cursor: 'pointer',
-          backgroundColor: '#f9fafb',
-          transition: 'all 0.2s ease-in-out',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.borderColor = '#6366f1';
-          e.currentTarget.style.backgroundColor = '#eef2ff';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.borderColor = '#9ca3af';
-          e.currentTarget.style.backgroundColor = '#f9fafb';
+          gap: '10px',
         }}
       >
-        <div
-          style={{
-            width: '48px',
-            height: '48px',
-            borderRadius: '50%',
-            backgroundColor: '#e5e7eb',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'all 0.2s ease-in-out',
-          }}
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
-        </div>
         <span style={{
-          fontSize: '13px',
+          fontSize: '12px',
           color: '#6b7280',
           fontWeight: 500
         }}>
           빈 페이지 추가
         </span>
+        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+          {/* 세로 A4 버튼 */}
+          <div
+            onClick={handleAddPortraitPage}
+            style={{
+              width: '48px',
+              height: '68px', // A4 세로 비율 (210:297)
+              border: '2px solid #d1d5db',
+              borderRadius: '6px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              backgroundColor: '#ffffff',
+              transition: 'all 0.15s ease-in-out',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = '#6366f1';
+              e.currentTarget.style.backgroundColor = '#eef2ff';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = '#d1d5db';
+              e.currentTarget.style.backgroundColor = '#ffffff';
+            }}
+            title="세로 A4 페이지 추가"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+          </div>
+          {/* 가로 A4 버튼 */}
+          <div
+            onClick={handleAddLandscapePage}
+            style={{
+              width: '68px',
+              height: '48px', // A4 가로 비율 (297:210)
+              border: '2px solid #d1d5db',
+              borderRadius: '6px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              backgroundColor: '#ffffff',
+              transition: 'all 0.15s ease-in-out',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = '#6366f1';
+              e.currentTarget.style.backgroundColor = '#eef2ff';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = '#d1d5db';
+              e.currentTarget.style.backgroundColor = '#ffffff';
+            }}
+            title="가로 A4 페이지 추가"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+          </div>
+        </div>
       </div>
     </div>
   );

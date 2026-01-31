@@ -174,7 +174,22 @@ export function Shell() {
   }, []);
 
   const handleAddBlankPage = useCallback((afterPageId: string, width: number, height: number) => {
-    const { pages, addPage, getPageIndex, getPage } = usePageStore.getState();
+    const { pages, addPage, getPageIndex, getPage, setCurrentPage: setCurrentPageInStore } = usePageStore.getState();
+
+    // 페이지가 없거나 afterPageId가 빈 문자열인 경우 첫 페이지로 추가
+    if (!afterPageId || pages.length === 0) {
+      const newPage = createPage({
+        docId: document?.id || 'new-doc',
+        index: 0,
+        width,
+        height,
+        contentType: 'blank'
+      });
+      addPage(newPage);
+      setCurrentPageInStore(newPage.id);
+      return;
+    }
+
     const afterPage = getPage(afterPageId);
     const afterIndex = getPageIndex(afterPageId);
 
@@ -187,7 +202,8 @@ export function Shell() {
       docId: afterPage.docId,
       index: afterIndex + 1,
       width,
-      height
+      height,
+      contentType: 'blank'
     });
 
     // Insert at correct position
@@ -197,7 +213,8 @@ export function Shell() {
     } else {
       addPage(newPage);
     }
-  }, []);
+    setCurrentPageInStore(newPage.id);
+  }, [document]);
 
   const handleAddPdfPages = useCallback(async (afterPageId: string, file: File) => {
     try {
