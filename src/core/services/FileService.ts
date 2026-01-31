@@ -17,25 +17,25 @@ export class FileService {
     const { loadPdf } = usePDFStore.getState();
     const { clearPages, addPage } = usePageStore.getState();
     const { setDocument } = useDocumentStore.getState();
-    
+
     try {
       // PDF 로딩
       await loadPdf(file);
-      
+
       // PDF에서 페이지 생성
       const pdfStore = usePDFStore.getState();
       const pdfProxy = pdfStore.pdfProxy;
       if (!pdfProxy) {
         throw new Error('PDF proxy is not available');
       }
-      
+
       // PDF 페이지 수를 직접 가져오기
       const pageCount = pdfProxy.numPages;
       console.log(`📄 [FileService] PDF has ${pageCount} pages`);
-      
+
       // 기존 페이지 클리어
       clearPages();
-      
+
       // 새 문서 생성
       const document = createDocument({
         name: file.name,
@@ -45,17 +45,17 @@ export class FileService {
           fileSize: file.size
         }
       });
-      
+
       setDocument(document);
-      
+
       // PDF 페이지들을 PageStore에 추가
       const { createPage } = await import('../model/factories');
       console.log(`📄 [FileService] Starting to add ${pageCount} pages to PageStore`);
-      
+
       for (let i = 0; i < pageCount; i++) {
         let width = 595; // A4 width 기본값
         let height = 842; // A4 height 기본값
-        
+
         // PDF에서 실제 페이지 크기 가져오기
         try {
           const pdfPage = await pdfProxy.getPage(i + 1);
@@ -66,7 +66,7 @@ export class FileService {
           console.warn(`⚠️ [FileService] Failed to get page ${i + 1} dimensions:`, error);
           // 기본값 사용
         }
-        
+
         // createPage 팩토리 함수 사용하여 pdfRef 포함
         const page = createPage({
           docId: document.id,
@@ -78,15 +78,15 @@ export class FileService {
             sourceIndex: i + 1, // PDF 페이지는 1-based
           }
         });
-        
+
         addPage(page);
         console.log(`✅ [FileService] Added page ${i + 1}/${pageCount}: id=${page.id}, index=${page.index}`);
       }
-      
+
       // 페이지 추가 완료 확인
       const { pages: addedPages } = usePageStore.getState();
       console.log(`📄 [FileService] Total pages in PageStore: ${addedPages.length}`);
-      
+
       // 첫 번째 페이지를 현재 페이지로 설정하고 창맞춤
       if (pageCount > 0) {
         const { setCurrentPage } = usePageStore.getState();
@@ -98,20 +98,22 @@ export class FileService {
           fitToPage(firstPage.width, firstPage.height);
         }
       }
-      
+
     } catch (error) {
       console.error('Failed to load PDF:', error);
       throw error;
     }
   }
-  
+
   /**
-   * 이미지 파일 로딩
+   * 이미지 파일 로딩 (실제 이미지 크기 사용)
    */
   static async loadImageFile(file: File): Promise<void> {
-    const { addPage } = usePageStore.getState();
+    const { clearPages, addPage } = usePageStore.getState();
     const { setDocument } = useDocumentStore.getState();
-    
+    const { setCurrentPage } = usePageStore.getState();
+    const { fitToPage } = useViewStore.getState();
+
     try {
       // 새 문서 생성
       const document = createDocument({
@@ -122,32 +124,124 @@ export class FileService {
           fileSize: file.size
         }
       });
-      
+
       setDocument(document);
-      
+      clearPages();
+
+      // 이미지를 Data URL로 읽기
+      const imageUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      // 이미지 크기 가져오기
+      const { width, height } = await new Promise<{ width: number; height: number }>((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve({ width: img.width, height: img.height });
+        img.onerror = reject;
+        img.src = imageUrl;
+      });
+
+      // 최대 크기 제한 (A4 기준)
+      const maxWidth = 595;
+      const maxHeight = 842;
+      let finalWidth = width;
+      let finalHeight = height;
+
+      if (width > maxWidth || height > maxHeight) {
+        const ratio = Math.min(maxWidth / width, maxHeight / height);
+        finalWidth = width * ratio;
+        finalHeight = height * ratio;
+      }
+
       // 이미지 페이지 생성
       const page = {
         id: `page_${Date.now()}_0`,
         docId: document.id,
         index: 0,
-        width: 800, // 기본 이미지 크기
-        height: 600,
+        width: finalWidth,
+        height: finalHeight,
         rotation: 0 as const,
         layers: {
           rasters: [],
-          vectors: [],
           annotations: []
-        }
+        },
+        imageUrl,
+        contentType: 'image' as const
       };
-      
+
       addPage(page);
-      
+      setCurrentPage(page.id);
+      fitToPage(page.width, page.height);
+
+      console.log(`🖼️ [FileService] Image loaded: ${file.name} (${finalWidth}x${finalHeight})`);
+
     } catch (error) {
       console.error('Failed to load image:', error);
       throw error;
     }
   }
-  
+
+  /**
+   * 텍스트/마크다운 파일 로딩
+   */
+  static async loadTextFile(file: File): Promise<void> {
+    const { clearPages, addPage } = usePageStore.getState();
+    const { setDocument } = useDocumentStore.getState();
+    const { setCurrentPage } = usePageStore.getState();
+    const { fitToPage } = useViewStore.getState();
+
+    try {
+      // 파일 내용 읽기
+      const textContent = await file.text();
+
+      // 확장자로 타입 결정
+      const isMarkdown = file.name.toLowerCase().endsWith('.md');
+      const contentType = isMarkdown ? 'markdown' : 'text';
+
+      // 새 문서 생성
+      const document = createDocument({
+        name: file.name,
+        source: {
+          kind: 'images' as const, // 임시로 images 사용
+          fileName: file.name,
+          fileSize: file.size
+        }
+      });
+
+      setDocument(document);
+      clearPages();
+
+      // 텍스트 페이지 생성 (A4 크기)
+      const page = {
+        id: `page_${Date.now()}_0`,
+        docId: document.id,
+        index: 0,
+        width: 595,  // A4 width
+        height: 842, // A4 height
+        rotation: 0 as const,
+        layers: {
+          rasters: [],
+          annotations: []
+        },
+        textContent,
+        contentType: contentType as 'text' | 'markdown'
+      };
+
+      addPage(page);
+      setCurrentPage(page.id);
+      fitToPage(page.width, page.height);
+
+      console.log(`📝 [FileService] Text file loaded: ${file.name} (${textContent.length} chars, type: ${contentType})`);
+
+    } catch (error) {
+      console.error('Failed to load text file:', error);
+      throw error;
+    }
+  }
+
   /**
    * 파일 타입 검증
    */
@@ -158,12 +252,18 @@ export class FileService {
       'image/jpeg',
       'image/jpg',
       'image/gif',
-      'image/webp'
+      'image/webp',
+      'text/plain',
+      'text/markdown'
     ];
-    
-    return allowedTypes.includes(file.type);
+
+    // 확장자 기반 검증 추가
+    const ext = file.name.toLowerCase().split('.').pop();
+    const allowedExtensions = ['pdf', 'png', 'jpg', 'jpeg', 'gif', 'webp', 'txt', 'md'];
+
+    return allowedTypes.includes(file.type) || allowedExtensions.includes(ext || '');
   }
-  
+
   /**
    * 파일 크기 검증
    */
@@ -171,7 +271,7 @@ export class FileService {
     const maxSizeBytes = maxSizeMB * 1024 * 1024;
     return file.size <= maxSizeBytes;
   }
-  
+
   /**
    * 파일 메타데이터 추출
    */

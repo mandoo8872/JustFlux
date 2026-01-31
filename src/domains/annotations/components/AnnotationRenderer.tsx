@@ -23,10 +23,10 @@ import { HeartAnnotationComponent } from '../../../ui/viewer/annotations/HeartAn
  */
 export function registerLegacyAnnotations(): void {
   console.log('🔄 [AnnotationRenderer] Registering legacy annotation components...');
-  
+
   // 텍스트 주석
   annotationRegistry.register('text', {
-    render: (props) => <TextAnnotationComponent 
+    render: (props) => <TextAnnotationComponent
       annotation={props.annotation}
       isSelected={props.isSelected}
       isHovered={props.isHovered}
@@ -34,12 +34,12 @@ export function registerLegacyAnnotations(): void {
       onSelect={props.onSelect}
       onUpdate={props.onUpdate}
       onDelete={props.onDelete}
-      onHover={props.onHover || (() => {})}
-      onHoverEnd={props.onHoverEnd || (() => {})}
+      onHover={props.onHover || (() => { })}
+      onHoverEnd={props.onHoverEnd || (() => { })}
       onDragStart={props.onDragStart}
       isDragging={props.isDragging}
     />,
-    validate: (annotation) => annotation.type === 'text' && !!annotation.text,
+    validate: (annotation) => annotation.type === 'text' && typeof annotation.text === 'string',
     getDefaultProps: () => ({
       type: 'text',
       text: '',
@@ -50,10 +50,10 @@ export function registerLegacyAnnotations(): void {
       }
     })
   });
-  
+
   // 하이라이트 주석
   annotationRegistry.register('highlight', {
-    render: (props) => <HighlightAnnotationComponent 
+    render: (props) => <HighlightAnnotationComponent
       annotation={props.annotation}
       isSelected={props.isSelected}
       scale={props.scale}
@@ -70,10 +70,10 @@ export function registerLegacyAnnotations(): void {
       }
     })
   });
-  
+
   // 도형 주석 (사각형, 원형)
-  annotationRegistry.register('rect', {
-    render: (props) => <ShapeAnnotationComponent 
+  annotationRegistry.register('rectangle', {
+    render: (props) => <ShapeAnnotationComponent
       annotation={props.annotation}
       isSelected={props.isSelected}
       scale={props.scale}
@@ -81,9 +81,9 @@ export function registerLegacyAnnotations(): void {
       onUpdate={props.onUpdate}
       onDelete={props.onDelete}
     />,
-    validate: (annotation) => annotation.type === 'rect' && !!annotation.bbox,
+    validate: (annotation) => annotation.type === 'rectangle' && !!annotation.bbox,
     getDefaultProps: () => ({
-      type: 'rect',
+      type: 'rectangle',
       style: {
         strokeColor: '#000000',
         strokeWidth: 2,
@@ -91,9 +91,9 @@ export function registerLegacyAnnotations(): void {
       }
     })
   });
-  
+
   annotationRegistry.register('ellipse', {
-    render: (props) => <ShapeAnnotationComponent 
+    render: (props) => <ShapeAnnotationComponent
       annotation={props.annotation}
       isSelected={props.isSelected}
       scale={props.scale}
@@ -111,10 +111,10 @@ export function registerLegacyAnnotations(): void {
       }
     })
   });
-  
+
   // 이미지 주석
   annotationRegistry.register('image', {
-    render: (props) => <ImageAnnotationComponent 
+    render: (props) => <ImageAnnotationComponent
       annotation={props.annotation}
       isSelected={props.isSelected}
       isHovered={props.isHovered}
@@ -122,8 +122,8 @@ export function registerLegacyAnnotations(): void {
       onSelect={props.onSelect}
       onUpdate={props.onUpdate}
       onDelete={props.onDelete}
-      onHover={props.onHover || (() => {})}
-      onHoverEnd={props.onHoverEnd || (() => {})}
+      onHover={props.onHover || (() => { })}
+      onHoverEnd={props.onHoverEnd || (() => { })}
       onDragStart={props.onDragStart}
     />,
     validate: (annotation) => annotation.type === 'image' && !!annotation.imageData,
@@ -135,10 +135,10 @@ export function registerLegacyAnnotations(): void {
       }
     })
   });
-  
+
   // 화살표 주석
   annotationRegistry.register('arrow', {
-    render: (props) => <ArrowAnnotationComponent 
+    render: (props) => <ArrowAnnotationComponent
       annotation={props.annotation}
       isSelected={props.isSelected}
       scale={props.scale}
@@ -155,10 +155,10 @@ export function registerLegacyAnnotations(): void {
       }
     })
   });
-  
+
   // 번개 주석
   annotationRegistry.register('lightning', {
-    render: (props) => <LightningAnnotationComponent 
+    render: (props) => <LightningAnnotationComponent
       annotation={props.annotation}
       isSelected={props.isSelected}
       scale={props.scale}
@@ -175,10 +175,10 @@ export function registerLegacyAnnotations(): void {
       }
     })
   });
-  
+
   // 별 주석
   annotationRegistry.register('star', {
-    render: (props) => <StarAnnotationComponent 
+    render: (props) => <StarAnnotationComponent
       annotation={props.annotation}
       isSelected={props.isSelected}
       scale={props.scale}
@@ -196,10 +196,10 @@ export function registerLegacyAnnotations(): void {
       }
     })
   });
-  
+
   // 하트 주석
   annotationRegistry.register('heart', {
-    render: (props) => <HeartAnnotationComponent 
+    render: (props) => <HeartAnnotationComponent
       annotation={props.annotation}
       isSelected={props.isSelected}
       scale={props.scale}
@@ -217,7 +217,7 @@ export function registerLegacyAnnotations(): void {
       }
     })
   });
-  
+
   console.log('✅ [AnnotationRenderer] Legacy annotation components registered');
 }
 
@@ -253,12 +253,12 @@ export function AnnotationRendererComponent({
   onHoverEnd
 }: AnnotationRendererProps) {
   const renderer = annotationRegistry.getRenderer(annotation.type);
-  
+
   if (!renderer) {
     console.warn(`⚠️ [AnnotationRenderer] No renderer found for type: ${annotation.type}`);
     return null;
   }
-  
+
   const props = {
     annotation,
     isSelected,
@@ -272,6 +272,6 @@ export function AnnotationRendererComponent({
     onHover,
     onHoverEnd
   };
-  
+
   return renderer.render(props);
 }

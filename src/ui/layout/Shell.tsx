@@ -56,24 +56,58 @@ export function Shell() {
     const updateViewportSize = () => {
       setViewportSize(window.innerWidth, window.innerHeight);
     };
-    
+
     updateViewportSize();
     window.addEventListener('resize', updateViewportSize);
-    
+
     return () => {
       window.removeEventListener('resize', updateViewportSize);
     };
   }, [setViewportSize]);
 
+  // 전역 Ctrl+V 키보드 이벤트 처리 (클립보드 붙여넣기)
+  useEffect(() => {
+    const handleKeyDown = async (e: KeyboardEvent) => {
+      // Ctrl+V 또는 Cmd+V 감지
+      if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+        // 텍스트 입력 필드에서는 기본 동작 유지
+        const target = e.target as HTMLElement;
+        if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+          return;
+        }
+
+        e.preventDefault();
+        console.log('📋 [Shell] Ctrl+V detected, pasting from clipboard');
+
+        try {
+          const { ClipboardService } = await import('../../core/services/ClipboardService');
+          const success = await ClipboardService.pasteFromClipboard();
+          if (success) {
+            console.log('📋 [Shell] Paste successful');
+          } else {
+            console.log('📋 [Shell] Nothing to paste');
+          }
+        } catch (error) {
+          console.error('📋 [Shell] Paste failed:', error);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
   const canUndo = false; // HistoryStore에서 가져오도록 수정
   const canRedo = false; // HistoryStore에서 가져오도록 수정
-  
+
   // PageStore와 PDFStore에서 실제 상태 가져오기
   const { pages, currentPageId, setCurrentPage } = usePageStore();
   const { pdfProxy } = usePDFStore();
   const currentPage = pages.find(p => p.id === currentPageId) || null;
   const currentPageIndex = pages.findIndex(p => p.id === currentPageId);
-  
+
   // 디버깅 로그
   console.log(`🔍 [Shell] Pages: ${pages.length}, CurrentPageId: ${currentPageId}, CurrentPageIndex: ${currentPageIndex}`);
   if (currentPage) {
@@ -97,13 +131,20 @@ export function Shell() {
       try {
         // FileService를 통한 파일 로딩
         const { FileService } = await import('../../core/services/FileService');
-        
+
+        // 확장자 확인
+        const ext = file.name.toLowerCase().split('.').pop();
+
         if (file.type === 'application/pdf') {
           await FileService.loadPdfFile(file);
         } else if (file.type.startsWith('image/')) {
           await FileService.loadImageFile(file);
+        } else if (ext === 'md' || ext === 'txt' || file.type === 'text/plain' || file.type === 'text/markdown') {
+          await FileService.loadTextFile(file);
+        } else {
+          console.warn('Unsupported file type:', file.type, ext);
         }
-        
+
         // Clear file input
         e.target.value = '';
       } catch (error) {
@@ -136,19 +177,19 @@ export function Shell() {
     const { pages, addPage, getPageIndex, getPage } = usePageStore.getState();
     const afterPage = getPage(afterPageId);
     const afterIndex = getPageIndex(afterPageId);
-    
+
     if (!afterPage) {
       console.warn('Cannot find page to add after:', afterPageId);
       return;
     }
-    
+
     const newPage = createPage({
       docId: afterPage.docId,
       index: afterIndex + 1,
       width,
       height
     });
-    
+
     // Insert at correct position
     if (afterIndex !== -1 && afterIndex < pages.length - 1) {
       const { insertPdfPages } = usePageStore.getState();
@@ -162,7 +203,7 @@ export function Shell() {
     try {
       const { FileService } = await import('../../core/services/FileService');
       await FileService.loadPdfFile(file);
-      
+
       // PDF 페이지들을 afterPageId 뒤에 삽입하는 로직은 FileService에서 처리해야 함
       // 현재는 기본 PDF 로딩만 수행
       console.log('PDF pages added after:', afterPageId);
@@ -172,10 +213,10 @@ export function Shell() {
   }, []);
 
   return (
-    <div style={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
-      height: '100vh', 
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100vh',
       width: '100vw',
       backgroundColor: '#E5E5E5',
       overflow: 'hidden' // 전체 레이아웃 스크롤 방지
@@ -231,7 +272,7 @@ export function Shell() {
         }}
         sidebarWidth={rightSidebarWidth}
         isCollapsed={isRightSidebarCollapsed}
-        onToggle={() => {}}
+        onToggle={() => { }}
       />
 
       {/* Main Content */}
@@ -248,7 +289,7 @@ export function Shell() {
         isRightSidebarCollapsed={isRightSidebarCollapsed}
         onPageSelect={setCurrentPage}
         onZoomChange={setScale}
-        onPanChange={() => {}}
+        onPanChange={() => { }}
         onAddAnnotation={(annotation) => {
           if (currentPage) {
             const annotationWithId = {

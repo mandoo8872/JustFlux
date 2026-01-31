@@ -11,6 +11,7 @@ export { annotationRegistry } from './services/AnnotationRegistry';
 export { annotationService } from './services/AnnotationService';
 
 // 컴포넌트들
+import { registerLegacyAnnotations } from './components/AnnotationRenderer';
 export { AnnotationManager } from './components/AnnotationManager';
 export { AnnotationRendererComponent, registerLegacyAnnotations } from './components/AnnotationRenderer';
 
@@ -23,24 +24,24 @@ import { eventBus, EVENTS } from '../../core/events/EventBus';
 // 초기화 함수
 export function initializeAnnotations(): void {
   console.log('🚀 [Annotations] Initializing annotation system...');
-  
+
   // 기존 주석 컴포넌트들 등록
-  // registerLegacyAnnotations();
-  
+  registerLegacyAnnotations();
+
   // 주석 생성 이벤트
   eventBus.on(EVENTS.ANNOTATION_CREATED, (annotation: any) => {
     console.log('📝 [Annotations] Annotation created:', annotation.id);
   });
-  
+
   // 주석 업데이트 이벤트
   eventBus.on(EVENTS.ANNOTATION_UPDATED, (annotation: any) => {
     console.log('📝 [Annotations] Annotation updated:', annotation.id);
   });
-  
+
   // 주석 삭제 이벤트
   eventBus.on(EVENTS.ANNOTATION_DELETED, (annotationId: string) => {
     console.log('📝 [Annotations] Annotation deleted:', annotationId);
   });
-  
+
   console.log('✅ [Annotations] Annotation system initialized');
 }

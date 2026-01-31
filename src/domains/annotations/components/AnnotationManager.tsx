@@ -73,7 +73,7 @@ export function AnnotationManager({
   // 캔버스 클릭 처리
   const onCanvasPointerDown = useCallback((e: React.PointerEvent) => {
     console.log('🖱️ [AnnotationManager] Canvas pointer down with tool:', activeTool);
-    
+
     if (activeTool === 'select') {
       if (e.target === layerRef.current) {
         // 선택 해제
@@ -83,7 +83,7 @@ export function AnnotationManager({
     }
 
     // 그리기 도구들
-    if (['text', 'highlight', 'rect', 'ellipse', 'arrow', 'line', 'star', 'heart', 'lightning', 'brush', 'eraser'].includes(activeTool)) {
+    if (['text', 'highlight', 'rectangle', 'ellipse', 'arrow', 'line', 'star', 'heart', 'lightning', 'brush', 'eraser'].includes(activeTool)) {
       e.preventDefault();
       const rect = layerRef.current?.getBoundingClientRect();
       if (!rect) return;
@@ -92,9 +92,14 @@ export function AnnotationManager({
       const y = (e.clientY - rect.top) / scale;
 
       console.log('🎨 [AnnotationManager] Starting draw at:', { x, y });
-      
+
+      // Set default size for shape tools, text gets its own size
+      const defaultSize = ['rectangle', 'ellipse', 'star', 'heart', 'lightning'].includes(activeTool)
+        ? { width: 100, height: 80 }
+        : { width: 0, height: 0 };
+
       // 주석 생성
-      const newAnnotation = annotationService.createAnnotation(activeTool, pageId, { x, y, width: 0, height: 0 });
+      const newAnnotation = annotationService.createAnnotation(activeTool, pageId, { x, y, ...defaultSize });
       if (newAnnotation) {
         onCreate(newAnnotation);
       }
@@ -104,7 +109,7 @@ export function AnnotationManager({
   // 키보드 이벤트 처리
   const onCanvasKeyDown = useCallback((e: React.KeyboardEvent) => {
     console.log('⌨️ [AnnotationManager] Key down:', e.key, 'ctrlKey:', e.ctrlKey, 'metaKey:', e.metaKey);
-    
+
     if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
       e.preventDefault();
       console.log('📋 [AnnotationManager] Paste triggered');

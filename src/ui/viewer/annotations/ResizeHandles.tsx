@@ -54,6 +54,27 @@ export function ResizeHandles({ width, height, onResize }: ResizeHandlesProps) {
         newHeight = Math.max(30, resizeStart.height - dy);
       }
 
+      // Shift 키로 비율 유지
+      if (e.shiftKey) {
+        const aspectRatio = resizeStart.width / resizeStart.height;
+        if (resizeHandle.includes('e') || resizeHandle.includes('w')) {
+          // 너비 기준으로 높이 조정
+          newHeight = newWidth / aspectRatio;
+        } else if (resizeHandle.includes('s') || resizeHandle.includes('n')) {
+          // 높이 기준으로 너비 조정
+          newWidth = newHeight * aspectRatio;
+        } else {
+          // 코너 핸들: 드래그 거리가 큰 쪽 기준
+          if (Math.abs(dx) > Math.abs(dy)) {
+            newHeight = newWidth / aspectRatio;
+          } else {
+            newWidth = newHeight * aspectRatio;
+          }
+        }
+        newWidth = Math.max(50, newWidth);
+        newHeight = Math.max(30, newHeight);
+      }
+
       onResize(newWidth, newHeight);
     };
 

@@ -34,12 +34,22 @@ export function ThumbnailList({
   onAddPdfPages,
   sidebarWidth
 }: ThumbnailListProps) {
-  
+
   // 모든 페이지를 렌더링 (스크롤 가능하도록)
   // 가상화는 나중에 필요시 구현
   const visiblePages = useMemo(() => {
     return pages;
   }, [pages]);
+
+  // 빈 페이지 추가 핸들러
+  const handleAddBlankPage = useCallback(() => {
+    // 마지막 페이지 뒤에 추가, 또는 첫 페이지로 추가
+    const lastPage = pages[pages.length - 1];
+    const width = lastPage?.width || 595; // A4 width
+    const height = lastPage?.height || 842; // A4 height
+    const afterPageId = lastPage?.id || '';
+    onAddBlankPage(afterPageId, width, height);
+  }, [pages, onAddBlankPage]);
 
   // 썸네일 아이템 렌더링
   const renderThumbnailItems = useCallback(() => {
@@ -74,6 +84,60 @@ export function ThumbnailList({
       >
         {renderThumbnailItems()}
       </ThumbnailDragDrop>
+
+      {/* 빈 페이지 추가 버튼 */}
+      <div
+        onClick={handleAddBlankPage}
+        style={{
+          width: '100%',
+          aspectRatio: '210 / 297', // A4 비율
+          marginTop: '16px',
+          border: '2px dashed #9ca3af',
+          borderRadius: '12px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px',
+          cursor: 'pointer',
+          backgroundColor: '#f9fafb',
+          transition: 'all 0.2s ease-in-out',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.borderColor = '#6366f1';
+          e.currentTarget.style.backgroundColor = '#eef2ff';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.borderColor = '#9ca3af';
+          e.currentTarget.style.backgroundColor = '#f9fafb';
+        }}
+      >
+        <div
+          style={{
+            width: '48px',
+            height: '48px',
+            borderRadius: '50%',
+            backgroundColor: '#e5e7eb',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.2s ease-in-out',
+          }}
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </div>
+        <span style={{
+          fontSize: '13px',
+          color: '#6b7280',
+          fontWeight: 500
+        }}>
+          빈 페이지 추가
+        </span>
+      </div>
     </div>
   );
 }
+

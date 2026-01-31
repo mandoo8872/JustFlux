@@ -45,6 +45,12 @@ export interface Page {
   layers: PageLayers;
   thumbnail?: ThumbnailRef;
   deleted?: boolean; // Soft delete flag
+  /** Text/Markdown content for text-based pages */
+  textContent?: string;
+  /** Image data URL for image-based pages */
+  imageUrl?: string;
+  /** Page content type: 'pdf' | 'blank' | 'text' | 'markdown' | 'image' */
+  contentType?: 'pdf' | 'blank' | 'text' | 'markdown' | 'image';
 }
 
 export interface PdfPageRef {

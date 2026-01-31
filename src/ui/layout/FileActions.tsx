@@ -32,18 +32,18 @@ export function FileActions({
         cursor: 'pointer',
         transition: 'background-color 0.15s ease-in-out'
       }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.backgroundColor = '#E0E0E0';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.backgroundColor = 'transparent';
-      }}
-      title="파일 열기"
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = '#E0E0E0';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = 'transparent';
+        }}
+        title="파일 열기"
       >
         <FileArrowUp size={16} weight="regular" />
         <input
           type="file"
-          accept=".pdf,application/pdf"
+          accept=".pdf,.md,.txt,.png,.jpg,.jpeg,.gif,.webp,application/pdf,text/plain,text/markdown,image/*"
           onChange={onFileSelect}
           style={{ display: 'none' }}
         />

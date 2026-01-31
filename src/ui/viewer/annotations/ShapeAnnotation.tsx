@@ -37,16 +37,16 @@ export function ShapeAnnotationComponent({
 
   const handleMouseDown = (e: React.MouseEvent) => {
     console.log('🔷 [ShapeAnnotation] Mouse down for annotation:', annotation.id);
-    
+
     // Always stop propagation to prevent AnnotationLayer from handling this event
     e.stopPropagation();
     e.preventDefault();
     e.nativeEvent.stopImmediatePropagation();
-    
+
     // Select the annotation
     console.log('🔷 [ShapeAnnotation] Selecting annotation:', annotation.id);
     onSelect();
-    
+
     // Start dragging using AnnotationLayer's drag system
     if (onDragStart) {
       console.log('🔷 [ShapeAnnotation] Starting drag for annotation:', annotation.id);
@@ -104,8 +104,8 @@ export function ShapeAnnotationComponent({
           <ellipse
             cx={scaledBBox.width / 2}
             cy={scaledBBox.height / 2}
-            rx={scaledBBox.width / 2 - strokeWidth / 2}
-            ry={scaledBBox.height / 2 - strokeWidth / 2}
+            rx={Math.max(0, scaledBBox.width / 2 - strokeWidth / 2)}
+            ry={Math.max(0, scaledBBox.height / 2 - strokeWidth / 2)}
             fill={annotation.style?.fill || 'transparent'}
             stroke={annotation.style?.stroke || '#000000'}
             strokeWidth={strokeWidth}
@@ -114,8 +114,8 @@ export function ShapeAnnotationComponent({
           <rect
             x={strokeWidth / 2}
             y={strokeWidth / 2}
-            width={scaledBBox.width - strokeWidth}
-            height={scaledBBox.height - strokeWidth}
+            width={Math.max(0, scaledBBox.width - strokeWidth)}
+            height={Math.max(0, scaledBBox.height - strokeWidth)}
             rx={(annotation as RectAnnotation).cornerRadius || 0}
             fill={annotation.style?.fill || 'transparent'}
             stroke={annotation.style?.stroke || '#000000'}

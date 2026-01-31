@@ -6,6 +6,8 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { PageView } from '../viewer/PageView';
 import { BlankPageView } from '../viewer/BlankPageView';
+import { TextPageView } from '../viewer/TextPageView';
+import { ImagePageView } from '../viewer/ImagePageView';
 import { AnnotationManager } from '../../domains/annotations';
 import type { Document as JFDocument, Page, Annotation } from '../../core/model/types';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
@@ -66,21 +68,21 @@ export function PageViewer({
 
       const visibleRatio = entry.intersectionRatio;
       const boundingRect = entry.boundingClientRect;
-      
+
       // 스크롤 컨테이너 기준으로 뷰포트 중앙 계산
       const scrollContainer = scrollContainerRef?.current;
       let viewportHeight = window.innerHeight;
       let viewportCenter = viewportHeight / 2;
-      
+
       if (scrollContainer) {
         const containerRect = scrollContainer.getBoundingClientRect();
         viewportHeight = containerRect.height;
         viewportCenter = containerRect.top + viewportHeight / 2;
       }
-      
+
       const elementCenter = boundingRect.top + boundingRect.height / 2;
       const distanceFromCenter = Math.abs(viewportCenter - elementCenter);
-      
+
       // 점수 계산: 가시성 비율이 높고 중앙에 가까울수록 높은 점수
       // 가시성 비율 70%, 중앙 거리 30% 가중치
       const visibilityScore = visibleRatio * 0.7;
@@ -99,7 +101,7 @@ export function PageViewer({
       if (updateTimeoutRef.current) {
         clearTimeout(updateTimeoutRef.current);
       }
-      
+
       // 디바운싱을 150ms로 늘려서 안정성 향상
       updateTimeoutRef.current = setTimeout(() => {
         // 다시 한 번 체크 (스크롤 중이 아닐 때만 변경)
@@ -230,7 +232,7 @@ export function PageViewer({
     scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
     // 초기 체크도 한 번 실행
     setTimeout(() => handleScroll(), 100);
-    
+
     return () => {
       if (updateTimeoutRef.current) {
         clearTimeout(updateTimeoutRef.current);
@@ -243,26 +245,26 @@ export function PageViewer({
   const scrollToPage = useCallback((pageElement: HTMLDivElement, scrollContainer: HTMLDivElement) => {
     // 프로그래매틱 스크롤 시작 (즉시 설정하여 다른 감지 로직 차단)
     isScrollingToPageRef.current = true;
-    
+
     // 기존 업데이트 타임아웃 취소 (다른 페이지 변경 시도 차단)
     if (updateTimeoutRef.current) {
       clearTimeout(updateTimeoutRef.current);
       updateTimeoutRef.current = null;
     }
-    
+
     // offsetTop을 사용하여 정확한 위치 계산
     const elementTop = pageElement.offsetTop;
     const elementHeight = pageElement.offsetHeight;
     const viewportHeight = scrollContainer.clientHeight;
-    
+
     // 페이지를 뷰포트 중앙에 위치시키기
     const targetScrollTop = elementTop + elementHeight / 2 - viewportHeight / 2;
-    
+
     scrollContainer.scrollTo({
       top: Math.max(0, targetScrollTop),
       behavior: 'smooth'
     });
-    
+
     // 스크롤 완료 후 플래그 해제 (스크롤 애니메이션 시간 고려)
     // smooth scroll은 보통 300-500ms 소요, 여유있게 800ms로 설정
     setTimeout(() => {
@@ -273,16 +275,16 @@ export function PageViewer({
   // 현재 페이지로 스크롤 (썸네일 클릭 등으로 페이지 선택이 변경될 때)
   useEffect(() => {
     if (!currentPage || !scrollContainerRef?.current) return;
-    
+
     // 즉시 프로그래매틱 스크롤 플래그 설정 (다른 감지 로직 차단)
     isScrollingToPageRef.current = true;
-    
+
     // 기존 업데이트 타임아웃 취소
     if (updateTimeoutRef.current) {
       clearTimeout(updateTimeoutRef.current);
       updateTimeoutRef.current = null;
     }
-    
+
     const pageElement = pageRefs.current.get(currentPage.id);
     if (!pageElement) {
       // 페이지 요소가 아직 렌더링되지 않았을 수 있으므로 잠시 후 다시 시도
@@ -302,7 +304,7 @@ export function PageViewer({
   }, [currentPage?.id, scrollContainerRef, scrollToPage]);
 
   console.log(`🔍 [PageViewer] Render check: document=${!!document}, pages.length=${pages?.length || 0}, currentPage=${!!currentPage}`);
-  
+
   if (!currentPage || !pages || pages.length === 0) {
     console.warn(`⚠️ [PageViewer] Missing data: currentPage=${!!currentPage}, pages.length=${pages?.length || 0}`);
     return (
@@ -336,13 +338,13 @@ export function PageViewer({
   // 모든 페이지 렌더링 (스크롤로 넘어갈 수 있도록)
   const pagesToRender: Page[] = pages.filter(p => !p.deleted);
   console.log(`🔍 [PageViewer] pagesToRender.length=${pagesToRender.length}, total pages=${pages.length}`);
-  
+
   if (pagesToRender.length === 0) {
     console.error(`❌ [PageViewer] No pages to render! pages.length=${pages.length}`);
   }
 
   return (
-    <div 
+    <div
       ref={containerRef}
       style={{
         display: 'flex',
@@ -357,126 +359,156 @@ export function PageViewer({
         const hasPdfProxy = !!pdfProxy;
         console.log(`🔍 [PageViewer] Rendering page: ${page.id}, pdfRef=${hasPdfRef}, pdfProxy=${hasPdfProxy}, pdfRef.sourceIndex=${page.pdfRef?.sourceIndex}`);
         return (
-        <div
-          key={page.id}
-          ref={(el) => {
-            if (el) {
-              pageRefs.current.set(page.id, el);
-              // Observer가 이미 생성되어 있으면 즉시 관찰 시작
-              if (observerRef.current) {
-                // 약간의 지연을 두어 레이아웃이 완료된 후 관찰
-                setTimeout(() => {
-                  if (observerRef.current && pageRefs.current.has(page.id)) {
-                    const element = pageRefs.current.get(page.id);
-                    if (element) {
-                      observerRef.current.observe(element);
-                      console.log(`✅ [PageViewer] Observing new page: ${page.id}`);
+          <div
+            key={page.id}
+            ref={(el) => {
+              if (el) {
+                pageRefs.current.set(page.id, el);
+                // Observer가 이미 생성되어 있으면 즉시 관찰 시작
+                if (observerRef.current) {
+                  // 약간의 지연을 두어 레이아웃이 완료된 후 관찰
+                  setTimeout(() => {
+                    if (observerRef.current && pageRefs.current.has(page.id)) {
+                      const element = pageRefs.current.get(page.id);
+                      if (element) {
+                        observerRef.current.observe(element);
+                        console.log(`✅ [PageViewer] Observing new page: ${page.id}`);
+                      }
                     }
-                  }
-                }, 100);
+                  }, 100);
+                }
+              } else {
+                if (observerRef.current && pageRefs.current.has(page.id)) {
+                  observerRef.current.unobserve(pageRefs.current.get(page.id)!);
+                }
+                pageRefs.current.delete(page.id);
               }
-            } else {
-              if (observerRef.current && pageRefs.current.has(page.id)) {
-                observerRef.current.unobserve(pageRefs.current.get(page.id)!);
-              }
-              pageRefs.current.delete(page.id);
-            }
-          }}
-          data-page-id={page.id}
-          style={{
-            position: 'relative',
-            display: 'inline-block',
-            backgroundColor: 'transparent',
-            borderRadius: '2px',
-            boxShadow: page.id === currentPage.id ? '0 4px 8px rgba(0, 0, 0, 0.15)' : '0 2px 4px rgba(0, 0, 0, 0.1)',
-            transition: 'box-shadow 0.2s ease-in-out',
-            margin: '8px 0'
-          }}
-        >
-          {/* Page View Container - AnnotationManager의 부모로 사용 */}
-          <div style={{ 
-            position: 'relative', 
-            display: 'block',
-            width: 'fit-content',
-            height: 'fit-content'
-          }}>
-            {/* Page View - PDF 페이지인지 빈 페이지인지 확인 */}
-            {page.pdfRef && pdfProxy ? (
-              <PageView
-                pageId={page.id}
-                pageIndex={page.pdfRef.sourceIndex - 1}
-                pdfProxy={pdfProxy}
-                scale={scale}
-                onRenderComplete={() => {
-                  console.log(`✅ [PageViewer] Page ${page.id} render complete`);
-                }}
-              />
-            ) : (
-              <>
-                {console.warn(`⚠️ [PageViewer] Using BlankPageView for ${page.id}: pdfRef=${!!page.pdfRef}, pdfProxy=${!!pdfProxy}`)}
-                <BlankPageView
-                  page={page}
-                  scale={scale}
-                />
-              </>
-            )}
+            }}
+            data-page-id={page.id}
+            style={{
+              position: 'relative',
+              display: 'inline-block',
+              backgroundColor: 'transparent',
+              borderRadius: '2px',
+              boxShadow: page.id === currentPage.id ? '0 4px 8px rgba(0, 0, 0, 0.15)' : '0 2px 4px rgba(0, 0, 0, 0.1)',
+              transition: 'box-shadow 0.2s ease-in-out',
+              margin: '8px 0'
+            }}
+          >
+            {/* Page View Container - AnnotationManager의 부모로 사용 */}
+            <div style={{
+              position: 'relative',
+              display: 'block',
+              width: 'fit-content',
+              height: 'fit-content'
+            }}>
+              {/* Page View - contentType에 따라 렌더링 */}
+              {(() => {
+                // Text/Markdown 페이지
+                if (page.contentType === 'text' || page.contentType === 'markdown') {
+                  return (
+                    <TextPageView
+                      pageId={page.id}
+                      textContent={page.textContent || ''}
+                      contentType={page.contentType}
+                      scale={scale}
+                      width={page.width}
+                      height={page.height}
+                    />
+                  );
+                }
+                // Image 페이지
+                if (page.contentType === 'image' && page.imageUrl) {
+                  return (
+                    <ImagePageView
+                      pageId={page.id}
+                      imageUrl={page.imageUrl}
+                      scale={scale}
+                      width={page.width}
+                      height={page.height}
+                    />
+                  );
+                }
+                // PDF 페이지
+                if (page.pdfRef && pdfProxy) {
+                  return (
+                    <PageView
+                      pageId={page.id}
+                      pageIndex={page.pdfRef.sourceIndex - 1}
+                      pdfProxy={pdfProxy}
+                      scale={scale}
+                      onRenderComplete={() => {
+                        console.log(`✅ [PageViewer] Page ${page.id} render complete`);
+                      }}
+                    />
+                  );
+                }
+                // Blank 페이지
+                console.log(`📄 [PageViewer] Using BlankPageView for ${page.id}`);
+                return (
+                  <BlankPageView
+                    page={page}
+                    scale={scale}
+                  />
+                );
+              })()}
 
-            {/* Annotation Layer - 현재 페이지에만 활성화 */}
-            {page.id === currentPage.id && (
-              <AnnotationManager
-                pageId={page.id}
-                scale={scale}
-                activeTool={activeTool as any}
-                onCreate={(annotation: Omit<Annotation, 'id'>) => {
-                console.log('✅ [PageViewer] Creating annotation:', annotation);
-                if (!document) return;
-                const forward = [
-                  { op: 'add' as const, path: `/document/pages/${document.pages.findIndex(p => p.id === annotation.pageId)}/layers/annotations/-`, value: annotation }
-                ];
-                const backward = [
-                  { op: 'remove' as const, path: `/document/pages/${document.pages.findIndex(p => p.id === annotation.pageId)}/layers/annotations/${document.pages.find(p => p.id === annotation.pageId)?.layers.annotations.length || 0}` }
-                ];
-                onAddHistoryPatch('주석 추가', forward, backward);
-                onAddAnnotation(annotation);
-              }}
-              onUpdate={(id, updates) => {
-                if (!document) return;
-                const annotation = document.pages
-                  .flatMap(p => p.layers.annotations)
-                  .find(a => a.id === id);
-                if (annotation) {
-                  const forward = [
-                    { op: 'replace' as const, path: `/document/pages/${document.pages.findIndex(p => p.layers.annotations.some(a => a.id === id))}/layers/annotations/${document.pages.find(p => p.layers.annotations.some(a => a.id === id))?.layers.annotations.findIndex(a => a.id === id)}`, value: { ...annotation, ...updates } }
-                  ];
-                  const backward = [
-                    { op: 'replace' as const, path: `/document/pages/${document.pages.findIndex(p => p.layers.annotations.some(a => a.id === id))}/layers/annotations/${document.pages.find(p => p.layers.annotations.some(a => a.id === id))?.layers.annotations.findIndex(a => a.id === id)}`, value: annotation }
-                  ];
-                  onAddHistoryPatch('주석 수정', forward, backward);
-                }
-                onUpdateAnnotation(id, updates);
-              }}
-              onDelete={(id) => {
-                if (!document) return;
-                const annotation = document.pages
-                  .flatMap(p => p.layers.annotations)
-                  .find(a => a.id === id);
-                if (annotation) {
-                  const pageIndex = document.pages.findIndex(p => p.layers.annotations.some(a => a.id === id));
-                  const annotationIndex = document.pages[pageIndex].layers.annotations.findIndex(a => a.id === id);
-                  const forward = [
-                    { op: 'remove' as const, path: `/document/pages/${pageIndex}/layers/annotations/${annotationIndex}` }
-                  ];
-                  const backward = [
-                    { op: 'add' as const, path: `/document/pages/${pageIndex}/layers/annotations/${annotationIndex}`, value: annotation }
-                  ];
-                  onAddHistoryPatch('주석 삭제', forward, backward);
-                }
-                onDeleteAnnotation(id);
-              }}
-              />
-            )}
+              {/* Annotation Layer - 현재 페이지에만 활성화 */}
+              {page.id === currentPage.id && (
+                <AnnotationManager
+                  pageId={page.id}
+                  scale={scale}
+                  activeTool={activeTool as any}
+                  onCreate={(annotation: Omit<Annotation, 'id'>) => {
+                    console.log('✅ [PageViewer] Creating annotation:', annotation);
+                    if (!document) return;
+                    const forward = [
+                      { op: 'add' as const, path: `/document/pages/${document.pages.findIndex(p => p.id === annotation.pageId)}/layers/annotations/-`, value: annotation }
+                    ];
+                    const backward = [
+                      { op: 'remove' as const, path: `/document/pages/${document.pages.findIndex(p => p.id === annotation.pageId)}/layers/annotations/${document.pages.find(p => p.id === annotation.pageId)?.layers.annotations.length || 0}` }
+                    ];
+                    onAddHistoryPatch('주석 추가', forward, backward);
+                    onAddAnnotation(annotation);
+                  }}
+                  onUpdate={(id, updates) => {
+                    if (!document) return;
+                    const annotation = document.pages
+                      .flatMap(p => p.layers.annotations)
+                      .find(a => a.id === id);
+                    if (annotation) {
+                      const forward = [
+                        { op: 'replace' as const, path: `/document/pages/${document.pages.findIndex(p => p.layers.annotations.some(a => a.id === id))}/layers/annotations/${document.pages.find(p => p.layers.annotations.some(a => a.id === id))?.layers.annotations.findIndex(a => a.id === id)}`, value: { ...annotation, ...updates } }
+                      ];
+                      const backward = [
+                        { op: 'replace' as const, path: `/document/pages/${document.pages.findIndex(p => p.layers.annotations.some(a => a.id === id))}/layers/annotations/${document.pages.find(p => p.layers.annotations.some(a => a.id === id))?.layers.annotations.findIndex(a => a.id === id)}`, value: annotation }
+                      ];
+                      onAddHistoryPatch('주석 수정', forward, backward);
+                    }
+                    onUpdateAnnotation(id, updates);
+                  }}
+                  onDelete={(id) => {
+                    if (!document) return;
+                    const annotation = document.pages
+                      .flatMap(p => p.layers.annotations)
+                      .find(a => a.id === id);
+                    if (annotation) {
+                      const pageIndex = document.pages.findIndex(p => p.layers.annotations.some(a => a.id === id));
+                      const annotationIndex = document.pages[pageIndex].layers.annotations.findIndex(a => a.id === id);
+                      const forward = [
+                        { op: 'remove' as const, path: `/document/pages/${pageIndex}/layers/annotations/${annotationIndex}` }
+                      ];
+                      const backward = [
+                        { op: 'add' as const, path: `/document/pages/${pageIndex}/layers/annotations/${annotationIndex}`, value: annotation }
+                      ];
+                      onAddHistoryPatch('주석 삭제', forward, backward);
+                    }
+                    onDeleteAnnotation(id);
+                  }}
+                />
+              )}
+            </div>
           </div>
-        </div>
         );
       })}
     </div>

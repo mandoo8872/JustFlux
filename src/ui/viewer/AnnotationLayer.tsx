@@ -58,14 +58,14 @@ export function AnnotationLayer({
       if (isDragging && dragAnnotation && dragStart) {
         const deltaX = (e.clientX - dragStart.x) / scale;
         const deltaY = (e.clientY - dragStart.y) / scale;
-        
+
         console.log('🖱️ [AnnotationLayer] Dragging:', {
           current: { x: e.clientX, y: e.clientY },
           start: dragStart,
           delta: { x: deltaX, y: deltaY },
           scale
         });
-        
+
         // Update annotation position
         onUpdate(dragAnnotation.id, {
           bbox: {
@@ -74,7 +74,7 @@ export function AnnotationLayer({
             y: dragAnnotation.bbox.y + deltaY,
           },
         });
-        
+
         // Update the drag annotation state with new position
         setDragAnnotation({
           ...dragAnnotation,
@@ -84,7 +84,7 @@ export function AnnotationLayer({
             y: dragAnnotation.bbox.y + deltaY,
           },
         });
-        
+
         // Update drag start position for next move
         setDragStart({ x: e.clientX, y: e.clientY });
       }
@@ -127,7 +127,7 @@ export function AnnotationLayer({
   // Convert screen coordinates to page coordinates
   const screenToPage = useCallback((clientX: number, clientY: number) => {
     if (!layerRef.current) return { x: 0, y: 0 };
-    
+
     const rect = layerRef.current.getBoundingClientRect();
     return {
       x: (clientX - rect.left) / scale,
@@ -143,17 +143,17 @@ export function AnnotationLayer({
       const point = screenToPage(e.clientX, e.clientY);
       const deltaX = point.x - dragStart.x;
       const deltaY = point.y - dragStart.y;
-      
+
       const newBbox = {
         ...dragAnnotation.bbox,
         x: dragAnnotation.bbox.x + deltaX,
         y: dragAnnotation.bbox.y + deltaY,
       };
-      
+
       onUpdate(dragAnnotation.id, { bbox: newBbox });
       return;
     }
-    
+
     if (isPanning && panStart && onPan) {
       // Pan tool: update view position
       const deltaX = e.clientX - panStart.x;
@@ -162,9 +162,9 @@ export function AnnotationLayer({
       setPanStart({ x: e.clientX, y: e.clientY });
       return;
     }
-    
+
     if (!isDrawing || !drawStart) return;
-    
+
     const point = screenToPage(e.clientX, e.clientY);
     setDrawCurrent(point);
   }, [isDragging, dragAnnotation, dragStart, onUpdate, isPanning, panStart, onPan, isDrawing, drawStart, screenToPage]);
@@ -172,20 +172,20 @@ export function AnnotationLayer({
   // Handle mouse up - create annotation or stop panning
   const handleMouseUp = useCallback(() => {
     console.log('🖱️ [AnnotationLayer] Mouse up - isPanning:', isPanning, 'isDrawing:', isDrawing, 'isDragging:', isDragging);
-    
+
     if (isDragging) {
       setIsDragging(false);
       setDragAnnotation(null);
       setDragStart(null);
       return;
     }
-    
+
     if (isPanning) {
       setIsPanning(false);
       setPanStart(null);
       return;
     }
-    
+
     if (!isDrawing || !drawStart || !drawCurrent) {
       console.log('❌ [AnnotationLayer] Not drawing or missing points');
       setIsDrawing(false);
@@ -200,12 +200,12 @@ export function AnnotationLayer({
     };
 
     console.log('🎨 [AnnotationLayer] Creating annotation with tool:', activeTool, 'bbox:', bbox);
-    
+
     // Create annotation based on active tool
-        if (activeTool === 'text') {
-          // Text annotation already created on mouse down, skip here
-          return;
-        } else if (activeTool === 'highlight') {
+    if (activeTool === 'text') {
+      // Text annotation already created on mouse down, skip here
+      return;
+    } else if (activeTool === 'highlight') {
       if (bbox.width < 10 || bbox.height < 10) {
         setIsDrawing(false);
         return;
@@ -246,117 +246,117 @@ export function AnnotationLayer({
       } as any;
       onCreate(annotation);
       setActiveTool?.('select');
-        } else if (activeTool === 'arrow' as ToolType) {
-          if (bbox.width < 10 || bbox.height < 10) {
-            setIsDrawing(false);
-            return;
-          }
-          const now = Date.now();
-          const annotation: Annotation = {
-            id: `ann-${now}-${Math.random().toString(36).slice(2, 9)}`,
-            type: 'arrow',
-            pageId,
-            bbox,
-            startPoint: { x: drawStart.x, y: drawStart.y },
-            endPoint: { x: drawCurrent.x, y: drawCurrent.y },
-            arrowHeadSize: 10,
-            style: {
-              stroke: '#000000',
-              strokeWidth: 2,
-            },
-            createdAt: now,
-            modifiedAt: now,
-          } as any;
-          onCreate(annotation);
-          setActiveTool?.('select');
-        } else if (activeTool === 'arrow' as ToolType) {
-          if (bbox.width < 10 || bbox.height < 10) {
-            setIsDrawing(false);
-            return;
-          }
-          const now = Date.now();
-          const annotation: Annotation = {
-            id: `ann-${now}-${Math.random().toString(36).slice(2, 9)}`,
-            type: 'arrow',
-            pageId,
-            bbox,
-            startPoint: { x: drawStart.x, y: drawStart.y },
-            endPoint: { x: drawCurrent.x, y: drawCurrent.y },
-            style: {
-              stroke: '#000000',
-              strokeWidth: 2,
-            },
-            createdAt: now,
-            modifiedAt: now,
-          } as any;
-          onCreate(annotation);
-          setActiveTool?.('select');
-        } else if (activeTool === 'star') {
-          if (bbox.width < 10 || bbox.height < 10) {
-            setIsDrawing(false);
-            return;
-          }
-          const now = Date.now();
-          const annotation: Annotation = {
-            id: `ann-${now}-${Math.random().toString(36).slice(2, 9)}`,
-            type: 'star',
-            pageId,
-            bbox,
-            points: 5,
-            innerRadius: 0.4,
-            style: {
-              stroke: '#000000',
-              strokeWidth: 2,
-              fill: 'transparent',
-            },
-            createdAt: now,
-            modifiedAt: now,
-          } as any;
-          onCreate(annotation);
-          setActiveTool?.('select');
-        } else if (activeTool === 'heart') {
-          if (bbox.width < 10 || bbox.height < 10) {
-            setIsDrawing(false);
-            return;
-          }
-          const now = Date.now();
-          const annotation: Annotation = {
-            id: `ann-${now}-${Math.random().toString(36).slice(2, 9)}`,
-            type: 'heart',
-            pageId,
-            bbox,
-            style: {
-              stroke: '#000000',
-              strokeWidth: 2,
-              fill: 'transparent',
-            },
-            createdAt: now,
-            modifiedAt: now,
-          } as any;
-          onCreate(annotation);
-          setActiveTool?.('select');
-        } else if (activeTool === 'lightning') {
-          if (bbox.width < 10 || bbox.height < 10) {
-            setIsDrawing(false);
-            return;
-          }
-          const now = Date.now();
-          const annotation: Annotation = {
-            id: `ann-${now}-${Math.random().toString(36).slice(2, 9)}`,
-            type: 'lightning',
-            pageId,
-            bbox,
-            style: {
-              stroke: '#000000',
-              strokeWidth: 2,
-              fill: 'transparent',
-            },
-            createdAt: now,
-            modifiedAt: now,
-          } as any;
-          onCreate(annotation);
-          setActiveTool?.('select');
-        }
+    } else if (activeTool === 'arrow' as ToolType) {
+      if (bbox.width < 10 || bbox.height < 10) {
+        setIsDrawing(false);
+        return;
+      }
+      const now = Date.now();
+      const annotation: Annotation = {
+        id: `ann-${now}-${Math.random().toString(36).slice(2, 9)}`,
+        type: 'arrow',
+        pageId,
+        bbox,
+        startPoint: { x: drawStart.x, y: drawStart.y },
+        endPoint: { x: drawCurrent.x, y: drawCurrent.y },
+        arrowHeadSize: 10,
+        style: {
+          stroke: '#000000',
+          strokeWidth: 2,
+        },
+        createdAt: now,
+        modifiedAt: now,
+      } as any;
+      onCreate(annotation);
+      setActiveTool?.('select');
+    } else if (activeTool === 'arrow' as ToolType) {
+      if (bbox.width < 10 || bbox.height < 10) {
+        setIsDrawing(false);
+        return;
+      }
+      const now = Date.now();
+      const annotation: Annotation = {
+        id: `ann-${now}-${Math.random().toString(36).slice(2, 9)}`,
+        type: 'arrow',
+        pageId,
+        bbox,
+        startPoint: { x: drawStart.x, y: drawStart.y },
+        endPoint: { x: drawCurrent.x, y: drawCurrent.y },
+        style: {
+          stroke: '#000000',
+          strokeWidth: 2,
+        },
+        createdAt: now,
+        modifiedAt: now,
+      } as any;
+      onCreate(annotation);
+      setActiveTool?.('select');
+    } else if (activeTool === 'star') {
+      if (bbox.width < 10 || bbox.height < 10) {
+        setIsDrawing(false);
+        return;
+      }
+      const now = Date.now();
+      const annotation: Annotation = {
+        id: `ann-${now}-${Math.random().toString(36).slice(2, 9)}`,
+        type: 'star',
+        pageId,
+        bbox,
+        points: 5,
+        innerRadius: 0.4,
+        style: {
+          stroke: '#000000',
+          strokeWidth: 2,
+          fill: 'transparent',
+        },
+        createdAt: now,
+        modifiedAt: now,
+      } as any;
+      onCreate(annotation);
+      setActiveTool?.('select');
+    } else if (activeTool === 'heart') {
+      if (bbox.width < 10 || bbox.height < 10) {
+        setIsDrawing(false);
+        return;
+      }
+      const now = Date.now();
+      const annotation: Annotation = {
+        id: `ann-${now}-${Math.random().toString(36).slice(2, 9)}`,
+        type: 'heart',
+        pageId,
+        bbox,
+        style: {
+          stroke: '#000000',
+          strokeWidth: 2,
+          fill: 'transparent',
+        },
+        createdAt: now,
+        modifiedAt: now,
+      } as any;
+      onCreate(annotation);
+      setActiveTool?.('select');
+    } else if (activeTool === 'lightning') {
+      if (bbox.width < 10 || bbox.height < 10) {
+        setIsDrawing(false);
+        return;
+      }
+      const now = Date.now();
+      const annotation: Annotation = {
+        id: `ann-${now}-${Math.random().toString(36).slice(2, 9)}`,
+        type: 'lightning',
+        pageId,
+        bbox,
+        style: {
+          stroke: '#000000',
+          strokeWidth: 2,
+          fill: 'transparent',
+        },
+        createdAt: now,
+        modifiedAt: now,
+      } as any;
+      onCreate(annotation);
+      setActiveTool?.('select');
+    }
 
     setIsDrawing(false);
     setDrawStart(null);
@@ -420,10 +420,10 @@ export function AnnotationLayer({
       const startY = drawStart.y * scale;
       const endX = drawCurrent.x * scale;
       const endY = drawCurrent.y * scale;
-      
+
       // Calculate arrow direction
       const angle = Math.atan2(endY - startY, endX - startX);
-      
+
       return (
         <svg
           style={{
@@ -466,34 +466,33 @@ export function AnnotationLayer({
         right: 0,
         bottom: 0,
         zIndex: 1,
-        cursor: activeTool === 'select' ? 'default' : 
-                activeTool === 'pan' ? 'grab' : 
-                activeTool === 'text' ? 'text' :
-                activeTool === 'highlight' ? 'crosshair' :
+        cursor: activeTool === 'select' ? 'default' :
+          activeTool === 'pan' ? 'grab' :
+            activeTool === 'text' ? 'text' :
+              activeTool === 'highlight' ? 'crosshair' :
                 activeTool === 'rectangle' ? 'crosshair' :
-                activeTool === 'ellipse' ? 'crosshair' :
-                activeTool === 'arrow' as ToolType ? 'crosshair' :
-                activeTool === 'eraser' ? 'crosshair' : 'crosshair',
+                  activeTool === 'ellipse' ? 'crosshair' :
+                    activeTool === 'arrow' as ToolType ? 'crosshair' :
+                      activeTool === 'eraser' ? 'crosshair' : 'crosshair',
         pointerEvents: 'auto',
         backgroundColor: 'transparent',
       }}
       onMouseDownCapture={(e) => {
-        // Block all mouse down events from reaching the layer when clicking on annotations
-        if (e.target !== layerRef.current) {
-          console.log('🖱️ [AnnotationLayer] Mouse down capture blocked for annotation');
-          e.stopPropagation();
-          e.preventDefault();
-          e.nativeEvent.stopImmediatePropagation();
-          return false;
+        // Block mouse down events from reaching the layer ONLY when using select tool
+        // and clicking on annotations. For drawing tools, we want events to propagate.
+        if (activeTool === 'select' && e.target !== layerRef.current) {
+          console.log('🖱️ [AnnotationLayer] Mouse down capture blocked for annotation selection');
+          // Don't block - let the annotation components handle their own selection
+          return;
         }
       }}
       onMouseDown={(e) => {
         console.log('🖱️ [AnnotationLayer] Mouse down with tool:', activeTool, 'target:', e.target, 'currentTarget:', e.currentTarget);
-        
+
         // Check if this is a direct click on the layer (not on any child elements)
         const isDirectLayerClick = e.target === layerRef.current;
         console.log('🖱️ [AnnotationLayer] Is direct layer click:', isDirectLayerClick);
-        
+
         if (activeTool === 'select') {
           // Only handle empty area clicks when using select tool
           // Check if the target is actually the layer div itself, not any child elements
@@ -507,7 +506,7 @@ export function AnnotationLayer({
           }
           return;
         }
-        
+
         if (activeTool === 'pan') {
           // Pan tool: start panning
           e.preventDefault();
@@ -515,22 +514,22 @@ export function AnnotationLayer({
           setIsPanning(true);
           return;
         }
-        
+
         if (activeTool === 'eraser') {
           // Eraser tool: delete annotation under cursor
           const point = screenToPage(e.clientX, e.clientY);
           const annotationToDelete = annotations.find(ann => {
             const { x, y, width, height } = ann.bbox;
-            return point.x >= x && point.x <= x + width && 
-                   point.y >= y && point.y <= y + height;
+            return point.x >= x && point.x <= x + width &&
+              point.y >= y && point.y <= y + height;
           });
-          
+
           if (annotationToDelete) {
             onDelete(annotationToDelete.id);
           }
           return;
         }
-        
+
         // For drawing tools (text, highlight, rect, ellipse, arrow, line, star, heart, lightning)
         if (['text', 'highlight', 'rectangle', 'ellipse', 'arrow', 'star', 'heart', 'lightning', 'brush'].includes(activeTool)) {
           console.log('🎨 [AnnotationLayer] Starting to draw with tool:', activeTool);
@@ -540,7 +539,7 @@ export function AnnotationLayer({
           setDrawStart(point);
           setDrawCurrent(point);
           setIsDrawing(true);
-          
+
           // For text tool, create annotation immediately on click
           if (activeTool === 'text') {
             const now = Date.now();
@@ -652,68 +651,68 @@ export function AnnotationLayer({
               )}
             </div>
           );
-            } else if (annotation.type === 'star') {
-              return (
-                <div key={annotation.id} style={{ position: 'relative' }}>
-                  <StarAnnotationComponent
-                    annotation={annotation as any}
-                    isSelected={isSelected}
-                    scale={scale}
-                    onSelect={() => onSelect(annotation.id)}
-                    onUpdate={(updates) => onUpdate(annotation.id, updates)}
-                    onDelete={() => onDelete(annotation.id)}
-                  />
-                </div>
-              );
-            } else if (annotation.type === 'heart') {
-              return (
-                <div key={annotation.id} style={{ position: 'relative' }}>
-                  <HeartAnnotationComponent
-                    annotation={annotation as any}
-                    isSelected={isSelected}
-                    scale={scale}
-                    onSelect={() => onSelect(annotation.id)}
-                    onUpdate={(updates) => onUpdate(annotation.id, updates)}
-                    onDelete={() => onDelete(annotation.id)}
-                  />
-                </div>
-              );
-            } else if (annotation.type === 'lightning') {
-              return (
-                <div key={annotation.id} style={{ position: 'relative' }}>
-                  <LightningAnnotationComponent
-                    annotation={annotation as any}
-                    isSelected={isSelected}
-                    scale={scale}
-                    onSelect={() => onSelect(annotation.id)}
-                    onUpdate={(updates) => onUpdate(annotation.id, updates)}
-                    onDelete={() => onDelete(annotation.id)}
-                    onDragStart={handleAnnotationDragStart}
-                  />
-                </div>
-              );
-            } else if (annotation.type === 'image') {
-              return (
-                <div key={annotation.id} style={{ position: 'relative' }}>
-                  <ImageAnnotationComponent
-                    annotation={annotation as any}
-                    isSelected={isSelected}
-                    isHovered={isHovered}
-                    scale={scale}
-                    onSelect={() => onSelect(annotation.id)}
-                    onUpdate={(updates) => onUpdate(annotation.id, updates)}
-                    onDelete={() => onDelete(annotation.id)}
-                    onHover={() => handleAnnotationHover(annotation.id)}
-                    onHoverEnd={() => handleAnnotationHover(null)}
-                    onDragStart={(annotation, startPos) => {
-                      setIsDragging(true);
-                      setDragStart(startPos);
-                      setDragAnnotation(annotation);
-                    }}
-                  />
-                </div>
-              );
-            }
+        } else if (annotation.type === 'star') {
+          return (
+            <div key={annotation.id} style={{ position: 'relative' }}>
+              <StarAnnotationComponent
+                annotation={annotation as any}
+                isSelected={isSelected}
+                scale={scale}
+                onSelect={() => onSelect(annotation.id)}
+                onUpdate={(updates) => onUpdate(annotation.id, updates)}
+                onDelete={() => onDelete(annotation.id)}
+              />
+            </div>
+          );
+        } else if (annotation.type === 'heart') {
+          return (
+            <div key={annotation.id} style={{ position: 'relative' }}>
+              <HeartAnnotationComponent
+                annotation={annotation as any}
+                isSelected={isSelected}
+                scale={scale}
+                onSelect={() => onSelect(annotation.id)}
+                onUpdate={(updates) => onUpdate(annotation.id, updates)}
+                onDelete={() => onDelete(annotation.id)}
+              />
+            </div>
+          );
+        } else if (annotation.type === 'lightning') {
+          return (
+            <div key={annotation.id} style={{ position: 'relative' }}>
+              <LightningAnnotationComponent
+                annotation={annotation as any}
+                isSelected={isSelected}
+                scale={scale}
+                onSelect={() => onSelect(annotation.id)}
+                onUpdate={(updates) => onUpdate(annotation.id, updates)}
+                onDelete={() => onDelete(annotation.id)}
+                onDragStart={handleAnnotationDragStart}
+              />
+            </div>
+          );
+        } else if (annotation.type === 'image') {
+          return (
+            <div key={annotation.id} style={{ position: 'relative' }}>
+              <ImageAnnotationComponent
+                annotation={annotation as any}
+                isSelected={isSelected}
+                isHovered={isHovered}
+                scale={scale}
+                onSelect={() => onSelect(annotation.id)}
+                onUpdate={(updates) => onUpdate(annotation.id, updates)}
+                onDelete={() => onDelete(annotation.id)}
+                onHover={() => handleAnnotationHover(annotation.id)}
+                onHoverEnd={() => handleAnnotationHover(null)}
+                onDragStart={(annotation, startPos) => {
+                  setIsDragging(true);
+                  setDragStart(startPos);
+                  setDragAnnotation(annotation);
+                }}
+              />
+            </div>
+          );
+        }
 
         return null;
       })}
