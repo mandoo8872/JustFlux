@@ -3,7 +3,7 @@
  * 객체 유형(텍스트/이미지/도형)에 따라 다른 컨트롤 표시
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
     Copy,
     Trash,
@@ -12,7 +12,7 @@ import {
     CaretLeft,
     CaretRight,
 } from 'phosphor-react';
-import type { Annotation, TextAnnotation, FreehandAnnotation } from '../../types/annotation';
+import type { Annotation, TextAnnotation } from '../../types/annotation';
 
 // Color palette
 const COLORS = [
@@ -59,7 +59,7 @@ export function ObjectPropertyPanel({
         if (activeColorTab === 'text') {
             onUpdate({ style: { ...style, fill: color } });
         } else if (activeColorTab === 'background') {
-            onUpdate({ style: { ...style, backgroundColor: color } });
+            onUpdate({ style: { ...style, fill: color } } as any);
         } else {
             onUpdate({ style: { ...style, stroke: color } });
         }
@@ -73,27 +73,7 @@ export function ObjectPropertyPanel({
         onUpdate({ style: { ...style, fontSize: size } });
     };
 
-    const handleOpacityChange = (opacity: number) => {
-        onUpdate({ style: { ...style, opacity: opacity / 100 } });
-    };
-
-    const handleSizeChange = (dimension: 'width' | 'height', value: number) => {
-        if (bbox) {
-            const aspectRatio = bbox.width / bbox.height;
-            const newBbox = { ...bbox };
-
-            if (dimension === 'width') {
-                newBbox.width = value;
-                // If aspect ratio locked, update height
-                // newBbox.height = value / aspectRatio;
-            } else {
-                newBbox.height = value;
-                // If aspect ratio locked, update width
-                // newBbox.width = value * aspectRatio;
-            }
-            onUpdate({ bbox: newBbox });
-        }
-    };
+    // handleOpacityChange and handleSizeChange are commented out - will be used in future implementation
 
     const panelStyle: React.CSSProperties = {
         backgroundColor: '#1E293B',

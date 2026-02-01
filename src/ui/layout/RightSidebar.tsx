@@ -41,7 +41,7 @@ export function RightSidebar({
 }: RightSidebarProps) {
   // Get selected annotation from store
   const { selection, annotations, updateAnnotation, removeAnnotation } = useAnnotationStore();
-  const { currentPageId } = usePageStore();
+  const { currentPageId: _currentPageId } = usePageStore();
 
   // Find the selected annotation
   const selectedAnnotationId = selection.selectedAnnotationIds.length > 0

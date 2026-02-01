@@ -63,7 +63,6 @@ export function AnnotationManager({
       const startY = (e.clientY - rect.top) / scale;
 
       let createdAnnotationId: string | null = null;
-      let hasMoved = false;
 
       // Start Dragging Logic
       const handleWindowMouseMove = (moveEvent: PointerEvent) => {
@@ -75,7 +74,6 @@ export function AnnotationManager({
 
         // Create annotation only if dragged enough (> 5px)
         if (!createdAnnotationId && dist > 5) {
-          hasMoved = true;
 
           // Map brush tool to freehand type
           const annotationType = activeTool === 'brush' ? 'freehand' : activeTool;

@@ -45,7 +45,7 @@ export const useAnnotationInteraction = ({ scale, activeTool }: UseAnnotationInt
             }
         };
 
-        const handlePointerUp = (e: PointerEvent) => {
+        const handlePointerUp = (_e: PointerEvent) => {
             console.log('🎯 [useAnnotationInteraction] Drag end');
             setDragState({
                 isDragging: false,

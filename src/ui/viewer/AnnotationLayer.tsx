@@ -632,7 +632,6 @@ export function AnnotationLayer({
                 onSelect={() => onSelect(annotation.id)}
                 onUpdate={(updates) => onUpdate(annotation.id, updates)}
                 onDelete={() => onDelete(annotation.id)}
-                onDragStart={handleAnnotationDragStart}
               />
               {/* Selection border */}
               {isSelected && (

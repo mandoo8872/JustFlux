@@ -52,9 +52,6 @@ export function Shell() {
           const blob = items[i].getAsFile();
           if (!blob) continue;
 
-          // 현재 페이지 확인 (Store 구독 상태 사용)
-          const currentState = usePageStore.getState();
-
           // 현재 페이지 ID 찾기 (Shell의 currentPage는 렌더링 시점 값이라 여기서 직접 조회)
           // 하지만 여기선 currentPage가 prop이나 state로 없으므로, selection 상태 활용
           const { selection } = useAnnotationStore.getState();

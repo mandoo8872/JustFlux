@@ -4,7 +4,8 @@
 
 import React from 'react';
 import type { ArrowAnnotation as ArrowAnnotationType, LineAnnotation } from '../../../core/model/types';
-import { ResizeHandles } from './ResizeHandles';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { ResizeHandles as _ResizeHandles } from './ResizeHandles';
 
 interface ArrowAnnotationProps {
   annotation: ArrowAnnotationType | LineAnnotation;
@@ -207,8 +208,8 @@ export function ArrowAnnotationComponent({
           style={{ pointerEvents: 'none' }}
         />
 
-        {/* Arrow head (Only for arrows) */}
-        {annotation.type !== 'line' && (
+        {/* Arrow head (Always shown for arrows) */}
+        {(annotation.type as string) !== 'line' && (
           <polygon
             points={`${endPoint.x * scale},${endPoint.y * scale} ${headPoint1.x * scale},${headPoint1.y * scale} ${headPoint2.x * scale},${headPoint2.y * scale}`}
             fill={stroke}
