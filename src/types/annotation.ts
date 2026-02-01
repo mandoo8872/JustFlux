@@ -53,7 +53,7 @@ export interface TextAnnotation extends BaseAnnotation {
 export interface HighlightAnnotation extends BaseAnnotation {
   type: 'highlight';
   content: string;
-  opacity?: number; // 기존 코드 호환성을 위한 추가
+  opacity?: number;
   style: AnnotationStyle & {
     fill: string;
     opacity: number;
@@ -75,7 +75,7 @@ export interface EllipseAnnotation extends BaseAnnotation {
 
 export interface RectangleAnnotation extends BaseAnnotation {
   type: 'rectangle';
-  cornerRadius?: number; // 기존 코드 호환성을 위한 추가
+  cornerRadius?: number;
   style: AnnotationStyle & {
     fill: string;
     stroke: string;
@@ -87,7 +87,17 @@ export interface ArrowAnnotation extends BaseAnnotation {
   type: 'arrow';
   startPoint: Point;
   endPoint: Point;
-  arrowHeadSize?: number; // 기존 코드 호환성을 위한 추가
+  arrowHeadSize?: number;
+  style: AnnotationStyle & {
+    stroke: string;
+    strokeWidth: number;
+  };
+}
+
+export interface LineAnnotation extends BaseAnnotation {
+  type: 'line';
+  startPoint: Point;
+  endPoint: Point;
   style: AnnotationStyle & {
     stroke: string;
     strokeWidth: number;
@@ -97,7 +107,7 @@ export interface ArrowAnnotation extends BaseAnnotation {
 export interface StarAnnotation extends BaseAnnotation {
   type: 'star';
   points: Point[];
-  innerRadius?: number; // 기존 코드 호환성을 위한 추가
+  innerRadius?: number;
   style: AnnotationStyle & {
     fill: string;
     stroke: string;
@@ -119,6 +129,15 @@ export interface LightningAnnotation extends BaseAnnotation {
   points: Point[];
   style: AnnotationStyle & {
     fill: string;
+    stroke: string;
+    strokeWidth: number;
+  };
+}
+
+export interface FreehandAnnotation extends BaseAnnotation {
+  type: 'freehand';
+  points: Point[];
+  style: AnnotationStyle & {
     stroke: string;
     strokeWidth: number;
   };
@@ -195,15 +214,17 @@ export interface Point {
 // Discriminated Union
 // ============================================
 
-export type Annotation = 
+export type Annotation =
   | TextAnnotation
   | HighlightAnnotation
   | EllipseAnnotation
   | RectangleAnnotation
   | ArrowAnnotation
+  | LineAnnotation
   | StarAnnotation
   | HeartAnnotation
   | LightningAnnotation
+  | FreehandAnnotation
   | ImageAnnotation
   | StampAnnotation
   | OCRAnnotation
@@ -221,14 +242,20 @@ export function isHighlightAnnotation(annotation: Annotation): annotation is Hig
   return annotation.type === 'highlight';
 }
 
-export function isShapeAnnotation(annotation: Annotation): annotation is 
-  | EllipseAnnotation 
-  | RectangleAnnotation 
-  | ArrowAnnotation 
-  | StarAnnotation 
-  | HeartAnnotation 
-  | LightningAnnotation {
-  return ['ellipse', 'rectangle', 'arrow', 'star', 'heart', 'lightning'].includes(annotation.type);
+export function isShapeAnnotation(annotation: Annotation): annotation is
+  | EllipseAnnotation
+  | RectangleAnnotation
+  | ArrowAnnotation
+  | LineAnnotation
+  | StarAnnotation
+  | HeartAnnotation
+  | LightningAnnotation
+  | FreehandAnnotation {
+  return ['ellipse', 'rectangle', 'arrow', 'line', 'star', 'heart', 'lightning', 'freehand'].includes(annotation.type);
+}
+
+export function isFreehandAnnotation(annotation: Annotation): annotation is FreehandAnnotation {
+  return annotation.type === 'freehand';
 }
 
 export function isImageAnnotation(annotation: Annotation): annotation is ImageAnnotation {

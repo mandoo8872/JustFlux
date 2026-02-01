@@ -1,12 +1,13 @@
 /**
  * Annotation Manager - 주석 관리 컴포넌트
- * 기존 AnnotationLayerV2의 기능을 모듈화하여 분리
+ * Refactored to use modular architecture (board6 style)
  */
 
 import React, { useCallback, useRef } from 'react';
 import { useAnnotationStore } from '../../../state/stores/AnnotationStore';
-import { annotationRegistry } from '../services/AnnotationRegistry';
 import { annotationService } from '../services/AnnotationService';
+import { AnnotationLayer } from './AnnotationLayer';
+import { useAnnotationInteraction } from '../hooks/useAnnotationInteraction';
 import type { Annotation } from '../../../core/model/types';
 import type { ToolType } from '../../../core/model/types';
 
@@ -17,7 +18,6 @@ interface AnnotationManagerProps {
   onCreate: (annotation: Omit<Annotation, 'id'>) => void;
   onUpdate: (id: string, updates: Partial<Annotation>) => void;
   onDelete: (id: string) => void;
-  // setActiveTool: (tool: ToolType) => void;
 }
 
 export function AnnotationManager({
@@ -27,95 +27,157 @@ export function AnnotationManager({
   onCreate,
   onUpdate,
   onDelete,
-  // setActiveTool
 }: AnnotationManagerProps) {
-  const { annotations, selectedAnnotationIds } = useAnnotationStore();
+
+  const { annotations, selectedAnnotationIds, clearSelection } = useAnnotationStore();
   const layerRef = useRef<HTMLDivElement>(null);
 
-  // 현재 페이지의 주석들만 필터링
+  // Hook manages drag state and pointer down events
+  const { handlePointerDown, draggedAnnotationId } = useAnnotationInteraction({
+    scale,
+    activeTool
+  });
+
+  // Filter annotations for current page
   const pageAnnotations = annotations.filter(annotation => annotation.pageId === pageId);
 
-  // 주석 렌더링
-  const renderAnnotation = useCallback((annotation: Annotation) => {
-    const renderer = annotationRegistry.getRenderer(annotation.type);
-    if (!renderer) {
-      console.warn(`⚠️ [AnnotationManager] No renderer found for type: ${annotation.type}`);
-      return null;
-    }
-
-    const props = {
-      annotation,
-      isSelected: selectedAnnotationIds.includes(annotation.id),
-      isHovered: false, // TODO: 호버 상태 관리
-      isDragging: false, // TODO: 드래그 상태 관리
-      scale,
-      onSelect: () => {
-        // 선택 상태는 AnnotationStore에서 관리
-        console.log('🎯 [AnnotationManager] Selecting annotation:', annotation.id);
-      },
-      onUpdate: (updates: Partial<Annotation>) => onUpdate(annotation.id, updates),
-      onDelete: () => onDelete(annotation.id),
-      onPointerDown: (e: React.PointerEvent) => {
-        e.stopPropagation();
-        console.log('🎯 [AnnotationManager] Pointer down on annotation:', annotation.id);
-      },
-      onHover: () => {
-        // TODO: 호버 상태 설정
-      },
-      onHoverEnd: () => {
-        // TODO: 호버 상태 해제
-      }
-    };
-
-    return renderer.render(props);
-  }, [scale, selectedAnnotationIds, onUpdate, onDelete]);
-
-  // 캔버스 클릭 처리
+  // Canvas interaction (Creation & Clear Selection)
   const onCanvasPointerDown = useCallback((e: React.PointerEvent) => {
-    console.log('🖱️ [AnnotationManager] Canvas pointer down with tool:', activeTool);
+    console.log('🖱️ [AnnotationManager] PointerDown', { activeTool, target: e.target, currentTarget: e.currentTarget });
 
+    // If clicking on the background (ref matches target), clear selection
     if (activeTool === 'select') {
       if (e.target === layerRef.current) {
-        // 선택 해제
-        console.log('🎯 [AnnotationManager] Clearing selection');
+        clearSelection();
       }
       return;
     }
 
-    // 그리기 도구들
+    // Creating new annotations (Drag to Create)
     if (['text', 'highlight', 'rectangle', 'ellipse', 'arrow', 'line', 'star', 'heart', 'lightning', 'brush', 'eraser'].includes(activeTool)) {
       e.preventDefault();
       const rect = layerRef.current?.getBoundingClientRect();
       if (!rect) return;
 
-      const x = (e.clientX - rect.left) / scale;
-      const y = (e.clientY - rect.top) / scale;
+      const startX = (e.clientX - rect.left) / scale;
+      const startY = (e.clientY - rect.top) / scale;
 
-      console.log('🎨 [AnnotationManager] Starting draw at:', { x, y });
+      let createdAnnotationId: string | null = null;
+      let hasMoved = false;
 
-      // Set default size for shape tools, text gets its own size
-      const defaultSize = ['rectangle', 'ellipse', 'star', 'heart', 'lightning'].includes(activeTool)
-        ? { width: 100, height: 80 }
-        : { width: 0, height: 0 };
+      // Start Dragging Logic
+      const handleWindowMouseMove = (moveEvent: PointerEvent) => {
+        const currentX = (moveEvent.clientX - rect.left) / scale;
+        const currentY = (moveEvent.clientY - rect.top) / scale;
 
-      // 주석 생성
-      const newAnnotation = annotationService.createAnnotation(activeTool, pageId, { x, y, ...defaultSize });
-      if (newAnnotation) {
-        onCreate(newAnnotation);
+        // Calculate distance
+        const dist = Math.sqrt(Math.pow(currentX - startX, 2) + Math.pow(currentY - startY, 2));
+
+        // Create annotation only if dragged enough (> 5px)
+        if (!createdAnnotationId && dist > 5) {
+          hasMoved = true;
+
+          // Map brush tool to freehand type
+          const annotationType = activeTool === 'brush' ? 'freehand' : activeTool;
+
+          const initialProps = {
+            // BBox is required by BaseAnnotation validation
+            bbox: { x: startX, y: startY, width: 0, height: 0 },
+            // For Arrow/Line/Lightning
+            startPoint: { x: startX, y: startY },
+            endPoint: { x: startX, y: startY },
+            // For Freehand - initial point
+            points: [{ x: startX, y: startY }]
+          };
+
+          const newAnnotation = annotationService.createAnnotation(annotationType, pageId, initialProps);
+          if (newAnnotation) {
+            onCreate(newAnnotation);
+            createdAnnotationId = newAnnotation.id;
+          }
+        }
+
+        // Update if created
+        if (createdAnnotationId) {
+          if (activeTool === 'arrow' || activeTool === 'line' || activeTool === 'lightning') {
+            const minX = Math.min(startX, currentX);
+            const minY = Math.min(startY, currentY);
+            const newWidth = Math.abs(currentX - startX);
+            const newHeight = Math.abs(currentY - startY);
+
+            onUpdate(createdAnnotationId, {
+              endPoint: { x: currentX, y: currentY },
+              bbox: { x: minX, y: minY, width: newWidth, height: newHeight }
+            });
+          } else if (activeTool === 'brush') {
+            // For freehand: append points and update bbox
+            const annotation = useAnnotationStore.getState().annotations.find(a => a.id === createdAnnotationId);
+            if (annotation && 'points' in annotation) {
+              const existingPoints = (annotation as any).points || [];
+              const newPoints = [...existingPoints, { x: currentX, y: currentY }];
+
+              // Calculate bounding box from all points
+              const allPoints = [{ x: startX, y: startY }, ...newPoints];
+              const minX = Math.min(...allPoints.map(p => p.x));
+              const minY = Math.min(...allPoints.map(p => p.y));
+              const maxX = Math.max(...allPoints.map(p => p.x));
+              const maxY = Math.max(...allPoints.map(p => p.y));
+
+              onUpdate(createdAnnotationId, {
+                points: newPoints,
+                bbox: { x: minX, y: minY, width: maxX - minX, height: maxY - minY }
+              });
+            }
+          } else {
+            // Update BBox for Box-based shapes
+            const width = Math.abs(currentX - startX);
+            const height = Math.abs(currentY - startY);
+            const newX = Math.min(startX, currentX);
+            const newY = Math.min(startY, currentY);
+
+            onUpdate(createdAnnotationId, {
+              bbox: { x: newX, y: newY, width, height }
+            });
+          }
+        }
+      };
+
+      const handleWindowMouseUp = () => {
+        window.removeEventListener('pointermove', handleWindowMouseMove);
+        window.removeEventListener('pointerup', handleWindowMouseUp);
+
+        if (createdAnnotationId) {
+          // If created, switch to select tool and select the new annotation
+          const { setActiveTool, selectAnnotation } = useAnnotationStore.getState();
+          setActiveTool('select');
+          selectAnnotation(createdAnnotationId);
+        }
+      };
+
+      window.addEventListener('pointermove', handleWindowMouseMove);
+      window.addEventListener('pointerup', handleWindowMouseUp);
+    }
+  }, [activeTool, scale, pageId, onCreate, onUpdate, clearSelection]);
+
+  // Global Key handler using window event to ensure capture
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (selectedAnnotationIds.length > 0) {
+          // Ignore if user is typing in an input
+          if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') return;
+
+          selectedAnnotationIds.forEach(id => onDelete(id));
+          e.preventDefault();
+        }
       }
-    }
-  }, [activeTool, scale, pageId, onCreate]);
+    };
 
-  // 키보드 이벤트 처리
-  const onCanvasKeyDown = useCallback((e: React.KeyboardEvent) => {
-    console.log('⌨️ [AnnotationManager] Key down:', e.key, 'ctrlKey:', e.ctrlKey, 'metaKey:', e.metaKey);
-
-    if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
-      e.preventDefault();
-      console.log('📋 [AnnotationManager] Paste triggered');
-      // TODO: 붙여넣기 기능 구현
-    }
-  }, []);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [selectedAnnotationIds, onDelete]);
 
   return (
     <div
@@ -134,14 +196,22 @@ export function AnnotationManager({
         touchAction: 'none'
       }}
       onPointerDown={onCanvasPointerDown}
-      onKeyDown={onCanvasKeyDown}
+      // onKeyDown moved to window listener
       tabIndex={0}
     >
-      {/* 주석들 렌더링 */}
       {pageAnnotations.map((annotation) => (
-        <div key={annotation.id}>
-          {renderAnnotation(annotation)}
-        </div>
+        <React.Fragment key={annotation.id}>
+          <AnnotationLayer
+            annotation={annotation}
+            scale={scale}
+            isSelected={selectedAnnotationIds.includes(annotation.id)}
+            isDragging={draggedAnnotationId === annotation.id}
+            onSelect={() => { }} // Selection logic is handled inside hook via onPointerDown
+            onUpdate={onUpdate}
+            onDelete={onDelete}
+            onPointerDown={handlePointerDown}
+          />
+        </React.Fragment>
       ))}
     </div>
   );

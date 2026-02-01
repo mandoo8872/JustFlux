@@ -461,17 +461,33 @@ export function PageViewer({
                   activeTool={activeTool as any}
                   onCreate={(annotation: Omit<Annotation, 'id'>) => {
                     console.log('✅ [PageViewer] Creating annotation:', annotation);
-                    if (!document) return;
-                    const forward = [
-                      { op: 'add' as const, path: `/document/pages/${document.pages.findIndex(p => p.id === annotation.pageId)}/layers/annotations/-`, value: annotation }
-                    ];
-                    const backward = [
-                      { op: 'remove' as const, path: `/document/pages/${document.pages.findIndex(p => p.id === annotation.pageId)}/layers/annotations/${document.pages.find(p => p.id === annotation.pageId)?.layers.annotations.length || 0}` }
-                    ];
-                    onAddHistoryPatch('주석 추가', forward, backward);
-                    onAddAnnotation(annotation);
+                    console.log('✅ [PageViewer] onAddAnnotation function type:', typeof onAddAnnotation);
+
+                    // History patch는 document가 있을 때만 적용
+                    if (document) {
+                      const forward = [
+                        { op: 'add' as const, path: `/document/pages/${document.pages.findIndex(p => p.id === annotation.pageId)}/layers/annotations/-`, value: annotation }
+                      ];
+                      const backward = [
+                        { op: 'remove' as const, path: `/document/pages/${document.pages.findIndex(p => p.id === annotation.pageId)}/layers/annotations/${document.pages.find(p => p.id === annotation.pageId)?.layers.annotations.length || 0}` }
+                      ];
+                      onAddHistoryPatch('주석 추가', forward, backward);
+                    }
+
+                    // 어노테이션 추가는 항상 실행 (빈 페이지에서도)
+                    console.log('✅ [PageViewer] About to call onAddAnnotation...');
+                    try {
+                      onAddAnnotation(annotation);
+                      console.log('✅ [PageViewer] onAddAnnotation call completed');
+                    } catch (error) {
+                      console.error('❌ [PageViewer] Error calling onAddAnnotation:', error);
+                    }
                   }}
                   onUpdate={(id, updates) => {
+                    // 어노테이션 업데이트는 항상 수행 (빈 페이지에서도)
+                    onUpdateAnnotation(id, updates);
+
+                    // History 처리는 document가 있을 때만 수행
                     if (!document) return;
                     const annotation = document.pages
                       .flatMap(p => p.layers.annotations)
@@ -485,24 +501,26 @@ export function PageViewer({
                       ];
                       onAddHistoryPatch('주석 수정', forward, backward);
                     }
-                    onUpdateAnnotation(id, updates);
                   }}
                   onDelete={(id) => {
-                    if (!document) return;
-                    const annotation = document.pages
-                      .flatMap(p => p.layers.annotations)
-                      .find(a => a.id === id);
-                    if (annotation) {
-                      const pageIndex = document.pages.findIndex(p => p.layers.annotations.some(a => a.id === id));
-                      const annotationIndex = document.pages[pageIndex].layers.annotations.findIndex(a => a.id === id);
-                      const forward = [
-                        { op: 'remove' as const, path: `/document/pages/${pageIndex}/layers/annotations/${annotationIndex}` }
-                      ];
-                      const backward = [
-                        { op: 'add' as const, path: `/document/pages/${pageIndex}/layers/annotations/${annotationIndex}`, value: annotation }
-                      ];
-                      onAddHistoryPatch('주석 삭제', forward, backward);
+                    // History 처리는 document가 있을 때만 수행
+                    if (document) {
+                      const annotation = document.pages
+                        .flatMap(p => p.layers.annotations)
+                        .find(a => a.id === id);
+                      if (annotation) {
+                        const pageIndex = document.pages.findIndex(p => p.layers.annotations.some(a => a.id === id));
+                        const annotationIndex = document.pages[pageIndex].layers.annotations.findIndex(a => a.id === id);
+                        const forward = [
+                          { op: 'remove' as const, path: `/document/pages/${pageIndex}/layers/annotations/${annotationIndex}` }
+                        ];
+                        const backward = [
+                          { op: 'add' as const, path: `/document/pages/${pageIndex}/layers/annotations/${annotationIndex}`, value: annotation }
+                        ];
+                        onAddHistoryPatch('주석 삭제', forward, backward);
+                      }
                     }
+                    // 삭제 처리는 항상 수행
                     onDeleteAnnotation(id);
                   }}
                 />

@@ -2,7 +2,7 @@
  * ShapeAnnotation Component - 도형 주석 (Rect, Ellipse)
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import type { RectAnnotation, EllipseAnnotation } from '../../../core/model/types';
 import { ResizeHandles } from './ResizeHandles';
 
@@ -11,21 +11,29 @@ type ShapeAnnotationType = RectAnnotation | EllipseAnnotation;
 interface ShapeAnnotationProps {
   annotation: ShapeAnnotationType;
   isSelected: boolean;
+  isHovered?: boolean;
   scale: number;
   onSelect: () => void;
   onUpdate: (updates: Partial<ShapeAnnotationType>) => void;
   onDelete: () => void;
-  onDragStart?: (annotation: ShapeAnnotationType, startPos: { x: number; y: number }) => void;
+  onHover?: () => void;
+  onHoverEnd?: () => void;
+  onPointerDown?: (e: React.PointerEvent) => void;
 }
 
 export function ShapeAnnotationComponent({
   annotation,
   isSelected,
+  isHovered: isHoveredProp,
   scale,
   onSelect,
   onUpdate,
-  onDragStart,
+  onHover,
+  onHoverEnd,
+  onPointerDown,
 }: ShapeAnnotationProps) {
+  const [localHovered, setLocalHovered] = useState(false);
+  const isHovered = isHoveredProp ?? localHovered;
 
   const bbox = annotation.bbox;
   const scaledBBox = {
@@ -35,31 +43,28 @@ export function ShapeAnnotationComponent({
     height: bbox.height * scale,
   };
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    console.log('🔷 [ShapeAnnotation] Mouse down for annotation:', annotation.id);
-
-    // Always stop propagation to prevent AnnotationLayer from handling this event
-    e.stopPropagation();
-    e.preventDefault();
-    e.nativeEvent.stopImmediatePropagation();
-
-    // Select the annotation
-    console.log('🔷 [ShapeAnnotation] Selecting annotation:', annotation.id);
-    onSelect();
-
-    // Start dragging using AnnotationLayer's drag system
-    if (onDragStart) {
-      console.log('🔷 [ShapeAnnotation] Starting drag for annotation:', annotation.id);
-      onDragStart(annotation, { x: e.clientX, y: e.clientY });
-    }
+  const handleMouseEnter = () => {
+    setLocalHovered(true);
+    onHover?.();
   };
 
-  const handleResize = (newWidth: number, newHeight: number) => {
+  const handleMouseLeave = () => {
+    setLocalHovered(false);
+    onHoverEnd?.();
+  };
+
+  const handleResize = (dWidth: number, dHeight: number, dX: number, dY: number) => {
+    const dW_scaled = dWidth / scale;
+    const dH_scaled = dHeight / scale;
+    const dX_scaled = dX / scale;
+    const dY_scaled = dY / scale;
+
     onUpdate({
       bbox: {
-        ...bbox,
-        width: newWidth / scale,
-        height: newHeight / scale,
+        x: bbox.x + dX_scaled,
+        y: bbox.y + dY_scaled,
+        width: Math.max(10 / scale, bbox.width + dW_scaled),
+        height: Math.max(10 / scale, bbox.height + dH_scaled),
       },
     });
   };
@@ -69,34 +74,31 @@ export function ShapeAnnotationComponent({
 
   return (
     <div
-      className={`absolute group ${isSelected ? 'z-50' : 'z-20'}`}
       style={{
+        position: 'absolute',
         left: scaledBBox.x,
         top: scaledBBox.y,
         width: scaledBBox.width,
         height: scaledBBox.height,
         cursor: 'grab',
+        zIndex: isSelected ? 50 : 20,
       }}
-      onMouseDown={handleMouseDown}
-      onMouseDownCapture={(e) => {
-        console.log('🔷 [ShapeAnnotation] Mouse down capture, stopping propagation');
+      onPointerDown={onPointerDown}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onClick={(e) => {
         e.stopPropagation();
-        e.preventDefault();
-        e.nativeEvent.stopImmediatePropagation();
-        return false; // Additional event blocking
-      }}
-      onMouseUpCapture={(e) => {
-        console.log('🔷 [ShapeAnnotation] Mouse up capture, stopping propagation');
-        e.stopPropagation();
-        e.preventDefault();
-        e.nativeEvent.stopImmediatePropagation();
-        return false; // Additional event blocking
+        onSelect();
       }}
     >
       {/* SVG Shape */}
       <svg
-        className="absolute inset-0 w-full h-full pointer-events-none"
         style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          pointerEvents: 'none',
           overflow: 'visible',
         }}
       >
@@ -124,9 +126,26 @@ export function ShapeAnnotationComponent({
         )}
       </svg>
 
+      {/* Hover indicator */}
+      {isHovered && !isSelected && (
+        <div style={{
+          position: 'absolute',
+          inset: '-3px',
+          border: '2px dashed #93C5FD',
+          borderRadius: '4px',
+          pointerEvents: 'none',
+        }} />
+      )}
+
       {/* Selection indicator */}
       {isSelected && (
-        <div className="absolute inset-0 ring-2 ring-blue-500 ring-offset-1 pointer-events-none rounded-sm" />
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          boxShadow: '0 0 0 2px #3B82F6, 0 0 0 3px rgba(59, 130, 246, 0.3)',
+          borderRadius: '2px',
+          pointerEvents: 'none',
+        }} />
       )}
 
       {/* Resize handles */}
@@ -140,7 +159,3 @@ export function ShapeAnnotationComponent({
     </div>
   );
 }
-
-
-
-

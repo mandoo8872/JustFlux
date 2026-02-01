@@ -17,6 +17,7 @@ import { ArrowAnnotationComponent } from '../../../ui/viewer/annotations/ArrowAn
 import { LightningAnnotationComponent } from '../../../ui/viewer/annotations/LightningAnnotation';
 import { StarAnnotationComponent } from '../../../ui/viewer/annotations/StarAnnotation';
 import { HeartAnnotationComponent } from '../../../ui/viewer/annotations/HeartAnnotation';
+import { FreehandAnnotationComponent } from '../../../ui/viewer/annotations/FreehandAnnotation';
 
 /**
  * 기존 주석 컴포넌트들을 새로운 시스템에 등록
@@ -80,6 +81,7 @@ export function registerLegacyAnnotations(): void {
       onSelect={props.onSelect}
       onUpdate={props.onUpdate}
       onDelete={props.onDelete}
+      onPointerDown={props.onPointerDown}
     />,
     validate: (annotation) => annotation.type === 'rectangle' && !!annotation.bbox,
     getDefaultProps: () => ({
@@ -100,6 +102,7 @@ export function registerLegacyAnnotations(): void {
       onSelect={props.onSelect}
       onUpdate={props.onUpdate}
       onDelete={props.onDelete}
+      onPointerDown={props.onPointerDown}
     />,
     validate: (annotation) => annotation.type === 'ellipse' && !!annotation.bbox,
     getDefaultProps: () => ({
@@ -145,10 +148,36 @@ export function registerLegacyAnnotations(): void {
       onSelect={props.onSelect}
       onUpdate={props.onUpdate}
       onDelete={props.onDelete}
+      onPointerDown={props.onPointerDown}
     />,
     validate: (annotation) => annotation.type === 'arrow' && !!annotation.bbox,
     getDefaultProps: () => ({
       type: 'arrow',
+      startPoint: { x: 0, y: 0 },
+      endPoint: { x: 100, y: 100 },
+      style: {
+        strokeColor: '#000000',
+        strokeWidth: 2
+      }
+    })
+  });
+
+  // 선 주석 (화살표 없는)
+  annotationRegistry.register('line', {
+    render: (props) => <ArrowAnnotationComponent
+      annotation={props.annotation}
+      isSelected={props.isSelected}
+      scale={props.scale}
+      onSelect={props.onSelect}
+      onUpdate={props.onUpdate}
+      onDelete={props.onDelete}
+      onPointerDown={props.onPointerDown}
+    />,
+    validate: (annotation) => annotation.type === 'line' && !!annotation.startPoint && !!annotation.endPoint,
+    getDefaultProps: () => ({
+      type: 'line',
+      startPoint: { x: 0, y: 0 },
+      endPoint: { x: 100, y: 100 },
       style: {
         strokeColor: '#000000',
         strokeWidth: 2
@@ -165,10 +194,13 @@ export function registerLegacyAnnotations(): void {
       onSelect={props.onSelect}
       onUpdate={props.onUpdate}
       onDelete={props.onDelete}
+    // onPointerDown={props.onPointerDown} // Temporarily removed to fix build error
     />,
     validate: (annotation) => annotation.type === 'lightning' && !!annotation.bbox,
     getDefaultProps: () => ({
       type: 'lightning',
+      startPoint: { x: 0, y: 0 },
+      endPoint: { x: 100, y: 100 },
       style: {
         strokeColor: '#000000',
         strokeWidth: 2
@@ -185,6 +217,7 @@ export function registerLegacyAnnotations(): void {
       onSelect={props.onSelect}
       onUpdate={props.onUpdate}
       onDelete={props.onDelete}
+    // onPointerDown={props.onPointerDown} // Temporarily removed
     />,
     validate: (annotation) => annotation.type === 'star' && !!annotation.bbox,
     getDefaultProps: () => ({
@@ -206,6 +239,7 @@ export function registerLegacyAnnotations(): void {
       onSelect={props.onSelect}
       onUpdate={props.onUpdate}
       onDelete={props.onDelete}
+    // onPointerDown={props.onPointerDown} // Temporarily removed
     />,
     validate: (annotation) => annotation.type === 'heart' && !!annotation.bbox,
     getDefaultProps: () => ({
@@ -214,6 +248,31 @@ export function registerLegacyAnnotations(): void {
         strokeColor: '#ff0000',
         strokeWidth: 2,
         fillColor: '#ff0000'
+      }
+    })
+  });
+
+  // 자유 그리기 주석
+  annotationRegistry.register('freehand', {
+    render: (props) => <FreehandAnnotationComponent
+      annotation={props.annotation}
+      isSelected={props.isSelected}
+      isHovered={props.isHovered}
+      scale={props.scale}
+      onSelect={props.onSelect}
+      onUpdate={props.onUpdate}
+      onDelete={props.onDelete}
+      onPointerDown={props.onPointerDown}
+      onHover={props.onHover}
+      onHoverEnd={props.onHoverEnd}
+    />,
+    validate: (annotation) => annotation.type === 'freehand' && !!annotation.bbox && Array.isArray((annotation as any).points),
+    getDefaultProps: () => ({
+      type: 'freehand',
+      points: [],
+      style: {
+        stroke: '#000000',
+        strokeWidth: 3
       }
     })
   });

@@ -10,6 +10,7 @@ import type { Document, ExportOptions } from '../../core/model/types';
 import { exportDocument } from '../../core/io/exportEngine';
 import { downloadBlob, downloadUint8Array } from '../../utils/fileDownload';
 import { usePageStore } from '../../state/stores/PageStore';
+import { useAnnotationStore } from '../../state/stores/AnnotationStore';
 import JSZip from 'jszip';
 
 interface ExportPanelProps {
@@ -30,17 +31,17 @@ export function ExportPanel({ document, pdfProxy, currentPageIndex, onClose, ins
   const [isExporting, setIsExporting] = useState(false);
   const [progress, setProgress] = useState(0);
   const [success, setSuccess] = useState(false);
-  
+
   // PageStore에서 실제 페이지 데이터 가져오기
   const { pages } = usePageStore();
-  
+
   // 페이지 범위 파싱 함수 (예: "1-5", "1,3,5", "1-3,5-7")
   const parsePageRange = (range: string, totalPages: number): number[] => {
     if (!range.trim()) return [];
-    
+
     const pages: number[] = [];
     const parts = range.split(',');
-    
+
     for (const part of parts) {
       const trimmed = part.trim();
       if (trimmed.includes('-')) {
@@ -60,7 +61,7 @@ export function ExportPanel({ document, pdfProxy, currentPageIndex, onClose, ins
         }
       }
     }
-    
+
     return pages.sort((a, b) => a - b);
   };
 
@@ -96,11 +97,22 @@ export function ExportPanel({ document, pdfProxy, currentPageIndex, onClose, ins
       };
 
       setProgress(10);
-      const result = await exportDocument(pages, pdfProxy, options, insertedPdfProxies);
+      const { annotations } = useAnnotationStore.getState();
+
+      // 주석 데이터를 포함한 페이지 복사본 생성
+      const pagesWithAnnotations = pages.map(page => ({
+        ...page,
+        layers: {
+          ...page.layers,
+          annotations: annotations.filter(a => a.pageId === page.id)
+        }
+      }));
+
+      const result = await exportDocument(pagesWithAnnotations, pdfProxy, options, insertedPdfProxies);
       setProgress(80);
 
       const extension = format === 'pdf' ? 'pdf' : format;
-      
+
       // 파일명에서 확장자 제거 (이미 extension에 포함됨)
       const baseName = document.name.replace(/\.[^/.]+$/, '') || 'document';
 
@@ -114,20 +126,20 @@ export function ExportPanel({ document, pdfProxy, currentPageIndex, onClose, ins
         // 여러 페이지 (PNG/JPEG)
         const isMultiplePages = result.length > 1;
         const shouldUseZip = isMultiplePages && useZip && (format === 'png' || format === 'jpeg');
-        
+
         if (shouldUseZip) {
           // ZIP 파일로 묶어서 다운로드
           setProgress(85);
           const zip = new JSZip();
-          
+
           result.forEach((blob, index) => {
-            const pageNum = Array.isArray(selectedPages) 
-              ? selectedPages[index] + 1 
+            const pageNum = Array.isArray(selectedPages)
+              ? selectedPages[index] + 1
               : index + 1;
             const filename = `page${pageNum.toString().padStart(3, '0')}.${extension}`;
             zip.file(filename, blob);
           });
-          
+
           setProgress(95);
           const zipBlob = await zip.generateAsync({ type: 'blob' });
           const zipFilename = `${baseName}_pages.zip`;
@@ -137,8 +149,8 @@ export function ExportPanel({ document, pdfProxy, currentPageIndex, onClose, ins
           // 개별 파일로 다운로드 (순차적으로)
           setProgress(85);
           for (let i = 0; i < result.length; i++) {
-            const pageNum = Array.isArray(selectedPages) 
-              ? selectedPages[i] + 1 
+            const pageNum = Array.isArray(selectedPages)
+              ? selectedPages[i] + 1
               : i + 1;
             const filename = `${baseName}_page${pageNum}.${extension}`;
             // 작은 딜레이를 두어 브라우저가 각 다운로드를 처리할 수 있도록 함
@@ -152,8 +164,8 @@ export function ExportPanel({ document, pdfProxy, currentPageIndex, onClose, ins
         }
       } else {
         // 단일 페이지 (PNG/JPEG)
-        const pageNum = Array.isArray(selectedPages) 
-          ? selectedPages[0] + 1 
+        const pageNum = Array.isArray(selectedPages)
+          ? selectedPages[0] + 1
           : currentPageIndex + 1;
         const filename = `${baseName}_page${pageNum}.${extension}`;
         downloadBlob(result, filename);
@@ -175,8 +187,8 @@ export function ExportPanel({ document, pdfProxy, currentPageIndex, onClose, ins
   };
 
   const modalContent = (
-    <div 
-      style={{ 
+    <div
+      style={{
         position: 'fixed',
         top: 0,
         left: 0,
@@ -191,7 +203,7 @@ export function ExportPanel({ document, pdfProxy, currentPageIndex, onClose, ins
       }}
       onClick={onClose}
     >
-      <div 
+      <div
         style={{
           backgroundColor: '#F5F5F5',
           borderRadius: '4px',
@@ -411,7 +423,7 @@ export function ExportPanel({ document, pdfProxy, currentPageIndex, onClose, ins
               marginBottom: '8px'
             }}>품질</label>
             {format === 'jpeg' ? (
-              <div style={{ 
+              <div style={{
                 backgroundColor: '#F5F5F5',
                 borderRadius: '2px',
                 padding: '8px'

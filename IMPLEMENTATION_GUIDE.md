@@ -20,10 +20,9 @@
 PDF 페이지를 실제로 렌더링하고 표시하는 PageView 컴포넌트를 구현
 
 ### 현재 상태
-- 프로젝트 경로: `/Users/donghyun/Project/justflux-v2`
-- PDF 로더는 `src/core/pdf/pdfLoader.ts`에 구현됨
-- Document store는 `src/state/documentStore.ts`에 구현됨
-- `Shell.tsx`에서 페이지 목록은 표시되지만 실제 렌더링은 안 됨
+- **구현 완료**: `src/ui/viewer/PageViewer.tsx` 구현됨
+- **기능 확장**: 빈 페이지 추가 지원 및 멀티 포맷(MD, TXT, IMG) 로딩 지원
+- **최적화**: Canvas 메모리 관리 및 렌더링 성능 최적화 적용됨
 
 ### 구현 요구사항
 
@@ -191,9 +190,9 @@ const debouncedScale = useMemo(() =>
 PDF 위에 벡터 주석(텍스트, 하이라이트, 도형)을 추가/편집할 수 있는 시스템 구현
 
 ### 현재 상태
-- 데이터 모델: `src/core/model/types.ts` (Annotation 타입 정의됨)
-- 팩토리: `src/core/model/factories.ts` (annotation 생성 함수)
-- 상태 관리: `documentStore.ts` (addAnnotation, updateAnnotation 등)
+- **구현 완료**: `AnnotationManager`, `AnnotationRegistry` 등 모듈화 완료
+- **버그 수정**: 빈 페이지 렌더링 및 선택 핸들 표시 문제 해결 (2026-02-01)
+- **통합**: `Shell.tsx` 및 `PageViewer.tsx`와 완전히 통합되어 작동 중
 
 ### 구현 요구사항
 

@@ -12,6 +12,7 @@ import { StarAnnotationComponent } from './annotations/StarAnnotation';
 import { HeartAnnotationComponent } from './annotations/HeartAnnotation';
 import { LightningAnnotationComponent } from './annotations/LightningAnnotation';
 import { ImageAnnotationComponent } from './annotations/ImageAnnotation';
+import { FreehandAnnotationComponent } from './annotations/FreehandAnnotation';
 
 interface AnnotationLayerProps {
   annotations: Annotation[];
@@ -711,6 +712,28 @@ export function AnnotationLayer({
                 }}
               />
             </div>
+          );
+        } else if (annotation.type === 'freehand') {
+          return (
+            <FreehandAnnotationComponent
+              key={annotation.id}
+              annotation={annotation as any}
+              isSelected={isSelected}
+              isHovered={isHovered}
+              scale={scale}
+              onSelect={() => onSelect(annotation.id)}
+              onUpdate={(updates) => onUpdate(annotation.id, updates)}
+              onDelete={() => onDelete(annotation.id)}
+              onHover={() => handleAnnotationHover(annotation.id)}
+              onHoverEnd={() => handleAnnotationHover(null)}
+              onPointerDown={(e) => {
+                e.stopPropagation();
+                onSelect(annotation.id);
+                setIsDragging(true);
+                setDragStart({ x: e.clientX, y: e.clientY });
+                setDragAnnotation(annotation);
+              }}
+            />
           );
         }
 

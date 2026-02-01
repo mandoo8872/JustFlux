@@ -60,12 +60,12 @@ export function TextAnnotationComponent({
 
   const handleDoubleClick = (e: React.MouseEvent) => {
     console.log('📝 [TextAnnotation] Double click, entering edit mode');
-    
+
     // Always stop propagation to prevent AnnotationLayer from handling this event
     e.stopPropagation();
     e.preventDefault();
     e.nativeEvent.stopImmediatePropagation();
-    
+
     // Enter edit mode
     setIsEditing(true);
   };
@@ -86,26 +86,26 @@ export function TextAnnotationComponent({
 
   const handleMouseDown = (e: React.MouseEvent) => {
     console.log('📝 [TextAnnotation] Mouse down, isEditing:', isEditing, 'isDragging:', isDragging);
-    
+
     // Always stop propagation to prevent AnnotationLayer from handling this event
     e.stopPropagation();
     e.preventDefault();
     e.nativeEvent.stopImmediatePropagation();
-    
+
     if (isEditing) {
       // If editing, don't handle selection or dragging
       return;
     }
-    
+
     // If already dragging, don't handle new events
     if (isDragging) {
       return;
     }
-    
+
     // Select the annotation immediately
     console.log('📝 [TextAnnotation] Selecting annotation:', annotation.id);
     onSelect();
-    
+
     // Start dragging using AnnotationLayer's drag system
     if (onDragStart) {
       console.log('📝 [TextAnnotation] Starting drag for annotation:', annotation.id);
@@ -125,13 +125,14 @@ export function TextAnnotationComponent({
 
   return (
     <div
-      className={`absolute group ${isSelected ? 'z-50' : 'z-20'}`}
       style={{
+        position: 'absolute',
         left: scaledBBox.x,
         top: scaledBBox.y,
         width: scaledBBox.width,
         height: scaledBBox.height,
         cursor: isEditing ? 'text' : 'grab',
+        zIndex: isSelected ? 50 : 20,
       }}
       onMouseDown={handleMouseDown}
       onMouseDownCapture={(e) => {
@@ -170,16 +171,22 @@ export function TextAnnotationComponent({
     >
       {/* Background */}
       <div
-        className="absolute inset-0 bg-white/90 backdrop-blur-sm rounded shadow-sm transition-all"
         style={{
-          border: isSelected 
-            ? '2px solid #3B82F6' 
-            : isHovered 
-              ? '2px solid #93C5FD' 
+          position: 'absolute',
+          inset: 0,
+          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          backdropFilter: 'blur(4px)',
+          borderRadius: '4px',
+          boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+          transition: 'all 0.15s ease-in-out',
+          border: isSelected
+            ? '2px solid #3B82F6'
+            : isHovered
+              ? '2px solid #93C5FD'
               : '1px solid transparent',
         }}
       />
-      
+
       {/* Hover indicator */}
       {isHovered && !isSelected && (
         <div
@@ -204,8 +211,16 @@ export function TextAnnotationComponent({
           defaultValue={annotation.content}
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
-          className="absolute inset-0 w-full h-full p-2 bg-transparent border-none outline-none resize-none"
           style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            padding: '8px',
+            backgroundColor: 'transparent',
+            border: 'none',
+            outline: 'none',
+            resize: 'none',
             fontFamily: annotation.style.fontFamily,
             fontSize: annotation.style.fontSize * scale,
             fontWeight: annotation.style.fontWeight,
@@ -215,8 +230,11 @@ export function TextAnnotationComponent({
         />
       ) : (
         <div
-          className="absolute inset-0 p-2 overflow-hidden"
           style={{
+            position: 'absolute',
+            inset: 0,
+            padding: '8px',
+            overflow: 'hidden',
             fontFamily: annotation.style.fontFamily,
             fontSize: annotation.style.fontSize * scale,
             fontWeight: annotation.style.fontWeight,

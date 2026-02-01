@@ -10,9 +10,9 @@ export class AnnotationService {
   /**
    * 주석 생성
    */
-  createAnnotation(type: string, pageId: string, bbox: { x: number; y: number; width: number; height: number }, style?: any): Annotation | null {
+  createAnnotation(type: string, pageId: string, props: any, style?: any): Annotation | null {
     console.log(`📝 [AnnotationService] Creating annotation of type: ${type}`);
-    
+
     const renderer = annotationRegistry.getRenderer(type);
     if (!renderer) {
       console.error(`❌ [AnnotationService] No renderer found for type: ${type}`);
@@ -20,16 +20,16 @@ export class AnnotationService {
     }
 
     const defaultProps = renderer.getDefaultProps();
-    const annotation = { 
-      ...defaultProps, 
+    const annotation = {
+      ...defaultProps,
       id: `annotation_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       pageId,
-      bbox,
+      ...props, // Spread passed props (bbox, startPoint, etc.) to overwrite defaults
       style: { ...defaultProps.style, ...style },
       createdAt: Date.now(),
       modifiedAt: Date.now()
     };
-    
+
     if (!renderer.validate(annotation)) {
       console.error(`❌ [AnnotationService] Invalid annotation data for type: ${type}`);
       return null;
@@ -43,7 +43,7 @@ export class AnnotationService {
    */
   updateAnnotation(annotation: Annotation, updates: Partial<Annotation>): Annotation | null {
     console.log(`📝 [AnnotationService] Updating annotation: ${annotation.id}`);
-    
+
     const renderer = annotationRegistry.getRenderer(annotation.type);
     if (!renderer) {
       console.error(`❌ [AnnotationService] No renderer found for type: ${annotation.type}`);
@@ -51,7 +51,7 @@ export class AnnotationService {
     }
 
     const updatedAnnotation = { ...annotation, ...updates };
-    
+
     if (!renderer.validate(updatedAnnotation)) {
       console.error(`❌ [AnnotationService] Invalid updated annotation data`);
       return null;
@@ -85,7 +85,7 @@ export class AnnotationService {
    */
   cloneAnnotation(annotation: Annotation): Annotation | null {
     console.log(`📝 [AnnotationService] Cloning annotation: ${annotation.id}`);
-    
+
     const clonedAnnotation = {
       ...annotation,
       id: `annotation-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,

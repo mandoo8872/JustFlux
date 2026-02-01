@@ -1,12 +1,16 @@
 /**
  * RightSidebar Component - 오른쪽 사이드바
- * Adobe Acrobat Reader 스타일: 도구, 확대/축소, 페이지 내비게이터를 모두 포함
+ * 객체 선택 시 확장되어 ObjectPropertyPanel 표시
  */
 
 import { AnnotationToolbox } from '../toolbox/AnnotationToolbox';
 import { ZoomControl } from '../viewer/ZoomControl';
 import { PageNavigator } from '../viewer/PageNavigator';
+import { ObjectPropertyPanel } from '../toolbox/ObjectPropertyPanel';
+import { useAnnotationStore } from '../../state/stores/AnnotationStore';
+import { usePageStore } from '../../state/stores/PageStore';
 import type { ToolType } from '../../core/model/types';
+import type { Annotation } from '../../types/annotation';
 
 interface RightSidebarProps {
   activeTool: ToolType;
@@ -35,79 +39,162 @@ export function RightSidebar({
   isCollapsed: _isCollapsed,
   onToggle: _onToggle,
 }: RightSidebarProps) {
-  // 접기 기능 제거 - 항상 표시
+  // Get selected annotation from store
+  const { selection, annotations, updateAnnotation, removeAnnotation } = useAnnotationStore();
+  const { currentPageId } = usePageStore();
+
+  // Find the selected annotation
+  const selectedAnnotationId = selection.selectedAnnotationIds.length > 0
+    ? selection.selectedAnnotationIds[0]
+    : null;
+
+  // Find annotation from the flat annotations array
+  const selectedAnnotation: Annotation | null = selectedAnnotationId
+    ? (annotations.find((a: Annotation) => a.id === selectedAnnotationId) || null)
+    : null;
+
+  // Check if panel should be expanded
+  const isExpanded = selectedAnnotation !== null;
+  const expandedWidth = 320; // Width when expanded
+
+  // Handlers for ObjectPropertyPanel
+  const handleUpdate = (updates: Partial<Annotation>) => {
+    if (selectedAnnotationId) {
+      updateAnnotation(selectedAnnotationId, updates);
+    }
+  };
+
+  const handleDelete = () => {
+    if (selectedAnnotationId) {
+      removeAnnotation(selectedAnnotationId);
+    }
+  };
+
+  const handleCopy = () => {
+    // TODO: Implement copy functionality
+    console.log('Copy annotation:', selectedAnnotationId);
+  };
+
+  const handleMoveUp = () => {
+    console.log('Move up:', selectedAnnotationId);
+  };
+
+  const handleMoveDown = () => {
+    console.log('Move down:', selectedAnnotationId);
+  };
+
+  const handleMoveToTop = () => {
+    console.log('Move to top:', selectedAnnotationId);
+  };
+
+  const handleMoveToBottom = () => {
+    console.log('Move to bottom:', selectedAnnotationId);
+  };
+
   return (
     <div style={{
       position: 'fixed',
       right: 0,
-      top: '40px', // Header 높이
-      width: `${sidebarWidth}px`,
+      top: '40px',
+      width: isExpanded ? `${expandedWidth}px` : `${sidebarWidth}px`,
       height: 'calc(100vh - 40px)',
       backgroundColor: '#F5F5F5',
       borderLeft: '1px solid #D0D0D0',
       display: 'flex',
-      flexDirection: 'column',
+      flexDirection: 'row',
       zIndex: 30,
-      padding: '12px 4px',
-      gap: '16px',
-      overflowY: 'auto'
+      transition: 'width 0.2s ease-in-out',
+      overflow: 'hidden',
     }}>
-      {/* Annotation Tools Section - 세로 1열 */}
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '4px',
-        padding: '8px 4px',
-        backgroundColor: '#FFFFFF',
-        borderRadius: '6px',
-        border: '1px solid #E5E5E5',
-        boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
-      }}>
-        <AnnotationToolbox
-          activeTool={activeTool}
-          onToolChange={onToolChange}
-        />
-      </div>
+      {/* Property Panel Section - 확장 시에만 표시 */}
+      {isExpanded && (
+        <div style={{
+          width: `${expandedWidth - sidebarWidth}px`,
+          height: '100%',
+          padding: '12px',
+          overflowY: 'auto',
+          borderRight: '1px solid #E5E5E5',
+          backgroundColor: '#FAFAFA',
+        }}>
+          <ObjectPropertyPanel
+            selectedAnnotation={selectedAnnotation}
+            onUpdate={handleUpdate}
+            onDelete={handleDelete}
+            onCopy={handleCopy}
+            onMoveUp={handleMoveUp}
+            onMoveDown={handleMoveDown}
+            onMoveToTop={handleMoveToTop}
+            onMoveToBottom={handleMoveToBottom}
+          />
+        </div>
+      )}
 
-      {/* Zoom Controls Section - 세로 배치 */}
+      {/* Tools Section - 항상 표시 */}
       <div style={{
+        width: `${sidebarWidth}px`,
+        flexShrink: 0,
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
-        gap: '2px',
-        padding: '8px 4px',
-        backgroundColor: '#FAFAFA',
-        borderRadius: '6px',
-        border: '1px solid #E5E5E5',
-        boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+        padding: '12px 4px',
+        gap: '16px',
+        overflowY: 'auto',
       }}>
-        <ZoomControl
-          zoom={zoom}
-          onZoomChange={onZoomChange}
-          onFitMode={(mode) => onFitView(mode as any)}
-        />
-      </div>
+        {/* Annotation Tools */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '4px',
+          padding: '8px 4px',
+          backgroundColor: '#FFFFFF',
+          borderRadius: '6px',
+          border: '1px solid #E5E5E5',
+          boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+        }}>
+          <AnnotationToolbox
+            activeTool={activeTool}
+            onToolChange={onToolChange}
+          />
+        </div>
 
-      {/* Page Navigator Section - 위아래 화살표 */}
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '2px',
-        padding: '8px 4px',
-        backgroundColor: '#FFFFFF',
-        borderRadius: '6px',
-        border: '1px solid #E5E5E5',
-        boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
-      }}>
-        <PageNavigator
-          currentPage={currentPageIndex}
-          totalPages={totalPages}
-          onPageChange={onPageChange}
-        />
+        {/* Zoom Controls */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '2px',
+          padding: '8px 4px',
+          backgroundColor: '#FAFAFA',
+          borderRadius: '6px',
+          border: '1px solid #E5E5E5',
+          boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+        }}>
+          <ZoomControl
+            zoom={zoom}
+            onZoomChange={onZoomChange}
+            onFitMode={(mode) => onFitView(mode as any)}
+          />
+        </div>
+
+        {/* Page Navigator */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '2px',
+          padding: '8px 4px',
+          backgroundColor: '#FFFFFF',
+          borderRadius: '6px',
+          border: '1px solid #E5E5E5',
+          boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+        }}>
+          <PageNavigator
+            currentPage={currentPageIndex}
+            totalPages={totalPages}
+            onPageChange={onPageChange}
+          />
+        </div>
       </div>
     </div>
   );
 }
-

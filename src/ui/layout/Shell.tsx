@@ -13,7 +13,7 @@ import { useHistoryStore } from '../../state/stores/HistoryStore';
 import { usePageStore } from '../../state/stores/PageStore';
 import { usePDFStore } from '../../state/stores/PDFStore';
 // import { loadPdfFile } from '../../core/pdf/pdfLoader'; // FileService로 대체
-import { createPage } from '../../core/model/factories';
+import { createPage, createImageAnnotation } from '../../core/model/factories';
 import { Header } from './Header';
 import { useEventBus } from '../../core/events/useEventBus';
 import { initializeContainer } from '../../core/di/ContainerSetup';
@@ -28,6 +28,95 @@ export function Shell() {
   // DI Container 초기화
   useEffect(() => {
     initializeContainer();
+
+
+  }, []);
+
+  // Clipboard Paste Handler
+  useEffect(() => {
+    const handlePaste = async (e: ClipboardEvent) => {
+      // 텍스트 입력 중이면 무시 (contentEditable 등)
+      if (
+        window.document.activeElement?.tagName === 'INPUT' ||
+        window.document.activeElement?.tagName === 'TEXTAREA' ||
+        (window.document.activeElement as HTMLElement)?.isContentEditable
+      ) {
+        return;
+      }
+
+      if (!e.clipboardData || !e.clipboardData.items) return;
+
+      const items = e.clipboardData.items;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          const blob = items[i].getAsFile();
+          if (!blob) continue;
+
+          // 현재 페이지 확인 (Store 구독 상태 사용)
+          const currentState = usePageStore.getState();
+
+          // 현재 페이지 ID 찾기 (Shell의 currentPage는 렌더링 시점 값이라 여기서 직접 조회)
+          // 하지만 여기선 currentPage가 prop이나 state로 없으므로, selection 상태 활용
+          const { selection } = useAnnotationStore.getState();
+          // 만약 selectedPageId가 없다면 첫 페이지 또는 현재 뷰포트 페이지를 가정해야 함
+          // Shell 컴포넌트 내부 스테이트인 currentPage를 의존하기 어려우므로 store에서 가져옴
+
+          let targetPageId = selection.selectedPageId;
+          const { pages } = usePageStore.getState();
+
+          if (!targetPageId && pages.length > 0) {
+            targetPageId = pages[0].id;
+          }
+
+          if (targetPageId) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+              if (event.target?.result) {
+                const imageUrl = event.target.result as string;
+
+                // 이미지 크기를 알기 위해 로드
+                const img = new Image();
+                img.onload = () => {
+                  const width = Math.min(img.width, 500); // 최대 500px 제한
+                  const height = width * (img.height / img.width);
+
+                  const newAnnotation = createImageAnnotation({
+                    pageId: targetPageId!,
+                    bbox: {
+                      x: 100, // 임시 위치
+                      y: 100,
+                      width,
+                      height
+                    },
+                    imageData: imageUrl,
+                    originalWidth: img.width,
+                    originalHeight: img.height
+                  });
+
+                  console.log('📋 [Clipboard] Pasting image annotation:', newAnnotation);
+                  useAnnotationStore.getState().addAnnotationToPage(targetPageId!, newAnnotation);
+                  useAnnotationStore.getState().setActiveTool('select');
+                  setTimeout(() => {
+                    useAnnotationStore.getState().selectAnnotation(newAnnotation.id);
+                  }, 50);
+                };
+                img.src = imageUrl;
+              }
+            };
+            reader.readAsDataURL(blob);
+          }
+
+          // 이벤트 전파 중단 (이미지 붙여넣기 성공 시)
+          e.preventDefault();
+          break;
+        }
+      }
+    };
+
+    window.addEventListener('paste', handlePaste);
+    return () => {
+      window.removeEventListener('paste', handlePaste);
+    };
   }, []);
 
   // 이벤트 시스템 사용
@@ -47,6 +136,7 @@ export function Shell() {
     selectAnnotations,
     addAnnotationToPage,
     setActiveTool,
+    selectAnnotation,
   } = useAnnotationStore();
 
   const { view, setScale, fitToPage, setViewportSize } = useViewStore();
@@ -308,13 +398,28 @@ export function Shell() {
         onZoomChange={setScale}
         onPanChange={() => { }}
         onAddAnnotation={(annotation) => {
+          console.log('🔔 [Shell] onAddAnnotation called, currentPage:', currentPage?.id, 'annotation:', annotation);
           if (currentPage) {
+            // 기존 ID가 있으면 사용, 없으면 새로 생성
+            const annotationId = (annotation as any).id || `annotation_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
             const annotationWithId = {
               ...annotation,
-              id: `annotation_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+              id: annotationId,
               ...(annotation.type === 'stamp' && { stampType: 'approved' })
             };
+            console.log('🔔 [Shell] Calling addAnnotationToPage with:', currentPage.id, annotationWithId);
             addAnnotationToPage(currentPage.id, annotationWithId as any);
+
+            // UX 개선: 생성 후 자동으로 선택 도구로 전환하고 생성된 객체 선택
+            setActiveTool('select');
+
+            // 약간의 지연 후 선택 (상태 업데이트 보장)
+            setTimeout(() => {
+              console.log('🔔 [Shell] Auto-selecting new annotation:', annotationId);
+              selectAnnotation(annotationId);
+            }, 50);
+          } else {
+            console.warn('⚠️ [Shell] currentPage is null, cannot add annotation');
           }
         }}
         onUpdateAnnotation={updateAnnotation}

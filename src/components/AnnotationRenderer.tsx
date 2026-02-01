@@ -13,6 +13,7 @@ import { HighlightAnnotationView } from './views/HighlightAnnotationView';
 import { ShapeAnnotationView } from './views/ShapeAnnotationView';
 import { ImageAnnotationView } from './views/ImageAnnotationView';
 import { StampAnnotationView } from './views/StampAnnotationView';
+import { FreehandAnnotationView } from './views/FreehandAnnotationView';
 
 // ============================================
 // Component Map 정의
@@ -27,6 +28,7 @@ const annotationViewMap = {
   star: ShapeAnnotationView,
   heart: ShapeAnnotationView,
   lightning: ShapeAnnotationView,
+  freehand: FreehandAnnotationView,
   image: ImageAnnotationView,
   stamp: StampAnnotationView,
   // 미래 확장을 위한 placeholder
@@ -42,16 +44,16 @@ const annotationViewMap = {
 
 export function AnnotationRenderer(props: AnnotationRenderProps): React.ReactElement {
   const { annotation } = props;
-  
+
   // Component Map에서 해당 타입의 View 컴포넌트 가져오기
   const ViewComponent = annotationViewMap[annotation.type as keyof typeof annotationViewMap] as React.ComponentType<any>;
-  
+
   // 타입 안전성을 위한 검증
   if (!ViewComponent) {
     console.warn(`Unknown annotation type: ${annotation.type}`);
     return <div>Unknown annotation type</div>;
   }
-  
+
   // 타입 안전한 props 전달 (any로 우회하여 타입 호환성 문제 해결)
   return <ViewComponent {...(props as any)} />;
 }
@@ -65,7 +67,7 @@ export function AnnotationRenderer(props: AnnotationRenderProps): React.ReactEle
  * 플러그인 방식으로 확장 가능
  */
 export function registerAnnotationView(
-  type: string, 
+  type: string,
   component: React.ComponentType<AnnotationRenderProps>
 ): void {
   (annotationViewMap as any)[type] = component;
