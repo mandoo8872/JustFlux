@@ -37,6 +37,7 @@ export function registerLegacyAnnotations(): void {
       onDelete={props.onDelete}
       onHover={props.onHover || (() => { })}
       onHoverEnd={props.onHoverEnd || (() => { })}
+      onPointerDown={props.onPointerDown}
       onDragStart={props.onDragStart}
       isDragging={props.isDragging}
     />,
@@ -47,7 +48,7 @@ export function registerLegacyAnnotations(): void {
       style: {
         fontSize: 14,
         color: '#000000',
-        backgroundColor: 'transparent'
+        backgroundColor: '#FFFFFF'
       }
     })
   });
@@ -86,6 +87,29 @@ export function registerLegacyAnnotations(): void {
     validate: (annotation) => annotation.type === 'rectangle' && !!annotation.bbox,
     getDefaultProps: () => ({
       type: 'rectangle',
+      style: {
+        strokeColor: '#000000',
+        strokeWidth: 2,
+        fillColor: 'transparent'
+      }
+    })
+  });
+
+  // 둥근 사각형 주석
+  annotationRegistry.register('roundedRect', {
+    render: (props) => <ShapeAnnotationComponent
+      annotation={props.annotation}
+      isSelected={props.isSelected}
+      scale={props.scale}
+      onSelect={props.onSelect}
+      onUpdate={props.onUpdate}
+      onDelete={props.onDelete}
+      onPointerDown={props.onPointerDown}
+    />,
+    validate: (annotation) => annotation.type === 'roundedRect' && !!annotation.bbox,
+    getDefaultProps: () => ({
+      type: 'roundedRect',
+      cornerRadius: 20,
       style: {
         strokeColor: '#000000',
         strokeWidth: 2,

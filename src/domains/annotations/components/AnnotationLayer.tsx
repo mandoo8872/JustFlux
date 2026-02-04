@@ -11,6 +11,7 @@ interface AnnotationLayerProps {
     onUpdate: (id: string, updates: Partial<Annotation>) => void;
     onDelete: (id: string) => void;
     onSelect: (id: string) => void;
+    onDragStart?: (annotation: Annotation, startPos: { x: number; y: number }) => void;
 }
 
 export const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
@@ -21,7 +22,8 @@ export const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
     onPointerDown,
     onUpdate,
     onDelete,
-    onSelect
+    onSelect,
+    onDragStart
 }) => {
     const renderer = annotationRegistry.getRenderer(annotation.type);
 
@@ -43,7 +45,8 @@ export const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
                 onDelete: () => onDelete(annotation.id),
                 onPointerDown: (e: any) => onPointerDown(e, annotation.id),
                 onHover: () => { },
-                onHoverEnd: () => { }
+                onHoverEnd: () => { },
+                onDragStart: onDragStart ? (ann: any, pos: any) => onDragStart(ann, pos) : undefined
             })}
         </>
     );

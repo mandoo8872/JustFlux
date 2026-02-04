@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useAnnotationStore } from '../../../state/stores/AnnotationStore';
 import { getDelta } from '../utils/transformUtils';
+import type { Annotation } from '../../../core/model/types';
 
 interface DragState {
     isDragging: boolean;
@@ -45,8 +46,7 @@ export const useAnnotationInteraction = ({ scale, activeTool }: UseAnnotationInt
             }
         };
 
-        const handlePointerUp = (_e: PointerEvent) => {
-            console.log('🎯 [useAnnotationInteraction] Drag end');
+        const handlePointerUp = () => {
             setDragState({
                 isDragging: false,
                 startPoint: null,
@@ -65,10 +65,9 @@ export const useAnnotationInteraction = ({ scale, activeTool }: UseAnnotationInt
 
     const handlePointerDown = useCallback((e: React.PointerEvent, annotationId: string) => {
         if (activeTool !== 'select') return;
-        if (e.button !== 0) return; // Only left click
+        if (e.button !== 0) return;
 
         e.stopPropagation();
-        console.log('🎯 [useAnnotationInteraction] Drag start:', annotationId);
 
         if (!selectedAnnotationIds.includes(annotationId)) {
             selectAnnotation(annotationId);
@@ -81,8 +80,24 @@ export const useAnnotationInteraction = ({ scale, activeTool }: UseAnnotationInt
         });
     }, [activeTool, selectedAnnotationIds, selectAnnotation]);
 
+    // Direct drag start function for components like ImageAnnotation
+    const startDrag = useCallback((annotation: Annotation, startPos: { x: number; y: number }) => {
+        if (activeTool !== 'select') return;
+
+        if (!selectedAnnotationIds.includes(annotation.id)) {
+            selectAnnotation(annotation.id);
+        }
+
+        setDragState({
+            isDragging: true,
+            startPoint: startPos,
+            annotationId: annotation.id,
+        });
+    }, [activeTool, selectedAnnotationIds, selectAnnotation]);
+
     return {
         handlePointerDown,
+        startDrag,
         isDragging: dragState.isDragging,
         draggedAnnotationId: dragState.annotationId,
     };

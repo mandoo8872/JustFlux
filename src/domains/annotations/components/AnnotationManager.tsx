@@ -33,7 +33,7 @@ export function AnnotationManager({
   const layerRef = useRef<HTMLDivElement>(null);
 
   // Hook manages drag state and pointer down events
-  const { handlePointerDown, draggedAnnotationId } = useAnnotationInteraction({
+  const { handlePointerDown, startDrag, draggedAnnotationId } = useAnnotationInteraction({
     scale,
     activeTool
   });
@@ -204,10 +204,11 @@ export function AnnotationManager({
             scale={scale}
             isSelected={selectedAnnotationIds.includes(annotation.id)}
             isDragging={draggedAnnotationId === annotation.id}
-            onSelect={() => { }} // Selection logic is handled inside hook via onPointerDown
+            onSelect={() => { }}
             onUpdate={onUpdate}
             onDelete={onDelete}
             onPointerDown={handlePointerDown}
+            onDragStart={startDrag}
           />
         </React.Fragment>
       ))}

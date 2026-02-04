@@ -103,8 +103,13 @@ export class ClipboardService {
                 width: finalWidth,
                 height: finalHeight
             },
-            imageUrl,
-            style: {},
+            imageData: imageUrl,
+            originalWidth: width,
+            originalHeight: height,
+            style: {
+                opacity: 1,
+                lockAspectRatio: true
+            },
             createdAt: now,
             modifiedAt: now
         };
@@ -127,6 +132,11 @@ export class ClipboardService {
 
         // 텍스트 주석 생성
         const now = Date.now();
+        const { pages } = usePageStore.getState();
+        const currentPage = pages.find(p => p.id === currentPageId);
+        const boxWidth = currentPage ? currentPage.width / 3 : 300;
+        const boxHeight = currentPage ? currentPage.height / 3 : 100;
+
         const annotation = {
             id: `ann-${now}-${Math.random().toString(36).slice(2, 9)}`,
             type: 'text' as const,
@@ -134,14 +144,21 @@ export class ClipboardService {
             bbox: {
                 x: 50,
                 y: 50,
-                width: 300,
-                height: 100
+                width: boxWidth,
+                height: boxHeight
             },
-            text: text,
+            content: text.trim(),
             style: {
-                fontSize: 14,
+                fontSize: 11,
+                fontFamily: 'sans-serif',
+                fontWeight: 'normal',
+                fontStyle: 'normal',
+                textAlign: 'left',
+                verticalAlign: 'top',
                 color: '#000000',
-                backgroundColor: '#ffffd4' // 연한 노란색 배경
+                backgroundColor: '#FFFFFF',
+                borderColor: 'transparent',
+                opacity: 1
             },
             createdAt: now,
             modifiedAt: now

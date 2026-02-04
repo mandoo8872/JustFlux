@@ -49,7 +49,8 @@ export function ObjectPropertyPanel({
 
     const isTextAnnotation = selectedAnnotation.type === 'text';
     const isImageAnnotation = selectedAnnotation.type === 'image';
-    const isShapeAnnotation = ['rectangle', 'ellipse', 'arrow', 'star', 'heart', 'lightning', 'freehand'].includes(selectedAnnotation.type);
+    const isShapeAnnotation = ['rectangle', 'roundedRect', 'ellipse', 'arrow', 'star', 'heart', 'lightning', 'freehand'].includes(selectedAnnotation.type);
+    const isClosedShape = ['rectangle', 'roundedRect', 'ellipse'].includes(selectedAnnotation.type);
 
     const style = selectedAnnotation.style || {};
     const bbox = selectedAnnotation.bbox;
@@ -57,11 +58,12 @@ export function ObjectPropertyPanel({
     // Handlers
     const handleColorChange = (color: string) => {
         if (activeColorTab === 'text') {
-            onUpdate({ style: { ...style, fill: color } });
+            onUpdate({ style: { ...style, color: color } });
         } else if (activeColorTab === 'background') {
-            onUpdate({ style: { ...style, fill: color } } as any);
+            onUpdate({ style: { ...style, backgroundColor: color } });
         } else {
-            onUpdate({ style: { ...style, stroke: color } });
+            // border
+            onUpdate({ style: { ...style, borderColor: color } });
         }
     };
 
@@ -76,37 +78,38 @@ export function ObjectPropertyPanel({
     // handleOpacityChange and handleSizeChange are commented out - will be used in future implementation
 
     const panelStyle: React.CSSProperties = {
-        backgroundColor: '#1E293B',
-        color: 'white',
-        borderRadius: '12px',
-        padding: '16px',
-        width: '280px',
+        backgroundColor: '#FFFFFF',
+        color: '#333333',
+        borderRadius: '8px',
+        padding: '12px',
+        width: '100%',
         fontSize: '13px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '16px',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+        gap: '12px',
+        border: '1px solid #E5E5E5',
     };
 
     const sectionStyle: React.CSSProperties = {
         display: 'flex',
         flexDirection: 'column',
-        gap: '8px',
+        gap: '6px',
     };
 
     const labelStyle: React.CSSProperties = {
-        fontSize: '12px',
-        color: '#94A3B8',
-        marginBottom: '4px',
+        fontSize: '11px',
+        color: '#666666',
+        fontWeight: 500,
+        marginBottom: '2px',
     };
 
     const inputStyle: React.CSSProperties = {
-        backgroundColor: '#334155',
-        border: '1px solid #475569',
-        borderRadius: '6px',
-        padding: '8px 12px',
-        color: 'white',
-        fontSize: '13px',
+        backgroundColor: '#F5F5F5',
+        border: '1px solid #D0D0D0',
+        borderRadius: '4px',
+        padding: '6px 10px',
+        color: '#333333',
+        fontSize: '12px',
         width: '100%',
         outline: 'none',
     };
@@ -115,23 +118,31 @@ export function ObjectPropertyPanel({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: '6px',
-        padding: '10px 16px',
-        borderRadius: '8px',
-        border: 'none',
+        gap: '4px',
+        padding: '6px 10px',
+        borderRadius: '6px',
+        border: '1px solid #D0D0D0',
         cursor: 'pointer',
         fontWeight: 500,
-        fontSize: '13px',
+        fontSize: '12px',
         flex: 1,
+        backgroundColor: '#FFFFFF',
+        color: '#333333',
     };
 
     const colorButtonStyle = (color: string, isActive: boolean): React.CSSProperties => ({
-        width: '28px',
-        height: '28px',
+        width: '24px',
+        height: '24px',
         borderRadius: '4px',
-        backgroundColor: color,
-        border: isActive ? '2px solid #3B82F6' : '1px solid #475569',
+        backgroundColor: color === 'transparent' ? 'transparent' : color,
+        backgroundImage: color === 'transparent'
+            ? 'linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%)'
+            : 'none',
+        backgroundSize: color === 'transparent' ? '8px 8px' : 'auto',
+        backgroundPosition: color === 'transparent' ? '0 0, 0 4px, 4px -4px, -4px 0px' : 'auto',
+        border: isActive ? '2px solid #3B82F6' : '1px solid #D0D0D0',
         cursor: 'pointer',
+        position: 'relative' as const,
     });
 
     return (
@@ -194,8 +205,8 @@ export function ObjectPropertyPanel({
                                     key={tab}
                                     style={{
                                         ...buttonStyle,
-                                        backgroundColor: activeColorTab === tab ? '#3B82F6' : '#334155',
-                                        color: 'white',
+                                        backgroundColor: activeColorTab === tab ? '#3B82F6' : '#E5E5E5',
+                                        color: activeColorTab === tab ? 'white' : '#333333',
                                         padding: '6px 12px',
                                     }}
                                     onClick={() => setActiveColorTab(tab)}
@@ -205,13 +216,39 @@ export function ObjectPropertyPanel({
                             ))}
                         </div>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '4px' }}>
-                            {COLORS.map((color) => (
+                            <button
+                                key="transparent"
+                                style={colorButtonStyle('transparent',
+                                    (activeColorTab === 'text' && (style.color === 'transparent' || !style.color)) ||
+                                    (activeColorTab === 'background' && (style.backgroundColor === 'transparent' || !style.backgroundColor)) ||
+                                    (activeColorTab === 'border' && (style.borderColor === 'transparent' || !style.borderColor))
+                                )}
+                                onClick={() => handleColorChange('transparent')}
+                                title="투명"
+                            />
+                            {COLORS.slice(0, 11).map((color) => (
                                 <button
                                     key={color}
-                                    style={colorButtonStyle(color, false)}
+                                    style={colorButtonStyle(color,
+                                        (activeColorTab === 'text' && style.color === color) ||
+                                        (activeColorTab === 'background' && style.backgroundColor === color) ||
+                                        (activeColorTab === 'border' && style.borderColor === color)
+                                    )}
                                     onClick={() => handleColorChange(color)}
                                 />
                             ))}
+                        </div>
+                        {/* Opacity Slider */}
+                        <div style={{ marginTop: '8px' }}>
+                            <div style={{ fontSize: '11px', color: '#666666', marginBottom: '4px' }}>투명도: {Math.round((style.opacity ?? 1) * 100)}%</div>
+                            <input
+                                type="range"
+                                min="0"
+                                max="100"
+                                value={Math.round((style.opacity ?? 1) * 100)}
+                                onChange={(e) => onUpdate({ style: { ...style, opacity: parseInt(e.target.value) / 100 } })}
+                                style={{ width: '100%' }}
+                            />
                         </div>
                     </div>
 
@@ -222,8 +259,8 @@ export function ObjectPropertyPanel({
                             <button
                                 style={{
                                     ...buttonStyle,
-                                    backgroundColor: style.fontWeight === 'bold' ? '#3B82F6' : '#334155',
-                                    color: 'white',
+                                    backgroundColor: style.fontWeight === 'bold' ? '#3B82F6' : '#E5E5E5',
+                                    color: style.fontWeight === 'bold' ? 'white' : '#333333',
                                     padding: '8px 16px',
                                 }}
                                 onClick={() => onUpdate({ style: { ...style, fontWeight: style.fontWeight === 'bold' ? 'normal' : 'bold' } })}
@@ -233,8 +270,8 @@ export function ObjectPropertyPanel({
                             <button
                                 style={{
                                     ...buttonStyle,
-                                    backgroundColor: style.fontStyle === 'italic' ? '#3B82F6' : '#334155',
-                                    color: 'white',
+                                    backgroundColor: style.fontStyle === 'italic' ? '#3B82F6' : '#E5E5E5',
+                                    color: style.fontStyle === 'italic' ? 'white' : '#333333',
                                     padding: '8px 16px',
                                 }}
                                 onClick={() => onUpdate({ style: { ...style, fontStyle: style.fontStyle === 'italic' ? 'normal' : 'italic' } })}
@@ -247,22 +284,88 @@ export function ObjectPropertyPanel({
                     {/* Text Alignment */}
                     <div style={sectionStyle}>
                         <label style={labelStyle}>텍스트 정렬</label>
+                        {/* Horizontal Alignment */}
                         <div style={{ marginBottom: '8px' }}>
-                            <div style={{ fontSize: '11px', color: '#64748B', marginBottom: '4px' }}>가로</div>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <CaretLeft size={16} color="#64748B" />
-                                <input
-                                    type="range"
-                                    min="0"
-                                    max="2"
-                                    value={style.textAlign === 'left' ? 0 : style.textAlign === 'right' ? 2 : 1}
-                                    onChange={(e) => {
-                                        const align = ['left', 'center', 'right'][parseInt(e.target.value)];
-                                        onUpdate({ style: { ...style, textAlign: align as any } });
+                            <div style={{ fontSize: '11px', color: '#666666', marginBottom: '4px' }}>가로</div>
+                            <div style={{ display: 'flex', gap: '4px' }}>
+                                <button
+                                    style={{
+                                        ...buttonStyle,
+                                        flex: 1,
+                                        backgroundColor: style.textAlign === 'left' ? '#3B82F6' : '#E5E5E5',
+                                        color: style.textAlign === 'left' ? 'white' : '#333333',
+                                        padding: '6px',
                                     }}
-                                    style={{ flex: 1, margin: '0 8px' }}
-                                />
-                                <CaretRight size={16} color="#64748B" />
+                                    onClick={() => onUpdate({ style: { ...style, textAlign: 'left' } })}
+                                >
+                                    <CaretLeft size={14} />
+                                </button>
+                                <button
+                                    style={{
+                                        ...buttonStyle,
+                                        flex: 1,
+                                        backgroundColor: style.textAlign === 'center' ? '#3B82F6' : '#E5E5E5',
+                                        color: style.textAlign === 'center' ? 'white' : '#333333',
+                                        padding: '6px',
+                                    }}
+                                    onClick={() => onUpdate({ style: { ...style, textAlign: 'center' } })}
+                                >
+                                    ━
+                                </button>
+                                <button
+                                    style={{
+                                        ...buttonStyle,
+                                        flex: 1,
+                                        backgroundColor: style.textAlign === 'right' ? '#3B82F6' : '#E5E5E5',
+                                        color: style.textAlign === 'right' ? 'white' : '#333333',
+                                        padding: '6px',
+                                    }}
+                                    onClick={() => onUpdate({ style: { ...style, textAlign: 'right' } })}
+                                >
+                                    <CaretRight size={14} />
+                                </button>
+                            </div>
+                        </div>
+                        {/* Vertical Alignment */}
+                        <div>
+                            <div style={{ fontSize: '11px', color: '#666666', marginBottom: '4px' }}>세로</div>
+                            <div style={{ display: 'flex', gap: '4px' }}>
+                                <button
+                                    style={{
+                                        ...buttonStyle,
+                                        flex: 1,
+                                        backgroundColor: style.verticalAlign === 'top' ? '#3B82F6' : '#E5E5E5',
+                                        color: style.verticalAlign === 'top' ? 'white' : '#333333',
+                                        padding: '6px',
+                                    }}
+                                    onClick={() => onUpdate({ style: { ...style, verticalAlign: 'top' } })}
+                                >
+                                    <CaretUp size={14} />
+                                </button>
+                                <button
+                                    style={{
+                                        ...buttonStyle,
+                                        flex: 1,
+                                        backgroundColor: style.verticalAlign === 'middle' || !style.verticalAlign ? '#3B82F6' : '#E5E5E5',
+                                        color: style.verticalAlign === 'middle' || !style.verticalAlign ? 'white' : '#333333',
+                                        padding: '6px',
+                                    }}
+                                    onClick={() => onUpdate({ style: { ...style, verticalAlign: 'middle' } })}
+                                >
+                                    ‖
+                                </button>
+                                <button
+                                    style={{
+                                        ...buttonStyle,
+                                        flex: 1,
+                                        backgroundColor: style.verticalAlign === 'bottom' ? '#3B82F6' : '#E5E5E5',
+                                        color: style.verticalAlign === 'bottom' ? 'white' : '#333333',
+                                        padding: '6px',
+                                    }}
+                                    onClick={() => onUpdate({ style: { ...style, verticalAlign: 'bottom' } })}
+                                >
+                                    <CaretDown size={14} />
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -272,19 +375,34 @@ export function ObjectPropertyPanel({
             {/* Image-specific controls */}
             {isImageAnnotation && (
                 <>
-                    {/* Aspect Ratio Lock */}
+                    {/* Aspect Ratio Lock - 기본값 checked */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <input type="checkbox" id="aspectLock" defaultChecked />
+                        <input
+                            type="checkbox"
+                            id="aspectLock"
+                            checked={style.lockAspectRatio !== false}
+                            onChange={(e) => onUpdate({ style: { ...style, lockAspectRatio: e.target.checked } })}
+                        />
                         <label htmlFor="aspectLock" style={{ fontSize: '13px' }}>비율 유지</label>
                     </div>
 
-                    {/* Opacity */}
+                    {/* Opacity Slider - 투명도 (0% = 완전 불투명, 100% = 완전 투명) */}
                     <div style={sectionStyle}>
-                        <label style={labelStyle}>불투명도</label>
+                        <label style={labelStyle}>투명도</label>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <CaretDown size={14} />
-                            <span style={{ flex: 1, textAlign: 'center' }}>{Math.round((style.opacity || 1) * 100)}%</span>
-                            <CaretUp size={14} />
+                            <input
+                                type="range"
+                                min="0"
+                                max="100"
+                                value={Math.round((1 - (style.opacity ?? 1)) * 100)}
+                                onChange={(e) => {
+                                    const transparency = parseInt(e.target.value);
+                                    const opacity = 1 - (transparency / 100);
+                                    onUpdate({ style: { ...style, opacity } });
+                                }}
+                                style={{ flex: 1, cursor: 'pointer' }}
+                            />
+                            <span style={{ minWidth: '40px', textAlign: 'right' }}>{Math.round((1 - (style.opacity ?? 1)) * 100)}%</span>
                         </div>
                     </div>
 
@@ -320,7 +438,13 @@ export function ObjectPropertyPanel({
                     <div style={sectionStyle}>
                         <label style={labelStyle}>선 색상</label>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '4px' }}>
-                            {COLORS.map((color) => (
+                            <button
+                                key="transparent"
+                                style={colorButtonStyle('transparent', style.stroke === 'transparent' || !style.stroke)}
+                                onClick={() => onUpdate({ style: { ...style, stroke: 'transparent' } })}
+                                title="투명 (선 없음)"
+                            />
+                            {COLORS.slice(0, 11).map((color) => (
                                 <button
                                     key={color}
                                     style={colorButtonStyle(color, style.stroke === color)}
@@ -339,6 +463,48 @@ export function ObjectPropertyPanel({
                             <CaretUp size={14} style={{ cursor: 'pointer' }} onClick={() => handleStrokeWidthChange((style.strokeWidth || 2) + 1)} />
                         </div>
                     </div>
+
+                    {/* Fill Color - Only for closed shapes */}
+                    {isClosedShape && (
+                        <div style={sectionStyle}>
+                            <label style={labelStyle}>채우기 색상</label>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '4px' }}>
+                                <button
+                                    key="fill-transparent"
+                                    style={colorButtonStyle('transparent', !style.fill || style.fill === 'transparent')}
+                                    onClick={() => onUpdate({ style: { ...style, fill: 'transparent' } })}
+                                    title="투명"
+                                />
+                                {COLORS.slice(0, 11).map((color) => (
+                                    <button
+                                        key={color}
+                                        style={colorButtonStyle(color, style.fill === color)}
+                                        onClick={() => onUpdate({ style: { ...style, fill: color } })}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Opacity - Only for closed shapes */}
+                    {isClosedShape && (
+                        <div style={sectionStyle}>
+                            <label style={labelStyle}>채우기 투명도</label>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max="100"
+                                    value={Math.round((style.opacity ?? 1) * 100)}
+                                    onChange={(e) => onUpdate({ style: { ...style, opacity: parseInt(e.target.value) / 100 } })}
+                                    style={{ flex: 1 }}
+                                />
+                                <span style={{ minWidth: '40px', textAlign: 'right', fontSize: '12px' }}>
+                                    {Math.round((style.opacity ?? 1) * 100)}%
+                                </span>
+                            </div>
+                        </div>
+                    )}
                 </>
             )}
 

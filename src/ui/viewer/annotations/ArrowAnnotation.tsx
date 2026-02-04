@@ -128,7 +128,6 @@ export function ArrowAnnotationComponent({
         width: '100%',
         height: '100%',
         pointerEvents: 'none', // Allow clicking through empty space
-        zIndex: isSelected ? 50 : 20,
       }}
     >
       <svg

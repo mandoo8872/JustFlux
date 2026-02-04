@@ -5,6 +5,7 @@
 
 import { useCallback, useEffect, useRef } from 'react';
 import { PageViewer } from './PageViewer';
+import { useAnnotationStore } from '../../state/stores/AnnotationStore';
 import type { Document as JFDocument, Page, Annotation, SelectionState } from '../../core/model/types';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 
@@ -85,7 +86,7 @@ export function MainContent({
     if (e.ctrlKey || e.metaKey) {
       e.preventDefault();
       e.stopPropagation();
-      
+
       // 줌 변경
       const zoomDelta = e.deltaY > 0 ? -0.1 : 0.1;
       const newZoom = Math.max(0.1, Math.min(5.0, view.zoom + zoomDelta));
@@ -113,13 +114,13 @@ export function MainContent({
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
-        
+
         // 앱 내부 줌 변경 (ref를 사용하여 최신 값 사용)
         const zoomDelta = e.deltaY > 0 ? -0.1 : 0.1;
         const currentZoom = zoomRef.current;
         const newZoom = Math.max(0.1, Math.min(5.0, currentZoom + zoomDelta));
         onZoomChange(newZoom);
-        
+
         return false;
       }
     };
@@ -149,10 +150,10 @@ export function MainContent({
         console.warn('Failed to register wheel listeners:', error);
       }
     }, 0);
-    
+
     return () => {
       clearTimeout(timeoutId);
-      
+
       if (!listenersRegistered) {
         return;
       }
@@ -212,7 +213,7 @@ export function MainContent({
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
-        
+
         if (isPinching && initialDistance > 0) {
           const touch1 = e.touches[0];
           const touch2 = e.touches[1];
@@ -220,7 +221,7 @@ export function MainContent({
             touch2.clientX - touch1.clientX,
             touch2.clientY - touch1.clientY
           );
-          
+
           const scale = currentDistance / initialDistance;
           const newZoom = Math.max(0.1, Math.min(5.0, initialZoom * scale));
           onZoomChange(newZoom);
@@ -247,7 +248,7 @@ export function MainContent({
         window.addEventListener('touchmove', handleTouchMove, { passive: false, capture: true });
         window.addEventListener('touchend', handleTouchEnd, { passive: false, capture: true });
         window.addEventListener('touchcancel', handleTouchEnd, { passive: false, capture: true });
-        
+
         try {
           const doc = globalThis.document;
           if (doc) {
@@ -259,7 +260,7 @@ export function MainContent({
         } catch (e) {
           // document가 없는 환경에서는 무시
         }
-        
+
         const container = containerRef.current;
         if (container && typeof container.addEventListener === 'function') {
           container.addEventListener('touchstart', handleTouchStart, { passive: false });
@@ -273,10 +274,10 @@ export function MainContent({
         console.warn('Failed to register touch listeners:', error);
       }
     }, 0);
-    
+
     return () => {
       clearTimeout(timeoutId);
-      
+
       if (!listenersRegistered) {
         return;
       }
@@ -286,7 +287,7 @@ export function MainContent({
         window.removeEventListener('touchmove', handleTouchMove, { capture: true });
         window.removeEventListener('touchend', handleTouchEnd, { capture: true });
         window.removeEventListener('touchcancel', handleTouchEnd, { capture: true });
-        
+
         try {
           const doc = globalThis.document;
           if (doc) {
@@ -298,7 +299,7 @@ export function MainContent({
         } catch (e) {
           // document가 없는 환경에서는 무시
         }
-        
+
         const container = containerRef.current;
         if (container && typeof container.removeEventListener === 'function') {
           container.removeEventListener('touchstart', handleTouchStart);
@@ -312,8 +313,10 @@ export function MainContent({
     };
   }, [view.zoom, onZoomChange]);
 
+  const { clearSelection } = useAnnotationStore();
+
   return (
-    <div 
+    <div
       ref={containerRef}
       style={{
         position: 'fixed',
@@ -331,6 +334,12 @@ export function MainContent({
       onDrop={handleDrop}
       onDragOver={handleDragOver}
       onWheel={handleWheel}
+      onClick={(e) => {
+        // Clear selection when clicking on empty background area
+        if (e.target === e.currentTarget) {
+          clearSelection();
+        }
+      }}
     >
       {/* Page Viewer Container */}
       <div style={{

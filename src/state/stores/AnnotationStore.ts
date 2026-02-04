@@ -96,6 +96,22 @@ interface AnnotationStore {
 
   /** 주석들 선택 */
   selectAnnotations: (annotationIds: string[]) => void;
+
+  // ============================================
+  // Layer Ordering
+  // ============================================
+
+  /** 맨 앞으로 보내기 */
+  bringToFront: (id: string) => void;
+
+  /** 맨 뒤로 보내기 */
+  sendToBack: (id: string) => void;
+
+  /** 앞으로 한 칸 */
+  bringForward: (id: string) => void;
+
+  /** 뒤로 한 칸 */
+  sendBackward: (id: string) => void;
 }
 
 export const useAnnotationStore = create<AnnotationStore>()(
@@ -316,6 +332,54 @@ export const useAnnotationStore = create<AnnotationStore>()(
     selectAnnotations: (annotationIds: string[]) => {
       set((state) => {
         state.selection.selectedAnnotationIds = annotationIds;
+      });
+    },
+
+    // ============================================
+    // Layer Ordering
+    // ============================================
+
+    bringToFront: (id: string) => {
+      set((state) => {
+        const index = state.annotations.findIndex(a => a.id === id);
+        if (index !== -1 && index < state.annotations.length - 1) {
+          const [annotation] = state.annotations.splice(index, 1);
+          state.annotations.push(annotation);
+        }
+      });
+    },
+
+    sendToBack: (id: string) => {
+      set((state) => {
+        const index = state.annotations.findIndex(a => a.id === id);
+        if (index > 0) {
+          const [annotation] = state.annotations.splice(index, 1);
+          state.annotations.unshift(annotation);
+        }
+      });
+    },
+
+    bringForward: (id: string) => {
+      set((state) => {
+        const index = state.annotations.findIndex(a => a.id === id);
+        if (index !== -1 && index < state.annotations.length - 1) {
+          // Swap with next
+          const temp = state.annotations[index];
+          state.annotations[index] = state.annotations[index + 1];
+          state.annotations[index + 1] = temp;
+        }
+      });
+    },
+
+    sendBackward: (id: string) => {
+      set((state) => {
+        const index = state.annotations.findIndex(a => a.id === id);
+        if (index > 0) {
+          // Swap with previous
+          const temp = state.annotations[index];
+          state.annotations[index] = state.annotations[index - 1];
+          state.annotations[index - 1] = temp;
+        }
       });
     },
   }))

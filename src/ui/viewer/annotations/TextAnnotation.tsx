@@ -16,6 +16,7 @@ interface TextAnnotationProps {
   onDelete: () => void;
   onHover: () => void;
   onHoverEnd: () => void;
+  onPointerDown?: (e: React.PointerEvent) => void;
   onDragStart?: (annotation: TextAnnotationType, startPos: { x: number; y: number }) => void;
   isDragging?: boolean;
 }
@@ -29,8 +30,7 @@ export function TextAnnotationComponent({
   onUpdate,
   onHover,
   onHoverEnd,
-  onDragStart,
-  isDragging = false,
+  onPointerDown,
 }: TextAnnotationProps) {
   const [isEditing, setIsEditing] = useState(false);
   const textRef = useRef<HTMLTextAreaElement>(null);
@@ -84,41 +84,18 @@ export function TextAnnotationComponent({
     }
   };
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    console.log('📝 [TextAnnotation] Mouse down, isEditing:', isEditing, 'isDragging:', isDragging);
+  const handleResize = (dWidth: number, dHeight: number, dX: number, dY: number) => {
+    const dW_scaled = dWidth / scale;
+    const dH_scaled = dHeight / scale;
+    const dX_scaled = dX / scale;
+    const dY_scaled = dY / scale;
 
-    // Always stop propagation to prevent AnnotationLayer from handling this event
-    e.stopPropagation();
-    e.preventDefault();
-    e.nativeEvent.stopImmediatePropagation();
-
-    if (isEditing) {
-      // If editing, don't handle selection or dragging
-      return;
-    }
-
-    // If already dragging, don't handle new events
-    if (isDragging) {
-      return;
-    }
-
-    // Select the annotation immediately
-    console.log('📝 [TextAnnotation] Selecting annotation:', annotation.id);
-    onSelect();
-
-    // Start dragging using AnnotationLayer's drag system
-    if (onDragStart) {
-      console.log('📝 [TextAnnotation] Starting drag for annotation:', annotation.id);
-      onDragStart(annotation, { x: e.clientX, y: e.clientY });
-    }
-  };
-
-  const handleResize = (newWidth: number, newHeight: number) => {
     onUpdate({
       bbox: {
-        ...bbox,
-        width: newWidth / scale,
-        height: newHeight / scale,
+        x: bbox.x + dX_scaled,
+        y: bbox.y + dY_scaled,
+        width: Math.max(20 / scale, bbox.width + dW_scaled),
+        height: Math.max(20 / scale, bbox.height + dH_scaled),
       },
     });
   };
@@ -132,50 +109,34 @@ export function TextAnnotationComponent({
         width: scaledBBox.width,
         height: scaledBBox.height,
         cursor: isEditing ? 'text' : 'grab',
-        zIndex: isSelected ? 50 : 20,
+        pointerEvents: 'auto',
       }}
-      onMouseDown={handleMouseDown}
-      onMouseDownCapture={(e) => {
-        console.log('📝 [TextAnnotation] Mouse down capture, stopping propagation');
+      onPointerDown={onPointerDown}
+      onClick={(e) => {
         e.stopPropagation();
-        e.preventDefault();
-        e.nativeEvent.stopImmediatePropagation();
-        return false; // Additional event blocking
-      }}
-      onMouseUpCapture={(e) => {
-        console.log('📝 [TextAnnotation] Mouse up capture, stopping propagation');
-        e.stopPropagation();
-        e.preventDefault();
-        e.nativeEvent.stopImmediatePropagation();
-        return false; // Additional event blocking
-      }}
-      onMouseMoveCapture={(e) => {
-        // Block mouse move events during interaction
-        if (isDragging) {
-          e.stopPropagation();
-          e.preventDefault();
-          e.nativeEvent.stopImmediatePropagation();
-          return false;
+        if (!isEditing) {
+          onSelect();
         }
-      }}
-      onClickCapture={(e) => {
-        console.log('📝 [TextAnnotation] Click capture, stopping propagation');
-        e.stopPropagation();
-        e.preventDefault();
-        e.nativeEvent.stopImmediatePropagation();
-        return false;
       }}
       onDoubleClick={handleDoubleClick}
       onMouseEnter={onHover}
       onMouseLeave={onHoverEnd}
     >
+      {/* Transparent hit area for reliable selection */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundColor: 'transparent',
+          pointerEvents: 'auto',
+        }}
+      />
       {/* Background */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
-          backgroundColor: 'rgba(255, 255, 255, 0.9)',
-          backdropFilter: 'blur(4px)',
+          backgroundColor: annotation.style.backgroundColor || 'rgba(255, 255, 255, 0.9)',
           borderRadius: '4px',
           boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
           transition: 'all 0.15s ease-in-out',
@@ -183,7 +144,9 @@ export function TextAnnotationComponent({
             ? '2px solid #3B82F6'
             : isHovered
               ? '2px solid #93C5FD'
-              : '1px solid transparent',
+              : annotation.style.borderColor
+                ? `1px solid ${annotation.style.borderColor}`
+                : '1px solid transparent',
         }}
       />
 
@@ -224,7 +187,8 @@ export function TextAnnotationComponent({
             fontFamily: annotation.style.fontFamily,
             fontSize: annotation.style.fontSize * scale,
             fontWeight: annotation.style.fontWeight,
-            color: annotation.style.stroke,
+            fontStyle: annotation.style.fontStyle || 'normal',
+            color: annotation.style.color || '#000000',
             textAlign: annotation.style.textAlign,
           }}
         />
@@ -235,10 +199,16 @@ export function TextAnnotationComponent({
             inset: 0,
             padding: '8px',
             overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: annotation.style.verticalAlign === 'top' ? 'flex-start'
+              : annotation.style.verticalAlign === 'bottom' ? 'flex-end' : 'center',
             fontFamily: annotation.style.fontFamily,
             fontSize: annotation.style.fontSize * scale,
             fontWeight: annotation.style.fontWeight,
-            color: annotation.style.stroke,
+            fontStyle: annotation.style.fontStyle || 'normal',
+            color: annotation.style.color || '#000000',
+            opacity: annotation.style.opacity ?? 1,
             textAlign: annotation.style.textAlign,
             whiteSpace: 'pre-wrap',
             wordBreak: 'break-word',

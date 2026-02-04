@@ -218,6 +218,7 @@ export type ToolType =
   | 'text'
   | 'highlight'
   | 'rectangle' // 'rect'에서 'rectangle'으로 변경
+  | 'roundedRect' // 둥근 사각형
   | 'ellipse'
   | 'arrow'
   | 'line' // 직선 도구 추가

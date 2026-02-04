@@ -95,7 +95,6 @@ export function FreehandAnnotationComponent({
                 width: '100%',
                 height: '100%',
                 overflow: 'visible',
-                zIndex: isSelected ? 50 : 20,
                 // SVG container has pointer-events:none, but child elements can override
                 pointerEvents: 'none',
             }}

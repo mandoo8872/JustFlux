@@ -19,6 +19,7 @@ import {
   MagnifyingGlass,
   Crop,
   Copy,
+  BoundingBox,
 } from 'phosphor-react';
 import type { ToolType } from '../../core/model/types';
 
@@ -95,6 +96,15 @@ const toolGroups: ToolGroup[] = [
         description: '사각형 그리기',
         gradient: { from: 'rgb(239, 68, 68)', to: 'rgb(220, 38, 38)' },
         shadowColor: 'rgba(239, 68, 68, 0.4)'
+      },
+      {
+        id: 'roundedRect',
+        icon: BoundingBox,
+        label: '둥근 사각형',
+        shortcut: 'U',
+        description: '둥근 사각형 그리기',
+        gradient: { from: 'rgb(249, 115, 22)', to: 'rgb(234, 88, 12)' },
+        shadowColor: 'rgba(249, 115, 22, 0.4)'
       },
       {
         id: 'ellipse',
@@ -222,8 +232,9 @@ export function AnnotationToolbox({ activeTool, onToolChange }: AnnotationToolbo
     toolGroups[0].tools[2], // text
     toolGroups[0].tools[3], // highlight
     toolGroups[1].tools[0], // rectangle
-    toolGroups[1].tools[1], // ellipse
-    toolGroups[1].tools[2], // arrow
+    toolGroups[1].tools[1], // roundedRect
+    toolGroups[1].tools[2], // ellipse
+    toolGroups[1].tools[3], // arrow
     toolGroups[2].tools[3], // brush (pen)
   ];
 

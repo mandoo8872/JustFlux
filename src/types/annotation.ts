@@ -34,7 +34,14 @@ export interface AnnotationStyle {
   fontWeight?: string;
   fontStyle?: string;
   textAlign?: 'left' | 'center' | 'right';
+  verticalAlign?: 'top' | 'middle' | 'bottom';
   textDecoration?: string;
+  // Text-specific colors
+  color?: string;
+  backgroundColor?: string;
+  borderColor?: string;
+  // Image-specific
+  lockAspectRatio?: boolean;
 }
 
 // ============================================
@@ -76,6 +83,16 @@ export interface EllipseAnnotation extends BaseAnnotation {
 export interface RectangleAnnotation extends BaseAnnotation {
   type: 'rectangle';
   cornerRadius?: number;
+  style: AnnotationStyle & {
+    fill: string;
+    stroke: string;
+    strokeWidth: number;
+  };
+}
+
+export interface RoundedRectAnnotation extends BaseAnnotation {
+  type: 'roundedRect';
+  cornerRadius: number;
   style: AnnotationStyle & {
     fill: string;
     stroke: string;
@@ -140,6 +157,16 @@ export interface FreehandAnnotation extends BaseAnnotation {
   style: AnnotationStyle & {
     stroke: string;
     strokeWidth: number;
+  };
+}
+
+export interface HighlighterAnnotation extends BaseAnnotation {
+  type: 'highlighter';
+  points: Point[];
+  style: AnnotationStyle & {
+    stroke: string;
+    strokeWidth: number;
+    opacity: number;
   };
 }
 
@@ -219,12 +246,14 @@ export type Annotation =
   | HighlightAnnotation
   | EllipseAnnotation
   | RectangleAnnotation
+  | RoundedRectAnnotation
   | ArrowAnnotation
   | LineAnnotation
   | StarAnnotation
   | HeartAnnotation
   | LightningAnnotation
   | FreehandAnnotation
+  | HighlighterAnnotation
   | ImageAnnotation
   | StampAnnotation
   | OCRAnnotation
@@ -256,6 +285,10 @@ export function isShapeAnnotation(annotation: Annotation): annotation is
 
 export function isFreehandAnnotation(annotation: Annotation): annotation is FreehandAnnotation {
   return annotation.type === 'freehand';
+}
+
+export function isHighlighterAnnotation(annotation: Annotation): annotation is HighlighterAnnotation {
+  return annotation.type === 'highlighter';
 }
 
 export function isImageAnnotation(annotation: Annotation): annotation is ImageAnnotation {

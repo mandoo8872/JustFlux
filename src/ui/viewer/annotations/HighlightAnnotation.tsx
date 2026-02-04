@@ -128,7 +128,6 @@ export function HighlightAnnotationComponent({
         backgroundColor: fillColor,
         opacity: opacity,
         cursor: isDragging ? 'grabbing' : 'grab',
-        zIndex: isSelected ? 50 : 15,
         borderRadius: '2px',
         transition: 'box-shadow 0.15s ease-in-out',
       }}

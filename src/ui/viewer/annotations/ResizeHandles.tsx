@@ -21,12 +21,16 @@ export function ResizeHandles({ width: _w, height: _h, onResize }: ResizeHandles
   // We store the last mouse position to calculate incremental movement
   const [lastMousePos, setLastMousePos] = useState<{ x: number; y: number } | null>(null);
 
+  // Store initial dimensions for aspect ratio calculation
+  const [initialSize, setInitialSize] = useState<{ width: number; height: number } | null>(null);
+
   const handleMouseDown = (e: React.PointerEvent, handle: HandlePosition) => {
     e.stopPropagation();
     e.preventDefault(); // Prevent text selection
     setIsResizing(true);
     setResizeHandle(handle);
     setLastMousePos({ x: e.clientX, y: e.clientY });
+    setInitialSize({ width: _w, height: _h }); // Store initial size for aspect ratio
   };
 
   useEffect(() => {
@@ -59,7 +63,30 @@ export function ResizeHandles({ width: _w, height: _h, onResize }: ResizeHandles
         dY = dy;
       }
 
-      // Shift key logic omitted for simplicity in this iteration to ensure basic resize works first
+      // Shift key: maintain aspect ratio
+      if (e.shiftKey && initialSize && initialSize.width > 0 && initialSize.height > 0) {
+        const aspectRatio = initialSize.width / initialSize.height;
+
+        // For corner handles, use the dominant axis
+        if (resizeHandle === 'nw' || resizeHandle === 'ne' || resizeHandle === 'sw' || resizeHandle === 'se') {
+          // Determine which delta is dominant
+          if (Math.abs(dWidth) >= Math.abs(dHeight * aspectRatio)) {
+            // Width is dominant
+            const newDHeight = dWidth / aspectRatio;
+            if (resizeHandle.includes('n')) {
+              dY = -newDHeight + dHeight; // Adjust position for north handles
+            }
+            dHeight = newDHeight;
+          } else {
+            // Height is dominant
+            const newDWidth = dHeight * aspectRatio;
+            if (resizeHandle.includes('w')) {
+              dX = -newDWidth + dWidth; // Adjust position for west handles
+            }
+            dWidth = newDWidth;
+          }
+        }
+      }
 
       if (dWidth !== 0 || dHeight !== 0 || dX !== 0 || dY !== 0) {
         onResize(dWidth, dHeight, dX, dY);
@@ -71,6 +98,7 @@ export function ResizeHandles({ width: _w, height: _h, onResize }: ResizeHandles
       setIsResizing(false);
       setResizeHandle(null);
       setLastMousePos(null);
+      setInitialSize(null);
     };
 
     window.addEventListener('pointermove', handleMouseMove);
@@ -80,7 +108,7 @@ export function ResizeHandles({ width: _w, height: _h, onResize }: ResizeHandles
       window.removeEventListener('pointermove', handleMouseMove);
       window.removeEventListener('pointerup', handleMouseUp);
     };
-  }, [isResizing, resizeHandle, lastMousePos, onResize]);
+  }, [isResizing, resizeHandle, lastMousePos, initialSize, onResize]);
 
   const handles: { position: HandlePosition; cursor: string; style: React.CSSProperties }[] = [
     { position: 'nw', cursor: 'nw-resize', style: { left: -4, top: -4 } },

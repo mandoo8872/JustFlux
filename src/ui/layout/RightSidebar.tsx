@@ -40,7 +40,7 @@ export function RightSidebar({
   onToggle: _onToggle,
 }: RightSidebarProps) {
   // Get selected annotation from store
-  const { selection, annotations, updateAnnotation, removeAnnotation } = useAnnotationStore();
+  const { selection, annotations, updateAnnotation, removeAnnotation, bringForward, sendBackward, bringToFront, sendToBack } = useAnnotationStore();
   const { currentPageId: _currentPageId } = usePageStore();
 
   // Find the selected annotation
@@ -76,19 +76,27 @@ export function RightSidebar({
   };
 
   const handleMoveUp = () => {
-    console.log('Move up:', selectedAnnotationId);
+    if (selectedAnnotationId) {
+      bringForward(selectedAnnotationId);
+    }
   };
 
   const handleMoveDown = () => {
-    console.log('Move down:', selectedAnnotationId);
+    if (selectedAnnotationId) {
+      sendBackward(selectedAnnotationId);
+    }
   };
 
   const handleMoveToTop = () => {
-    console.log('Move to top:', selectedAnnotationId);
+    if (selectedAnnotationId) {
+      bringToFront(selectedAnnotationId);
+    }
   };
 
   const handleMoveToBottom = () => {
-    console.log('Move to bottom:', selectedAnnotationId);
+    if (selectedAnnotationId) {
+      sendToBack(selectedAnnotationId);
+    }
   };
 
   return (
