@@ -226,7 +226,7 @@ export function AnnotationLayer({
       } as any;
       onCreate(annotation);
       setActiveTool?.('select');
-    } else if (activeTool === 'rectangle' || activeTool === 'ellipse') {
+    } else if (activeTool === 'rectangle' || activeTool === 'ellipse' || activeTool === 'roundedRect') {
       if (bbox.width < 10 || bbox.height < 10) {
         setIsDrawing(false);
         return;
@@ -237,6 +237,7 @@ export function AnnotationLayer({
         type: activeTool,
         pageId,
         bbox,
+        ...(activeTool === 'roundedRect' ? { cornerRadius: 20 } : {}),
         style: {
           stroke: '#000000',
           strokeWidth: 2,
@@ -395,13 +396,14 @@ export function AnnotationLayer({
           }}
         />
       );
-    } else if (activeTool === 'rectangle') {
+    } else if (activeTool === 'rectangle' || activeTool === 'roundedRect') {
       return (
         <div
           style={{
             ...commonStyle,
             border: '2px dashed #3B82F6',
             backgroundColor: 'transparent',
+            borderRadius: activeTool === 'roundedRect' ? '20px' : '0',
           }}
         />
       );
@@ -532,7 +534,7 @@ export function AnnotationLayer({
         }
 
         // For drawing tools (text, highlight, rect, ellipse, arrow, line, star, heart, lightning)
-        if (['text', 'highlight', 'rectangle', 'ellipse', 'arrow', 'star', 'heart', 'lightning', 'brush'].includes(activeTool)) {
+        if (['text', 'highlight', 'rectangle', 'roundedRect', 'ellipse', 'arrow', 'star', 'heart', 'lightning', 'brush'].includes(activeTool)) {
           console.log('🎨 [AnnotationLayer] Starting to draw with tool:', activeTool);
           e.preventDefault();
           const point = screenToPage(e.clientX, e.clientY);
