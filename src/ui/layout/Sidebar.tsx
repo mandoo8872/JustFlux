@@ -137,7 +137,7 @@ export function Sidebar({
       </div>
 
       {/* Thumbnail List */}
-      <div style={{ flex: 1, overflow: 'hidden' }}>
+      <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
         <ThumbnailSidebar
           pages={pages} // PageStore의 pages 사용
           allPages={pages}
