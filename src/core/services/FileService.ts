@@ -243,6 +243,154 @@ export class FileService {
   }
 
   /**
+   * PDF 파일을 기존 문서에 추가 (clearPages 없이)
+   * matchWidth=true이면 기존 페이지 폭에 맞춰 크기 조정
+   */
+  static async appendPdfFile(file: File, matchWidth: boolean): Promise<any> {
+    const { addPage, pages } = usePageStore.getState();
+
+    try {
+      // 기존 페이지의 폭 가져오기 (matchWidth 용)
+      const existingWidth = pages.length > 0 ? pages[pages.length - 1].width : null;
+      const existingDocId = pages.length > 0 ? pages[0].docId : 'new-doc';
+      const startIndex = pages.length;
+
+      // PDF.js로 직접 로딩 (PDFStore를 덮어쓰지 않기 위해)
+      const pdfjsLib = await import('pdfjs-dist');
+      const arrayBuffer = await file.arrayBuffer();
+      const pdfData = new Uint8Array(arrayBuffer);
+
+      const loadingTask = pdfjsLib.getDocument({
+        data: pdfData,
+        cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/cmaps/',
+        cMapPacked: true,
+      });
+
+      const pdfProxy = await loadingTask.promise;
+      const pageCount = pdfProxy.numPages;
+      console.log(`📄 [FileService] Appending PDF: ${file.name} (${pageCount} pages)`);
+
+      const { createPage } = await import('../model/factories');
+
+      for (let i = 0; i < pageCount; i++) {
+        let width = 595;
+        let height = 842;
+
+        try {
+          const pdfPage = await pdfProxy.getPage(i + 1);
+          const viewport = pdfPage.getViewport({ scale: 1.0 });
+          width = viewport.width;
+          height = viewport.height;
+        } catch (error) {
+          console.warn(`⚠️ [FileService] Failed to get page ${i + 1} dimensions:`, error);
+        }
+
+        // 폭 맞춤 적용
+        if (matchWidth && existingWidth && Math.abs(width - existingWidth) > 1) {
+          const ratio = existingWidth / width;
+          height = height * ratio;
+          width = existingWidth;
+        }
+
+        const page = createPage({
+          docId: existingDocId,
+          index: startIndex + i,
+          width,
+          height,
+          rotation: 0,
+          pdfRef: {
+            sourceIndex: i + 1,
+            appendedFrom: file.name, // 추가 출처 식별용
+          }
+        });
+
+        addPage(page);
+      }
+
+      // 추가된 첫 페이지로 이동
+      const { setCurrentPage } = usePageStore.getState();
+      const { pages: updatedPages } = usePageStore.getState();
+      const firstAppended = updatedPages[startIndex];
+      if (firstAppended) {
+        setCurrentPage(firstAppended.id);
+      }
+
+      console.log(`✅ [FileService] Appended ${pageCount} pages from ${file.name}`);
+
+      // pdfProxy를 반환하여 Shell에서 insertedPdfProxies에 저장할 수 있도록
+      return pdfProxy as any;
+
+    } catch (error) {
+      console.error('Failed to append PDF:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 이미지 파일을 기존 문서에 추가
+   * matchWidth=true이면 기존 페이지 폭에 맞춰 크기 조정
+   */
+  static async appendImageFile(file: File, matchWidth: boolean): Promise<void> {
+    const { addPage, pages } = usePageStore.getState();
+
+    try {
+      const existingWidth = pages.length > 0 ? pages[pages.length - 1].width : null;
+      const existingDocId = pages.length > 0 ? pages[0].docId : 'new-doc';
+      const startIndex = pages.length;
+
+      // 이미지를 Data URL로 읽기
+      const imageUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      // 이미지 크기 가져오기
+      let { width, height } = await new Promise<{ width: number; height: number }>((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve({ width: img.width, height: img.height });
+        img.onerror = reject;
+        img.src = imageUrl;
+      });
+
+      // 폭 맞춤 적용
+      if (matchWidth && existingWidth && Math.abs(width - existingWidth) > 1) {
+        const ratio = existingWidth / width;
+        height = height * ratio;
+        width = existingWidth;
+      }
+
+      const page = {
+        id: `page_${Date.now()}_${startIndex}`,
+        docId: existingDocId,
+        index: startIndex,
+        width,
+        height,
+        rotation: 0 as const,
+        layers: {
+          rasters: [],
+          annotations: []
+        },
+        imageUrl,
+        contentType: 'image' as const
+      };
+
+      addPage(page);
+
+      // 추가된 페이지로 이동
+      const { setCurrentPage } = usePageStore.getState();
+      setCurrentPage(page.id);
+
+      console.log(`🖼️ [FileService] Appended image: ${file.name} (${width}x${height})`);
+
+    } catch (error) {
+      console.error('Failed to append image:', error);
+      throw error;
+    }
+  }
+
+  /**
    * 파일 타입 검증
    */
   static validateFileType(file: File): boolean {

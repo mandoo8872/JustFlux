@@ -40,7 +40,7 @@ export function RightSidebar({
   onToggle: _onToggle,
 }: RightSidebarProps) {
   // Get selected annotation from store
-  const { selection, annotations, updateAnnotation, removeAnnotation, bringForward, sendBackward, bringToFront, sendToBack } = useAnnotationStore();
+  const { selection, annotations, updateAnnotation, removeAnnotation, cloneAnnotation, bringForward, sendBackward, bringToFront, sendToBack } = useAnnotationStore();
   const { currentPageId: _currentPageId } = usePageStore();
 
   // Find the selected annotation
@@ -71,8 +71,9 @@ export function RightSidebar({
   };
 
   const handleCopy = () => {
-    // TODO: Implement copy functionality
-    console.log('Copy annotation:', selectedAnnotationId);
+    if (selectedAnnotationId) {
+      cloneAnnotation(selectedAnnotationId);
+    }
   };
 
   const handleMoveUp = () => {

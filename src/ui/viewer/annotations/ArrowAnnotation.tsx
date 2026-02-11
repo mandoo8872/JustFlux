@@ -204,6 +204,7 @@ export function ArrowAnnotationComponent({
           stroke={stroke}
           strokeWidth={strokeWidth * scale}
           strokeLinecap="round"
+          strokeDasharray={style?.strokeDasharray ? style.strokeDasharray.split(' ').map(v => String(parseFloat(v) * scale)).join(' ') : undefined}
           style={{ pointerEvents: 'none' }}
         />
 

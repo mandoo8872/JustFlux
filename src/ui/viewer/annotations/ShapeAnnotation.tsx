@@ -157,6 +157,7 @@ export function ShapeAnnotationComponent({
             fillOpacity={annotation.style?.opacity ?? 1}
             stroke={annotation.style?.stroke || '#000000'}
             strokeWidth={strokeWidth}
+            strokeDasharray={annotation.style?.strokeDasharray ? annotation.style.strokeDasharray.split(' ').map(v => String(parseFloat(v) * scale)).join(' ') : undefined}
           />
         ) : (
           <rect
@@ -170,6 +171,7 @@ export function ShapeAnnotationComponent({
             fillOpacity={annotation.style?.opacity ?? 1}
             stroke={annotation.style?.stroke || '#000000'}
             strokeWidth={strokeWidth}
+            strokeDasharray={annotation.style?.strokeDasharray ? annotation.style.strokeDasharray.split(' ').map(v => String(parseFloat(v) * scale)).join(' ') : undefined}
           />
         )}
       </svg>

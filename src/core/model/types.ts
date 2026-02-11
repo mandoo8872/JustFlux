@@ -56,6 +56,8 @@ export interface Page {
 export interface PdfPageRef {
   /** Reference to original PDF in Document.source */
   sourceIndex: number; // page number in original PDF (1-based)
+  /** Source filename when appended from a different file */
+  appendedFrom?: string;
 }
 
 export interface ThumbnailRef {

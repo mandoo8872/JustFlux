@@ -27,6 +27,7 @@ export interface BBox {
 export interface AnnotationStyle {
   stroke?: string;
   strokeWidth?: number;
+  strokeDasharray?: string; // SVG dash pattern: '4 4', '12 4', '2 2', etc.
   fill?: string;
   opacity?: number;
   fontSize?: number;
@@ -39,7 +40,9 @@ export interface AnnotationStyle {
   // Text-specific colors
   color?: string;
   backgroundColor?: string;
+  backgroundOpacity?: number; // 0-1, background transparency
   borderColor?: string;
+  borderWidth?: number; // border thickness in px
   // Image-specific
   lockAspectRatio?: boolean;
 }

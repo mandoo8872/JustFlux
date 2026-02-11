@@ -26,12 +26,12 @@ interface ThumbnailSidebarProps {
   insertedPdfProxies?: Map<string, PDFDocumentProxy>;
 }
 
-export function ThumbnailSidebar({ 
-  pages, 
+export function ThumbnailSidebar({
+  pages,
   allPages,
-  currentPageId, 
-  pdfProxy, 
-  onPageSelect, 
+  currentPageId,
+  pdfProxy,
+  onPageSelect,
   onReorder,
   onDuplicate,
   onDelete,
@@ -56,14 +56,14 @@ export function ThumbnailSidebar({
       const newThumbnails: Record<string, string> = {};
       // Calculate thumbnail width: sidebar width - padding (16px on each side) - container padding (24px total)
       const maxThumbnailWidth = Math.max(120, sidebarWidth - 40);
-      
+
       for (const page of pages) {
         try {
           // Calculate thumbnail dimensions based on page aspect ratio
           const pageAspectRatio = page.height / page.width;
           const thumbnailWidth = Math.min(maxThumbnailWidth, maxThumbnailWidth);
           const thumbnailHeight = thumbnailWidth * pageAspectRatio;
-          
+
           // Check if page has PDF reference (not a blank page)
           if (page.pdfRef && pdfProxy && !insertedPdfPages.has(page.id)) {
             try {
@@ -75,18 +75,18 @@ export function ThumbnailSidebar({
               const canvas = document.createElement('canvas');
               canvas.width = thumbnailWidth;
               canvas.height = thumbnailHeight;
-              
+
               const ctx = canvas.getContext('2d');
               if (ctx) {
                 // Draw white background
                 ctx.fillStyle = '#ffffff';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
-                
+
                 // Draw border
                 ctx.strokeStyle = '#e5e7eb';
                 ctx.lineWidth = 2;
                 ctx.strokeRect(1, 1, canvas.width - 2, canvas.height - 2);
-                
+
                 // Draw "PDF 페이지" text
                 ctx.fillStyle = '#9ca3af';
                 ctx.font = '14px sans-serif';
@@ -109,7 +109,7 @@ export function ThumbnailSidebar({
                 const canvas = document.createElement('canvas');
                 canvas.width = thumbnailWidth;
                 canvas.height = thumbnailHeight;
-                
+
                 const ctx = canvas.getContext('2d');
                 if (ctx) {
                   ctx.fillStyle = '#ffffff';
@@ -130,7 +130,7 @@ export function ThumbnailSidebar({
               const canvas = document.createElement('canvas');
               canvas.width = thumbnailWidth;
               canvas.height = thumbnailHeight;
-              
+
               const ctx = canvas.getContext('2d');
               if (ctx) {
                 ctx.fillStyle = '#ffffff';
@@ -151,18 +151,18 @@ export function ThumbnailSidebar({
             const canvas = document.createElement('canvas');
             canvas.width = thumbnailWidth;
             canvas.height = thumbnailHeight;
-            
+
             const ctx = canvas.getContext('2d');
             if (ctx) {
               // Draw white background
               ctx.fillStyle = '#ffffff';
               ctx.fillRect(0, 0, canvas.width, canvas.height);
-              
+
               // Draw border
               ctx.strokeStyle = '#e5e7eb';
               ctx.lineWidth = 2;
               ctx.strokeRect(1, 1, canvas.width - 2, canvas.height - 2);
-              
+
               // Draw "빈 페이지" text
               ctx.fillStyle = '#9ca3af';
               ctx.font = '14px sans-serif';
@@ -170,14 +170,14 @@ export function ThumbnailSidebar({
               ctx.textBaseline = 'middle';
               ctx.fillText('빈 페이지', canvas.width / 2, canvas.height / 2);
             }
-            
+
             newThumbnails[page.id] = canvas.toDataURL('image/png');
           }
         } catch (error) {
           console.error(`Failed to generate thumbnail for page ${page.index + 1}:`, error);
         }
       }
-      
+
       setThumbnails(newThumbnails);
     };
 
@@ -189,10 +189,10 @@ export function ThumbnailSidebar({
   // Auto-scroll when dragging near edges
   const startAutoScroll = useCallback((direction: 'up' | 'down') => {
     if (autoScrollIntervalRef.current) return;
-    
+
     autoScrollIntervalRef.current = window.setInterval(() => {
       if (!scrollContainerRef.current) return;
-      
+
       const scrollAmount = direction === 'up' ? -10 : 10;
       scrollContainerRef.current.scrollTop += scrollAmount;
     }, 50);
@@ -215,19 +215,19 @@ export function ThumbnailSidebar({
   const handleDragOver = (e: React.DragEvent, targetPageId: string) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
-    
+
     const targetIndex = pages.findIndex(p => p.id === targetPageId);
     setDropTargetIndex(targetIndex);
 
     // Auto-scroll logic
     if (!scrollContainerRef.current) return;
-    
+
     const container = scrollContainerRef.current;
     const rect = container.getBoundingClientRect();
     const mouseY = e.clientY - rect.top;
-    
+
     const SCROLL_THRESHOLD = 80;
-    
+
     if (mouseY < SCROLL_THRESHOLD) {
       startAutoScroll('up');
     } else if (mouseY > rect.height - SCROLL_THRESHOLD) {
@@ -244,7 +244,7 @@ export function ThumbnailSidebar({
   const handleDrop = (e: React.DragEvent, targetPageId: string) => {
     e.preventDefault();
     stopAutoScroll();
-    
+
     if (!draggedPageId || draggedPageId === targetPageId) {
       setDraggedPageId(null);
       setDropTargetIndex(null);
@@ -253,21 +253,21 @@ export function ThumbnailSidebar({
 
     const draggedIndex = pages.findIndex(p => p.id === draggedPageId);
     const targetIndex = pages.findIndex(p => p.id === targetPageId);
-    
+
     if (draggedIndex === -1 || targetIndex === -1) return;
 
     // Create new order with visible pages
     const visibleNewOrder = [...pages];
     const [draggedPage] = visibleNewOrder.splice(draggedIndex, 1);
     visibleNewOrder.splice(targetIndex, 0, draggedPage);
-    
+
     // Remove duplicates and use only the reordered IDs
     const visibleIds = visibleNewOrder.map(p => p.id);
-    
+
     // Merge: insert deleted pages at their relative positions
     const finalOrder: string[] = [];
     let visibleIdx = 0;
-    
+
     for (const page of allPages) {
       if (page.deleted) {
         finalOrder.push(page.id);
@@ -278,15 +278,15 @@ export function ThumbnailSidebar({
         }
       }
     }
-    
+
     // Add any remaining visible pages
     while (visibleIdx < visibleIds.length) {
       finalOrder.push(visibleIds[visibleIdx]);
       visibleIdx++;
     }
-    
+
     onReorder(finalOrder);
-    
+
     setDraggedPageId(null);
     setDropTargetIndex(null);
   };
@@ -332,10 +332,10 @@ export function ThumbnailSidebar({
         onAddPdfPages={onAddPdfPages}
         sidebarWidth={sidebarWidth}
       />
-      
+
       {/* 기존 렌더링 코드는 주석 처리 */}
       {false && (
-        <div 
+        <div
           ref={scrollContainerRef}
           style={{
             height: '100%',
@@ -345,7 +345,7 @@ export function ThumbnailSidebar({
           }}
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              {pages.map((page, index) => {
+            {pages.map((page, index) => {
               const isSelected = page.id === currentPageId;
               const isDragging = draggedPageId === page.id;
               const isDropTarget = dropTargetIndex === index;
@@ -384,11 +384,11 @@ export function ThumbnailSidebar({
                       overflow: 'hidden',
                       transition: 'all 0.2s ease-in-out',
                       border: isSelected ? '1px solid rgb(192, 132, 252)' : '1px solid rgb(229, 231, 235)',
-                      boxShadow: isSelected 
-                        ? '0 10px 15px -3px rgba(168, 85, 247, 0.3)' 
+                      boxShadow: isSelected
+                        ? '0 10px 15px -3px rgba(168, 85, 247, 0.3)'
                         : '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-                      background: isSelected 
-                        ? 'linear-gradient(to bottom right, rgb(250, 245, 255), rgb(239, 246, 255))' 
+                      background: isSelected
+                        ? 'linear-gradient(to bottom right, rgb(250, 245, 255), rgb(239, 246, 255))'
                         : 'white',
                       transform: isSelected ? 'scale(1.05)' : 'scale(1)',
                       cursor: isDragging ? 'grabbing' : 'grab',
@@ -462,8 +462,8 @@ export function ThumbnailSidebar({
                         paddingTop: '6px',
                         paddingBottom: '6px',
                         borderRadius: '9999px',
-                        background: isSelected 
-                          ? 'linear-gradient(to right, rgb(168, 85, 247), rgb(59, 130, 246))' 
+                        background: isSelected
+                          ? 'linear-gradient(to right, rgb(168, 85, 247), rgb(59, 130, 246))'
                           : 'rgb(243, 244, 246)',
                         color: isSelected ? 'white' : 'rgb(75, 85, 99)',
                         boxShadow: isSelected ? '0 1px 2px 0 rgba(0, 0, 0, 0.05)' : 'none'
@@ -475,8 +475,8 @@ export function ThumbnailSidebar({
                 </div>
               );
             })}
+          </div>
         </div>
-      </div>
       )}
 
       {/* Hidden file input for PDF insertion */}
@@ -502,6 +502,19 @@ export function ThumbnailSidebar({
             }
           }}
           onAddPdfPage={handleAddPdfPage}
+          onRotateRight={(pageId) => {
+            const page = pages.find(p => p.id === pageId);
+            if (page) {
+              // Rotation is handled by PageStore via ThumbnailItem
+              // This is a fallback for old-style context menu
+            }
+          }}
+          onRotateLeft={(pageId) => {
+            const page = pages.find(p => p.id === pageId);
+            if (page) {
+              // Rotation is handled by PageStore via ThumbnailItem
+            }
+          }}
           onClose={() => setContextMenu(null)}
         />
       )}

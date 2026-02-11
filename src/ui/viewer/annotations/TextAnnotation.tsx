@@ -137,30 +137,25 @@ export function TextAnnotationComponent({
           position: 'absolute',
           inset: 0,
           backgroundColor: annotation.style.backgroundColor || 'rgba(255, 255, 255, 0.9)',
+          opacity: annotation.style.backgroundOpacity ?? 1,
           borderRadius: '4px',
-          boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
           transition: 'all 0.15s ease-in-out',
           border: isSelected
             ? '2px solid #3B82F6'
-            : isHovered
-              ? '2px solid #93C5FD'
-              : annotation.style.borderColor
-                ? `1px solid ${annotation.style.borderColor}`
-                : '1px solid transparent',
+            : annotation.style.borderColor
+              ? `${annotation.style.borderWidth || 1}px solid ${annotation.style.borderColor}`
+              : `${annotation.style.borderWidth || 1}px solid #CCCCCC`,
         }}
       />
 
-      {/* Hover indicator */}
+      {/* Hover indicator - dashed like shapes */}
       {isHovered && !isSelected && (
         <div
           style={{
             position: 'absolute',
-            top: '-2px',
-            left: '-2px',
-            right: '-2px',
-            bottom: '-2px',
-            border: '2px solid #93C5FD',
-            borderRadius: '4px',
+            inset: '-3px',
+            border: '2px dashed #93C5FD',
+            borderRadius: '6px',
             pointerEvents: 'none',
             zIndex: 5,
           }}

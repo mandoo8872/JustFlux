@@ -14,6 +14,7 @@ interface MainContentProps {
   pages: Page[]; // PageStore의 pages 추가
   currentPage: Page | null;
   pdfProxy: PDFDocumentProxy | null;
+  insertedPdfProxies?: Map<string, PDFDocumentProxy>;
   view: {
     zoom: number;
     pan: { x: number; y: number };
@@ -40,6 +41,7 @@ export function MainContent({
   pages,
   currentPage,
   pdfProxy,
+  insertedPdfProxies,
   view,
   selection,
   sidebarWidth,
@@ -58,27 +60,7 @@ export function MainContent({
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // 드래그 앤 드롭 핸들러
-  const handleDrop = async (e: React.DragEvent) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files[0];
-    if (file) {
-      try {
-        const { FileService } = await import('../../core/services/FileService');
-        if (file.type === 'application/pdf') {
-          await FileService.loadPdfFile(file);
-        } else if (file.type.startsWith('image/')) {
-          await FileService.loadImageFile(file);
-        }
-      } catch (error) {
-        console.error('Failed to load file via drag and drop:', error);
-      }
-    }
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-  };
+  // MainContent의 D&D는 Shell에서 전역 처리하므로 제거
 
   // 휠 이벤트 핸들러 (Ctrl+휠 또는 핀치 줌 방지)
   const handleWheel = useCallback((e: React.WheelEvent) => {
@@ -331,8 +313,6 @@ export function MainContent({
         touchAction: 'pan-y pan-x', // 세로/가로 스크롤만 허용, 핀치 줌 차단
         WebkitTouchCallout: 'none'
       }}
-      onDrop={handleDrop}
-      onDragOver={handleDragOver}
       onWheel={handleWheel}
       onClick={(e) => {
         // Clear selection when clicking on empty background area
@@ -357,6 +337,7 @@ export function MainContent({
           pages={pages}
           currentPage={currentPage}
           pdfProxy={pdfProxy}
+          insertedPdfProxies={insertedPdfProxies}
           scale={view.zoom}
           pan={view.pan}
           activeTool={selection.activeTool}

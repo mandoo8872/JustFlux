@@ -182,14 +182,14 @@ export function ObjectPropertyPanel({
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <button
                                 style={{ ...inputStyle, width: '32px', padding: '6px', textAlign: 'center' }}
-                                onClick={() => handleFontSizeChange((style.fontSize || 16) - 2)}
+                                onClick={() => handleFontSizeChange((style.fontSize || 16) - 1)}
                             >
                                 <CaretDown size={14} />
                             </button>
                             <span style={{ flex: 1, textAlign: 'center' }}>{style.fontSize || 16}px</span>
                             <button
                                 style={{ ...inputStyle, width: '32px', padding: '6px', textAlign: 'center' }}
-                                onClick={() => handleFontSizeChange((style.fontSize || 16) + 2)}
+                                onClick={() => handleFontSizeChange((style.fontSize || 16) + 1)}
                             >
                                 <CaretUp size={14} />
                             </button>
@@ -238,18 +238,46 @@ export function ObjectPropertyPanel({
                                 />
                             ))}
                         </div>
-                        {/* Opacity Slider */}
-                        <div style={{ marginTop: '8px' }}>
-                            <div style={{ fontSize: '11px', color: '#666666', marginBottom: '4px' }}>투명도: {Math.round((style.opacity ?? 1) * 100)}%</div>
-                            <input
-                                type="range"
-                                min="0"
-                                max="100"
-                                value={Math.round((style.opacity ?? 1) * 100)}
-                                onChange={(e) => onUpdate({ style: { ...style, opacity: parseInt(e.target.value) / 100 } })}
-                                style={{ width: '100%' }}
-                            />
-                        </div>
+                        {/* Dynamic control based on active tab */}
+                        {activeColorTab === 'text' && (
+                            <div style={{ marginTop: '8px' }}>
+                                <div style={{ fontSize: '11px', color: '#666666', marginBottom: '4px' }}>텍스트 투명도: {Math.round((style.opacity ?? 1) * 100)}%</div>
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max="100"
+                                    value={Math.round((style.opacity ?? 1) * 100)}
+                                    onChange={(e) => onUpdate({ style: { ...style, opacity: parseInt(e.target.value) / 100 } })}
+                                    style={{ width: '100%' }}
+                                />
+                            </div>
+                        )}
+                        {activeColorTab === 'background' && (
+                            <div style={{ marginTop: '8px' }}>
+                                <div style={{ fontSize: '11px', color: '#666666', marginBottom: '4px' }}>배경 투명도: {Math.round((style.backgroundOpacity ?? 1) * 100)}%</div>
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max="100"
+                                    value={Math.round((style.backgroundOpacity ?? 1) * 100)}
+                                    onChange={(e) => onUpdate({ style: { ...style, backgroundOpacity: parseInt(e.target.value) / 100 } })}
+                                    style={{ width: '100%' }}
+                                />
+                            </div>
+                        )}
+                        {activeColorTab === 'border' && (
+                            <div style={{ marginTop: '8px' }}>
+                                <div style={{ fontSize: '11px', color: '#666666', marginBottom: '4px' }}>테두리 굵기: {style.borderWidth ?? 1}px</div>
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max="10"
+                                    value={style.borderWidth ?? 1}
+                                    onChange={(e) => onUpdate({ style: { ...style, borderWidth: parseInt(e.target.value) } })}
+                                    style={{ width: '100%' }}
+                                />
+                            </div>
+                        )}
                     </div>
 
                     {/* Text Style */}
@@ -461,6 +489,47 @@ export function ObjectPropertyPanel({
                             <CaretDown size={14} style={{ cursor: 'pointer' }} onClick={() => handleStrokeWidthChange(Math.max(1, (style.strokeWidth || 2) - 1))} />
                             <span style={{ flex: 1, textAlign: 'center' }}>{style.strokeWidth || 2}px</span>
                             <CaretUp size={14} style={{ cursor: 'pointer' }} onClick={() => handleStrokeWidthChange((style.strokeWidth || 2) + 1)} />
+                        </div>
+                    </div>
+
+                    {/* Line Style */}
+                    <div style={sectionStyle}>
+                        <label style={labelStyle}>선 스타일</label>
+                        <div style={{ display: 'flex', gap: '4px' }}>
+                            {[
+                                { label: '실선', value: '', preview: 'none' },
+                                { label: '점선', value: '4 4', preview: '4 4' },
+                                { label: '긴 점선', value: '12 4', preview: '12 4' },
+                                { label: '짧은 점선', value: '2 2', preview: '2 2' },
+                                { label: '혼합', value: '12 4 2 4', preview: '12 4 2 4' },
+                            ].map(({ label, value, preview }) => {
+                                const isActive = (style.strokeDasharray || '') === value;
+                                return (
+                                    <button
+                                        key={value}
+                                        style={{
+                                            ...buttonStyle,
+                                            flex: 1,
+                                            padding: '6px 4px',
+                                            backgroundColor: isActive ? '#3B82F6' : '#E5E5E5',
+                                            color: isActive ? 'white' : '#333333',
+                                            flexDirection: 'column',
+                                            gap: '2px',
+                                        }}
+                                        onClick={() => onUpdate({ style: { ...style, strokeDasharray: value } })}
+                                        title={label}
+                                    >
+                                        <svg width="24" height="4" viewBox="0 0 24 4">
+                                            <line
+                                                x1="0" y1="2" x2="24" y2="2"
+                                                stroke={isActive ? 'white' : '#333'}
+                                                strokeWidth="2"
+                                                strokeDasharray={preview === 'none' ? undefined : preview}
+                                            />
+                                        </svg>
+                                    </button>
+                                );
+                            })}
                         </div>
                     </div>
 

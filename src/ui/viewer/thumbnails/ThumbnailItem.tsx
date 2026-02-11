@@ -7,6 +7,7 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import type { Page } from '../../../core/model/types';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import { PageContextMenu } from '../PageContextMenu';
+import { usePageStore } from '../../../state/stores/PageStore';
 
 interface ThumbnailItemProps {
   page: Page;
@@ -34,30 +35,50 @@ export function ThumbnailItem({
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
   const itemRef = useRef<HTMLDivElement>(null);
+  const updatePage = usePageStore(state => state.updatePage);
+
+  const handleRotateRight = useCallback(() => {
+    const newRotation = ((page.rotation + 90) % 360) as 0 | 90 | 180 | 270;
+    // Swap width and height on 90/270 rotation changes
+    updatePage(page.id, {
+      rotation: newRotation,
+      width: page.height,
+      height: page.width,
+    });
+  }, [page.id, page.rotation, page.width, page.height, updatePage]);
+
+  const handleRotateLeft = useCallback(() => {
+    const newRotation = ((page.rotation + 270) % 360) as 0 | 90 | 180 | 270;
+    updatePage(page.id, {
+      rotation: newRotation,
+      width: page.height,
+      height: page.width,
+    });
+  }, [page.id, page.rotation, page.width, page.height, updatePage]);
 
   // 썸네일 생성
   useEffect(() => {
     const generateThumbnailAsync = async () => {
       try {
         setIsLoading(true);
-        
+
         if (pdfProxy && page.pdfRef) {
           // PDF 페이지 렌더링 (page.pdfRef.sourceIndex 사용)
           const pdfPage = await pdfProxy.getPage(page.pdfRef.sourceIndex);
           const viewport = pdfPage.getViewport({ scale: 0.2 }); // 썸네일용 작은 스케일
-          
+
           const canvas = document.createElement('canvas');
           const context = canvas.getContext('2d');
           canvas.width = viewport.width;
           canvas.height = viewport.height;
-          
+
           if (context) {
             await pdfPage.render({
               canvasContext: context,
               viewport: viewport,
               canvas: canvas
             }).promise;
-            
+
             const thumbnailData = canvas.toDataURL('image/png');
             setThumbnail(thumbnailData);
           }
@@ -140,7 +161,7 @@ export function ThumbnailItem({
             </div>
           </div>
         )}
-        
+
         {/* 선택 표시 */}
         {isSelected && (
           <div
@@ -175,10 +196,11 @@ export function ThumbnailItem({
           onDelete={onDelete}
           onAddBlankPage={handleAddBlankPage}
           onAddPdfPage={(_afterPageId: string) => {
-            // 임시로 빈 파일 생성
             const file = new File([''], 'temp.pdf', { type: 'application/pdf' });
             handleAddPdfPages(file);
           }}
+          onRotateRight={() => handleRotateRight()}
+          onRotateLeft={() => handleRotateLeft()}
         />
       )}
     </>

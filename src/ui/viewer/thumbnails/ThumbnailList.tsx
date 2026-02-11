@@ -3,7 +3,7 @@
  * 가상화 및 성능 최적화 고려
  */
 
-import { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import type { Page } from '../../../core/model/types';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import { ThumbnailItem } from './ThumbnailItem';
@@ -41,14 +41,21 @@ export function ThumbnailList({
     return pages;
   }, [pages]);
 
-  // 빈 페이지 추가 핸들러 (세로 A4)
+  // 빈 페이지 추가 핸들러 (마지막 페이지 크기 참조 — 페이지가 있을 때)
+  const handleAddBlankPageFromLast = useCallback(() => {
+    const lastPage = pages[pages.length - 1];
+    if (!lastPage) return;
+    onAddBlankPage(lastPage.id, lastPage.width, lastPage.height);
+  }, [pages, onAddBlankPage]);
+
+  // 빈 페이지 추가 핸들러 (세로 A4 — 페이지가 없을 때)
   const handleAddPortraitPage = useCallback(() => {
     const lastPage = pages[pages.length - 1];
     const afterPageId = lastPage?.id || '';
     onAddBlankPage(afterPageId, 595, 842); // A4 세로: 595×842pt
   }, [pages, onAddBlankPage]);
 
-  // 빈 페이지 추가 핸들러 (가로 A4)
+  // 빈 페이지 추가 핸들러 (가로 A4 — 페이지가 없을 때)
   const handleAddLandscapePage = useCallback(() => {
     const lastPage = pages[pages.length - 1];
     const afterPageId = lastPage?.id || '';
@@ -72,12 +79,43 @@ export function ThumbnailList({
     ));
   }, [visiblePages, currentPageId, pdfProxy, onPageSelect, onDuplicate, onDelete, onAddBlankPage, onAddPdfPages]);
 
+  // 공통 버튼 스타일
+  const addButtonStyle = (w: string, h: string): React.CSSProperties => ({
+    width: w,
+    height: h,
+    border: '2px solid #d1d5db',
+    borderRadius: '6px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    backgroundColor: '#ffffff',
+    transition: 'all 0.15s ease-in-out',
+  });
+
+  const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.currentTarget.style.borderColor = '#6366f1';
+    e.currentTarget.style.backgroundColor = '#eef2ff';
+  };
+
+  const handleMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.currentTarget.style.borderColor = '#d1d5db';
+    e.currentTarget.style.backgroundColor = '#ffffff';
+  };
+
+  const plusIcon = (size: number) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="12" y1="5" x2="12" y2="19"></line>
+      <line x1="5" y1="12" x2="19" y2="12"></line>
+    </svg>
+  );
+
   return (
     <div
       style={{
         width: sidebarWidth - 20,
         padding: '10px',
-        paddingBottom: '20px' // 하단 여백 추가
+        paddingBottom: '20px'
       }}
     >
       <ThumbnailDragDrop
@@ -87,11 +125,11 @@ export function ThumbnailList({
         {renderThumbnailItems()}
       </ThumbnailDragDrop>
 
-      {/* 빈 페이지 추가 - 세로/가로 선택 */}
+      {/* 빈 페이지 추가 */}
       <div
         style={{
           width: '100%',
-          marginTop: pages.length > 0 ? '8px' : '0px', // 페이지 있으면 8px 간격, 없으면 바로 위에
+          marginTop: pages.length > 0 ? '8px' : '0px',
           border: '2px dashed #9ca3af',
           borderRadius: '12px',
           padding: '12px',
@@ -110,69 +148,42 @@ export function ThumbnailList({
           빈 페이지 추가
         </span>
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-          {/* 세로 A4 버튼 */}
-          <div
-            onClick={handleAddPortraitPage}
-            style={{
-              width: '48px',
-              height: '68px', // A4 세로 비율 (210:297)
-              border: '2px solid #d1d5db',
-              borderRadius: '6px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              backgroundColor: '#ffffff',
-              transition: 'all 0.15s ease-in-out',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = '#6366f1';
-              e.currentTarget.style.backgroundColor = '#eef2ff';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = '#d1d5db';
-              e.currentTarget.style.backgroundColor = '#ffffff';
-            }}
-            title="세로 A4 페이지 추가"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-          </div>
-          {/* 가로 A4 버튼 */}
-          <div
-            onClick={handleAddLandscapePage}
-            style={{
-              width: '68px',
-              height: '48px', // A4 가로 비율 (297:210)
-              border: '2px solid #d1d5db',
-              borderRadius: '6px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              backgroundColor: '#ffffff',
-              transition: 'all 0.15s ease-in-out',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = '#6366f1';
-              e.currentTarget.style.backgroundColor = '#eef2ff';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = '#d1d5db';
-              e.currentTarget.style.backgroundColor = '#ffffff';
-            }}
-            title="가로 A4 페이지 추가"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-          </div>
+          {pages.length > 0 ? (
+            /* 페이지가 있을 때: 마지막 페이지 크기 참조하는 단일 버튼 */
+            <div
+              onClick={handleAddBlankPageFromLast}
+              style={addButtonStyle('60px', '60px')}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+              title={`빈 페이지 추가 (${Math.round(pages[pages.length - 1].width)}×${Math.round(pages[pages.length - 1].height)})`}
+            >
+              {plusIcon(22)}
+            </div>
+          ) : (
+            /* 페이지가 없을 때: A4 세로/가로 선택 */
+            <>
+              <div
+                onClick={handleAddPortraitPage}
+                style={addButtonStyle('48px', '68px')}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+                title="세로 A4 페이지 추가"
+              >
+                {plusIcon(18)}
+              </div>
+              <div
+                onClick={handleAddLandscapePage}
+                style={addButtonStyle('68px', '48px')}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+                title="가로 A4 페이지 추가"
+              >
+                {plusIcon(18)}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
   );
 }
-

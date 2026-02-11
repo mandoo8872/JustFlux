@@ -4,11 +4,14 @@
  */
 
 import { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Copy,
   Trash,
   FileArrowUp,
   File,
+  ArrowClockwise,
+  ArrowCounterClockwise,
 } from 'phosphor-react';
 
 export interface PageContextMenuProps {
@@ -18,6 +21,8 @@ export interface PageContextMenuProps {
   onDelete: (pageId: string) => void;
   onAddBlankPage: (afterPageId: string) => void;
   onAddPdfPage: (afterPageId: string) => void;
+  onRotateRight?: (pageId: string) => void;
+  onRotateLeft?: (pageId: string) => void;
   onClose: () => void;
 }
 
@@ -28,6 +33,8 @@ export function PageContextMenu({
   onDelete,
   onAddBlankPage,
   onAddPdfPage,
+  onRotateRight,
+  onRotateLeft,
   onClose,
 }: PageContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
@@ -76,7 +83,17 @@ export function PageContextMenu({
     onClose();
   };
 
-  return (
+  const handleRotateRight = () => {
+    onRotateRight?.(pageId);
+    onClose();
+  };
+
+  const handleRotateLeft = () => {
+    onRotateLeft?.(pageId);
+    onClose();
+  };
+
+  const menuContent = (
     <div
       ref={menuRef}
       style={{
@@ -185,6 +202,71 @@ export function PageContextMenu({
       {/* Separator */}
       <div style={{ height: '1px', backgroundColor: 'rgb(229, 231, 235)', margin: '4px 0' }} />
 
+      {/* Rotate Right */}
+      {onRotateRight && (
+        <button
+          onClick={handleRotateRight}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            padding: '10px 12px',
+            borderRadius: '8px',
+            border: 'none',
+            backgroundColor: 'transparent',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease-in-out',
+            fontSize: '14px',
+            fontWeight: '500',
+            color: 'rgb(31, 41, 55)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgb(243, 244, 246)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'transparent';
+          }}
+        >
+          <ArrowClockwise size={18} weight="duotone" style={{ color: 'rgb(14, 165, 233)' }} />
+          <span>우측으로 90° 회전</span>
+        </button>
+      )}
+
+      {/* Rotate Left */}
+      {onRotateLeft && (
+        <button
+          onClick={handleRotateLeft}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            padding: '10px 12px',
+            borderRadius: '8px',
+            border: 'none',
+            backgroundColor: 'transparent',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease-in-out',
+            fontSize: '14px',
+            fontWeight: '500',
+            color: 'rgb(31, 41, 55)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgb(243, 244, 246)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'transparent';
+          }}
+        >
+          <ArrowCounterClockwise size={18} weight="duotone" style={{ color: 'rgb(14, 165, 233)' }} />
+          <span>좌측으로 90° 회전</span>
+        </button>
+      )}
+
+      {/* Separator */}
+      <div style={{ height: '1px', backgroundColor: 'rgb(229, 231, 235)', margin: '4px 0' }} />
+
       {/* Delete Page */}
       <button
         onClick={handleDelete}
@@ -215,5 +297,7 @@ export function PageContextMenu({
       </button>
     </div>
   );
+
+  return createPortal(menuContent, document.body);
 }
 

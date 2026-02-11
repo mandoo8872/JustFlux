@@ -17,6 +17,7 @@ interface PageViewerProps {
   pages: Page[]; // PageStore의 pages 추가
   currentPage: Page | null;
   pdfProxy: PDFDocumentProxy | null;
+  insertedPdfProxies?: Map<string, PDFDocumentProxy>;
   scale: number;
   pan: { x: number; y: number };
   activeTool: string;
@@ -34,6 +35,7 @@ export function PageViewer({
   pages,
   currentPage,
   pdfProxy,
+  insertedPdfProxies,
   scale,
   activeTool,
   onAddAnnotation,
@@ -430,18 +432,25 @@ export function PageViewer({
                   );
                 }
                 // PDF 페이지
-                if (page.pdfRef && pdfProxy) {
-                  return (
-                    <PageView
-                      pageId={page.id}
-                      pageIndex={page.pdfRef.sourceIndex - 1}
-                      pdfProxy={pdfProxy}
-                      scale={scale}
-                      onRenderComplete={() => {
-                        console.log(`✅ [PageViewer] Page ${page.id} render complete`);
-                      }}
-                    />
-                  );
+                if (page.pdfRef) {
+                  // 추가된 PDF의 경우 insertedPdfProxies에서 프록시 조회
+                  const resolvedProxy = page.pdfRef.appendedFrom
+                    ? insertedPdfProxies?.get(page.pdfRef.appendedFrom) || null
+                    : pdfProxy;
+
+                  if (resolvedProxy) {
+                    return (
+                      <PageView
+                        pageId={page.id}
+                        pageIndex={page.pdfRef.sourceIndex - 1}
+                        pdfProxy={resolvedProxy}
+                        scale={scale}
+                        onRenderComplete={() => {
+                          console.log(`✅ [PageViewer] Page ${page.id} render complete`);
+                        }}
+                      />
+                    );
+                  }
                 }
                 // Blank 페이지
                 console.log(`📄 [PageViewer] Using BlankPageView for ${page.id}`);

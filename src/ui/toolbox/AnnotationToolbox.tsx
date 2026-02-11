@@ -4,7 +4,6 @@
 
 import {
   Selection,
-  Hand,
   TextT,
   HighlighterCircle,
   Rectangle,
@@ -55,15 +54,6 @@ const toolGroups: ToolGroup[] = [
         description: '주석 선택 및 편집',
         gradient: { from: 'rgb(168, 85, 247)', to: 'rgb(147, 51, 234)' },
         shadowColor: 'rgba(168, 85, 247, 0.4)'
-      },
-      {
-        id: 'pan',
-        icon: Hand,
-        label: '이동',
-        shortcut: 'H',
-        description: '캔버스 드래그 이동',
-        gradient: { from: 'rgb(59, 130, 246)', to: 'rgb(37, 99, 235)' },
-        shadowColor: 'rgba(59, 130, 246, 0.4)'
       },
       {
         id: 'text',
@@ -228,9 +218,8 @@ export function AnnotationToolbox({ activeTool, onToolChange }: AnnotationToolbo
   // Adobe 스타일: 주요 도구만 가로로 배치
   const mainTools = [
     toolGroups[0].tools[0], // select
-    toolGroups[0].tools[1], // pan
-    toolGroups[0].tools[2], // text
-    toolGroups[0].tools[3], // highlight
+    toolGroups[0].tools[1], // text
+    toolGroups[0].tools[2], // highlight
     toolGroups[1].tools[0], // rectangle
     toolGroups[1].tools[1], // roundedRect
     toolGroups[1].tools[2], // ellipse
