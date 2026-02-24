@@ -56,7 +56,7 @@ const ANNOTATION_CREATORS: Record<string, AnnotationCreator> = {
     type: 'text',
     pageId,
     bbox: { x: points.start.x, y: points.start.y, width: 200, height: 40 },
-    content: '텍스트 입력',
+    content: '',
     style: {
       fontFamily: 'sans-serif',
       fontSize: 16,

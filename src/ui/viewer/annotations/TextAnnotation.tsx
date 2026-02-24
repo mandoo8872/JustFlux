@@ -164,6 +164,7 @@ export function TextAnnotationComponent({
         <textarea
           ref={textRef}
           defaultValue={annotation.content}
+          placeholder="Enter text here"
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
           style={{
@@ -206,7 +207,9 @@ export function TextAnnotationComponent({
             wordBreak: 'break-word',
           }}
         >
-          {annotation.content}
+          {annotation.content || (
+            <span style={{ color: '#999999', fontStyle: 'italic' }}>Enter text here</span>
+          )}
         </div>
       )}
 
