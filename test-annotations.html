@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Annotation Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .log-output {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Annotation Layer Test</h1>
+        
+        <div class="test-section">
+            <h2>테스트 시나리오</h2>
+            <p>다음 순서로 테스트해주세요:</p>
+            <ol>
+                <li>PDF 파일을 업로드</li>
+                <li>텍스트 도구로 텍스트 박스 생성</li>
+                <li>생성된 텍스트 박스 클릭하여 선택</li>
+                <li>선택 상태가 유지되는지 확인</li>
+                <li>텍스트 박스 더블클릭하여 편집 모드 진입</li>
+                <li>다른 주석 타입으로 도형 생성 후 선택 테스트</li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <h2>콘솔 로그 모니터링</h2>
+            <p>브라우저 개발자 도구 콘솔에서 다음 로그들을 확인하세요:</p>
+            <ul>
+                <li><code>🖱️ [AnnotationLayer] Mouse down</code> - AnnotationLayer 이벤트</li>
+                <li><code>📝 [TextAnnotation] Mouse down</code> - 텍스트 주석 이벤트</li>
+                <li><code>🎯 [Shell] onSelect called</code> - 선택 상태 변경</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>예상되는 문제점</h2>
+            <ul>
+                <li><strong>선택 상태 유지 안됨:</strong> 주석 클릭 후 바로 선택 해제</li>
+                <li><strong>드래그 충돌:</strong> 도형 객체 드래그 시 다른 객체와 충돌</li>
+                <li><strong>더블클릭 편집 안됨:</strong> 텍스트 박스 더블클릭 시 편집 모드 진입 안됨</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>해결 방법</h2>
+            <p>문제가 발견되면 다음을 확인하세요:</p>
+            <ol>
+                <li>콘솔에서 이벤트 처리 순서 확인</li>
+                <li>AnnotationLayer의 onMouseDown이 주석 클릭 시 호출되는지 확인</li>
+                <li>주석 컴포넌트의 stopPropagation이 제대로 작동하는지 확인</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        console.log('🧪 Annotation Test Page Loaded');
+        console.log('📋 Test Instructions:');
+        console.log('1. Go to http://localhost:5173/');
+        console.log('2. Upload a PDF file');
+        console.log('3. Create annotations and test selection');
+        console.log('4. Monitor console logs for event handling');
+    </script>
+</body>
+</html>
+
+

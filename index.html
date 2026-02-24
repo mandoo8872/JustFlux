@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>justflux-v2</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <div id="modal-root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Prevent default drag and drop behavior
+      document.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      });
+      
+      document.addEventListener('dragenter', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      });
+      
+      document.addEventListener('drop', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Handle file drop
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+          // Dispatch custom event to React app
+          const event = new CustomEvent('fileDrop', { 
+            detail: { files: Array.from(files) } 
+          });
+          window.dispatchEvent(event);
+        }
+      });
+
+      // 브라우저 확대/축소 방지는 React 컴포넌트에서 처리
+    </script>
+  </body>
+</html>
