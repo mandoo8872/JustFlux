@@ -144,6 +144,17 @@ export function AnnotationManager({
         window.removeEventListener('pointermove', handleWindowMouseMove);
         window.removeEventListener('pointerup', handleWindowMouseUp);
 
+        // Text tool: create immediately on click (no drag required)
+        if (!createdAnnotationId && activeTool === 'text') {
+          const newAnnotation = annotationService.createAnnotation('text', pageId, {
+            bbox: { x: startX, y: startY, width: 200, height: 40 },
+          });
+          if (newAnnotation) {
+            onCreate(newAnnotation);
+            createdAnnotationId = newAnnotation.id;
+          }
+        }
+
         if (createdAnnotationId) {
           // If created, switch to select tool and select the new annotation
           const { setActiveTool, selectAnnotation } = useAnnotationStore.getState();
