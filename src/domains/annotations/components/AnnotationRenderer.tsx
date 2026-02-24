@@ -81,21 +81,21 @@ const ANNOTATION_CONFIGS: AnnotationConfig[] = [
     Component: ShapeAnnotationComponent,
     propsMapper: withPointerDown,
     validate: (a) => a.type === 'rectangle' && !!a.bbox,
-    defaultProps: () => ({ type: 'rectangle', style: { strokeColor: '#000000', strokeWidth: 2, fillColor: 'transparent' } }),
+    defaultProps: () => ({ type: 'rectangle', style: { strokeColor: '#000000', strokeWidth: 1, fillColor: 'transparent' } }),
   },
   {
     type: 'roundedRect',
     Component: ShapeAnnotationComponent,
     propsMapper: withPointerDown,
     validate: (a) => a.type === 'roundedRect' && !!a.bbox,
-    defaultProps: () => ({ type: 'roundedRect', cornerRadius: 20, style: { strokeColor: '#000000', strokeWidth: 2, fillColor: 'transparent' } }),
+    defaultProps: () => ({ type: 'roundedRect', cornerRadius: 20, style: { strokeColor: '#000000', strokeWidth: 1, fillColor: 'transparent' } }),
   },
   {
     type: 'ellipse',
     Component: ShapeAnnotationComponent,
     propsMapper: withPointerDown,
     validate: (a) => a.type === 'ellipse' && !!a.bbox,
-    defaultProps: () => ({ type: 'ellipse', style: { strokeColor: '#000000', strokeWidth: 2, fillColor: 'transparent' } }),
+    defaultProps: () => ({ type: 'ellipse', style: { strokeColor: '#000000', strokeWidth: 1, fillColor: 'transparent' } }),
   },
   // ── Image ──
   {
@@ -111,14 +111,14 @@ const ANNOTATION_CONFIGS: AnnotationConfig[] = [
     Component: ArrowAnnotationComponent,
     propsMapper: withPointerDown,
     validate: (a) => a.type === 'arrow' && !!a.bbox,
-    defaultProps: () => ({ type: 'arrow', startPoint: { x: 0, y: 0 }, endPoint: { x: 100, y: 100 }, style: { strokeColor: '#000000', strokeWidth: 2 } }),
+    defaultProps: () => ({ type: 'arrow', startPoint: { x: 0, y: 0 }, endPoint: { x: 100, y: 100 }, style: { strokeColor: '#000000', strokeWidth: 1 } }),
   },
   {
     type: 'line',
     Component: ArrowAnnotationComponent,
     propsMapper: withPointerDown,
     validate: (a) => a.type === 'line' && 'startPoint' in a && 'endPoint' in a && !!a.startPoint && !!a.endPoint,
-    defaultProps: () => ({ type: 'line', startPoint: { x: 0, y: 0 }, endPoint: { x: 100, y: 100 }, style: { strokeColor: '#000000', strokeWidth: 2 } }),
+    defaultProps: () => ({ type: 'line', startPoint: { x: 0, y: 0 }, endPoint: { x: 100, y: 100 }, style: { strokeColor: '#000000', strokeWidth: 1 } }),
   },
   // ── Lightning, Star, Heart (core only) ──
   {
@@ -126,21 +126,21 @@ const ANNOTATION_CONFIGS: AnnotationConfig[] = [
     Component: LightningAnnotationComponent,
     propsMapper: coreProps,
     validate: (a) => a.type === 'lightning' && !!a.bbox,
-    defaultProps: () => ({ type: 'lightning', startPoint: { x: 0, y: 0 }, endPoint: { x: 100, y: 100 }, style: { strokeColor: '#000000', strokeWidth: 2 } }),
+    defaultProps: () => ({ type: 'lightning', startPoint: { x: 0, y: 0 }, endPoint: { x: 100, y: 100 }, style: { strokeColor: '#000000', strokeWidth: 1 } }),
   },
   {
     type: 'star',
     Component: StarAnnotationComponent,
     propsMapper: coreProps,
     validate: (a) => a.type === 'star' && !!a.bbox,
-    defaultProps: () => ({ type: 'star', style: { strokeColor: '#000000', strokeWidth: 2, fillColor: '#ffff00' } }),
+    defaultProps: () => ({ type: 'star', style: { strokeColor: '#000000', strokeWidth: 1, fillColor: '#ffff00' } }),
   },
   {
     type: 'heart',
     Component: HeartAnnotationComponent,
     propsMapper: coreProps,
     validate: (a) => a.type === 'heart' && !!a.bbox,
-    defaultProps: () => ({ type: 'heart', style: { strokeColor: '#ff0000', strokeWidth: 2, fillColor: '#ff0000' } }),
+    defaultProps: () => ({ type: 'heart', style: { strokeColor: '#ff0000', strokeWidth: 1, fillColor: '#ff0000' } }),
   },
   // ── Freehand ──
   {

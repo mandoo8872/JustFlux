@@ -9,7 +9,7 @@
  *  - 파일 드래그&드롭  → useFileDrop
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useDocumentStore } from '../../state/documentStore';
 import { useViewStore } from '../../state/stores/ViewStore';
 import { useAnnotationStore } from '../../state/stores/AnnotationStore';
@@ -78,19 +78,34 @@ export function Shell() {
   const [exportModalOpen, setExportModalOpen] = useState(false);
 
   // ── 뷰포트 크기 동기화 + 창맞춤 ──
+  const doFitToPage = useRef(() => { });
+  doFitToPage.current = () => {
+    const collapsed = isSidebarCollapsed;
+    const leftW = collapsed ? 0 : SIDEBAR_WIDTH;
+    const rightW = RIGHT_SIDEBAR_WIDTH;
+    const headerH = 40; // Header height
+    const contentW = window.innerWidth - leftW - rightW;
+    const contentH = window.innerHeight - headerH;
+    setViewportSize(contentW, contentH);
+    const cp = usePageStore.getState().pages.find(
+      p => p.id === usePageStore.getState().currentPageId
+    );
+    if (cp) fitToPage(cp.width, cp.height);
+  };
+
   useEffect(() => {
-    const update = () => {
-      setViewportSize(window.innerWidth, window.innerHeight);
-      // 현재 페이지에 맞춰 스케일 자동 조정
-      const cp = usePageStore.getState().pages.find(
-        p => p.id === usePageStore.getState().currentPageId
-      );
-      if (cp) fitToPage(cp.width, cp.height);
-    };
+    const update = () => doFitToPage.current();
     update();
     window.addEventListener('resize', update);
     return () => window.removeEventListener('resize', update);
-  }, [setViewportSize, fitToPage]);
+  }, []);
+
+  // 사이드바 접힘/펼침 시 재계산
+  useEffect(() => {
+    // 사이드바 transition(0.3s) 완료 후 재계산
+    const timer = setTimeout(() => doFitToPage.current(), 320);
+    return () => clearTimeout(timer);
+  }, [isSidebarCollapsed]);
 
   // ── Render ──
   return (
