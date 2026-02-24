@@ -54,7 +54,7 @@ export function AnnotationManager({
     }
 
     // Creating new annotations (Drag to Create)
-    if (['text', 'highlight', 'rectangle', 'roundedRect', 'ellipse', 'arrow', 'line', 'star', 'heart', 'lightning', 'brush', 'eraser'].includes(activeTool)) {
+    if (['text', 'highlight', 'highlighter', 'rectangle', 'roundedRect', 'ellipse', 'arrow', 'line', 'star', 'heart', 'lightning', 'brush', 'eraser'].includes(activeTool)) {
       e.preventDefault();
       const rect = layerRef.current?.getBoundingClientRect();
       if (!rect) return;
@@ -75,7 +75,7 @@ export function AnnotationManager({
         // Create annotation only if dragged enough (> 5px)
         if (!createdAnnotationId && dist > 5) {
 
-          // Map brush tool to freehand type
+          // Map brush tool to freehand type, highlighter stays as highlighter
           const annotationType = activeTool === 'brush' ? 'freehand' : activeTool;
 
           const initialProps = {
@@ -107,7 +107,7 @@ export function AnnotationManager({
               endPoint: { x: currentX, y: currentY },
               bbox: { x: minX, y: minY, width: newWidth, height: newHeight }
             });
-          } else if (activeTool === 'brush') {
+          } else if (activeTool === 'brush' || activeTool === 'highlighter') {
             // For freehand: append points and update bbox
             const annotation = useAnnotationStore.getState().annotations.find(a => a.id === createdAnnotationId);
             if (annotation && 'points' in annotation) {

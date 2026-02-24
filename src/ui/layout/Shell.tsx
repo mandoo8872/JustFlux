@@ -77,13 +77,20 @@ export function Shell() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
 
-  // ── 뷰포트 크기 동기화 ──
+  // ── 뷰포트 크기 동기화 + 창맞춤 ──
   useEffect(() => {
-    const update = () => setViewportSize(window.innerWidth, window.innerHeight);
+    const update = () => {
+      setViewportSize(window.innerWidth, window.innerHeight);
+      // 현재 페이지에 맞춰 스케일 자동 조정
+      const cp = usePageStore.getState().pages.find(
+        p => p.id === usePageStore.getState().currentPageId
+      );
+      if (cp) fitToPage(cp.width, cp.height);
+    };
     update();
     window.addEventListener('resize', update);
     return () => window.removeEventListener('resize', update);
-  }, [setViewportSize]);
+  }, [setViewportSize, fitToPage]);
 
   // ── Render ──
   return (

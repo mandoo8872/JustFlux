@@ -231,6 +231,7 @@ export type ToolType =
   | 'pan'
   | 'text'
   | 'highlight'
+  | 'highlighter' // 형광펜 자유 드로잉
   | 'rectangle' // 'rect'에서 'rectangle'으로 변경
   | 'roundedRect' // 둥근 사각형
   | 'ellipse'

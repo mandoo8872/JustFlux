@@ -65,11 +65,11 @@ const toolGroups: ToolGroup[] = [
         shadowColor: 'rgba(34, 197, 94, 0.4)'
       },
       {
-        id: 'highlight',
+        id: 'highlighter',
         icon: HighlighterCircle,
         label: '형광펜',
         shortcut: 'R',
-        description: '하이라이트 표시',
+        description: '형광펜 자유 그리기',
         gradient: { from: 'rgb(251, 191, 36)', to: 'rgb(245, 158, 11)' },
         shadowColor: 'rgba(251, 191, 36, 0.4)'
       }

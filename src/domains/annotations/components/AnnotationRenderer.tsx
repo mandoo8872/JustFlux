@@ -17,6 +17,7 @@ import { LightningAnnotationComponent } from '../../../ui/viewer/annotations/Lig
 import { StarAnnotationComponent } from '../../../ui/viewer/annotations/StarAnnotation';
 import { HeartAnnotationComponent } from '../../../ui/viewer/annotations/HeartAnnotation';
 import { FreehandAnnotationComponent } from '../../../ui/viewer/annotations/FreehandAnnotation';
+import { HighlighterAnnotationComponent } from '../../../ui/viewer/annotations/HighlighterAnnotation';
 
 // ── 공통 Props 빌더 ──
 
@@ -154,6 +155,20 @@ const ANNOTATION_CONFIGS: AnnotationConfig[] = [
     }),
     validate: (a) => a.type === 'freehand' && !!a.bbox && 'points' in a && Array.isArray(a.points),
     defaultProps: () => ({ type: 'freehand', points: [], style: { stroke: '#000000', strokeWidth: 3 } }),
+  },
+  // ── Highlighter (freehand-style) ──
+  {
+    type: 'highlighter',
+    Component: HighlighterAnnotationComponent,
+    propsMapper: (p: any) => ({
+      ...coreProps(p),
+      isHovered: p.isHovered,
+      onPointerDown: p.onPointerDown,
+      onHover: p.onHover,
+      onHoverEnd: p.onHoverEnd,
+    }),
+    validate: (a) => a.type === 'highlighter' && !!a.bbox && 'points' in a && Array.isArray(a.points),
+    defaultProps: () => ({ type: 'highlighter', points: [], style: { stroke: '#FFFF00', strokeWidth: 20, opacity: 0.4 } }),
   },
 ];
 

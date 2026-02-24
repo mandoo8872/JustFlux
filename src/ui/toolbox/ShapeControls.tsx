@@ -44,9 +44,9 @@ export function ShapeControls({ style, isClosedShape, onUpdate }: ShapeControlsP
             <div style={sectionStyle}>
                 <label style={labelStyle}>선 두께</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <CaretDown size={14} style={{ cursor: 'pointer' }} onClick={() => handleStrokeWidthChange(Math.max(1, (style.strokeWidth || 2) - 1))} />
-                    <span style={{ flex: 1, textAlign: 'center' }}>{style.strokeWidth || 2}px</span>
-                    <CaretUp size={14} style={{ cursor: 'pointer' }} onClick={() => handleStrokeWidthChange((style.strokeWidth || 2) + 1)} />
+                    <CaretDown size={14} style={{ cursor: 'pointer' }} onClick={() => handleStrokeWidthChange(Math.max(0.5, (style.strokeWidth || 1) - 0.5))} />
+                    <span style={{ flex: 1, textAlign: 'center' }}>{style.strokeWidth || 1}px</span>
+                    <CaretUp size={14} style={{ cursor: 'pointer' }} onClick={() => handleStrokeWidthChange((style.strokeWidth || 1) + 0.5)} />
                 </div>
             </div>
 

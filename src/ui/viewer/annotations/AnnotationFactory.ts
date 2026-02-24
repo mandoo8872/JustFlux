@@ -89,7 +89,7 @@ const ANNOTATION_CREATORS: Record<string, AnnotationCreator> = {
       type: 'rectangle',
       pageId,
       bbox,
-      style: { stroke: '#000000', strokeWidth: 2, fill: 'transparent' },
+      style: { stroke: '#000000', strokeWidth: 1, fill: 'transparent' },
       ...timestamps(),
     } as Annotation;
   },
@@ -103,7 +103,7 @@ const ANNOTATION_CREATORS: Record<string, AnnotationCreator> = {
       pageId,
       bbox,
       cornerRadius: 20,
-      style: { stroke: '#000000', strokeWidth: 2, fill: 'transparent' },
+      style: { stroke: '#000000', strokeWidth: 1, fill: 'transparent' },
       ...timestamps(),
     } as Annotation;
   },
@@ -116,7 +116,7 @@ const ANNOTATION_CREATORS: Record<string, AnnotationCreator> = {
       type: 'ellipse',
       pageId,
       bbox,
-      style: { stroke: '#000000', strokeWidth: 2, fill: 'transparent' },
+      style: { stroke: '#000000', strokeWidth: 1, fill: 'transparent' },
       ...timestamps(),
     } as Annotation;
   },
@@ -132,7 +132,7 @@ const ANNOTATION_CREATORS: Record<string, AnnotationCreator> = {
       startPoint: { x: points.start.x, y: points.start.y },
       endPoint: { x: points.current.x, y: points.current.y },
       arrowHeadSize: 10,
-      style: { stroke: '#000000', strokeWidth: 2 },
+      style: { stroke: '#000000', strokeWidth: 1 },
       ...timestamps(),
     } as Annotation;
   },
@@ -147,7 +147,7 @@ const ANNOTATION_CREATORS: Record<string, AnnotationCreator> = {
       bbox,
       points: 5 as any, // StarAnnotation의 points는 number (꼭짓점 수)
       innerRadius: 0.4,
-      style: { stroke: '#000000', strokeWidth: 2, fill: 'transparent' },
+      style: { stroke: '#000000', strokeWidth: 1, fill: 'transparent' },
       ...timestamps(),
     } as Annotation;
   },
@@ -160,7 +160,7 @@ const ANNOTATION_CREATORS: Record<string, AnnotationCreator> = {
       type: 'heart',
       pageId,
       bbox,
-      style: { stroke: '#000000', strokeWidth: 2, fill: 'transparent' },
+      style: { stroke: '#000000', strokeWidth: 1, fill: 'transparent' },
       ...timestamps(),
     } as Annotation;
   },
@@ -173,7 +173,7 @@ const ANNOTATION_CREATORS: Record<string, AnnotationCreator> = {
       type: 'lightning',
       pageId,
       bbox,
-      style: { stroke: '#000000', strokeWidth: 2, fill: 'transparent' },
+      style: { stroke: '#000000', strokeWidth: 1, fill: 'transparent' },
       ...timestamps(),
     } as Annotation;
   },
@@ -212,7 +212,7 @@ export function isImmediateCreateTool(tool: ToolType): boolean {
  * 드로잉이 가능한 도구 목록
  */
 export const DRAWING_TOOLS: readonly string[] = [
-  'text', 'highlight', 'rectangle', 'roundedRect', 'ellipse',
+  'text', 'highlight', 'highlighter', 'rectangle', 'roundedRect', 'ellipse',
   'arrow', 'star', 'heart', 'lightning', 'brush',
 ] as const;
 
