@@ -170,6 +170,17 @@ export const useAnnotationStore = create<AnnotationStore>()(
             typed.endPoint.x += deltaX;
             typed.endPoint.y += deltaY;
           }
+
+          // For freehand/highlighter types, also move all points
+          if ((annotation.type === 'freehand' || annotation.type === 'highlighter') && 'points' in annotation) {
+            const points = (annotation as any).points as Array<{ x: number; y: number }>;
+            if (Array.isArray(points)) {
+              for (const point of points) {
+                point.x += deltaX;
+                point.y += deltaY;
+              }
+            }
+          }
         }
       });
     },
