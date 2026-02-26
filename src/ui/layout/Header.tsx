@@ -13,10 +13,12 @@ interface HeaderProps {
   totalPages: number;
   canUndo: boolean;
   canRedo: boolean;
+  smoothRendering: boolean;
   onFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onUndo: () => void;
   onRedo: () => void;
   onExport: () => void;
+  onToggleSmooth: () => void;
 }
 
 export function Header({
@@ -24,10 +26,12 @@ export function Header({
   totalPages,
   canUndo,
   canRedo,
+  smoothRendering,
   onFileSelect,
   onUndo,
   onRedo,
   onExport,
+  onToggleSmooth,
 }: HeaderProps) {
   return (
     <header style={{
@@ -71,6 +75,29 @@ export function Header({
             JustFlux
           </span>
         )}
+      </div>
+
+      {/* Center: Smooth toggle */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginRight: '8px' }}>
+        <button
+          onClick={onToggleSmooth}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '4px',
+            padding: '3px 8px',
+            fontSize: '11px', fontWeight: 500,
+            backgroundColor: smoothRendering ? '#DBEAFE' : '#F1F5F9',
+            color: smoothRendering ? '#1D4ED8' : '#64748B',
+            border: `1px solid ${smoothRendering ? '#93C5FD' : '#CBD5E1'}`,
+            borderRadius: '4px',
+            cursor: 'pointer',
+            transition: 'all 0.15s',
+            whiteSpace: 'nowrap',
+          }}
+          title={smoothRendering ? 'Smooth 렌더링 ON (부드럽지만 무거움)' : 'Smooth 렌더링 OFF (선명하고 가벼움)'}
+        >
+          <span style={{ fontSize: '10px' }}>{smoothRendering ? '🔵' : '⚪'}</span>
+          Smooth
+        </button>
       </div>
 
       {/* Right: Actions */}

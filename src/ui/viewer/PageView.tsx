@@ -7,6 +7,8 @@ import { useEffect, useRef, useState } from 'react';
 import type { PDFDocumentProxy, RenderTask } from 'pdfjs-dist';
 import { Spinner } from 'phosphor-react';
 
+import { useViewStore } from '../../state/stores/ViewStore';
+
 interface PageViewProps {
   pageId: string;
   pageIndex: number;
@@ -23,6 +25,7 @@ export function PageView({ pageId, pageIndex, pdfProxy, scale, onRenderComplete 
   const renderIdRef = useRef(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const smoothRendering = useViewStore((s) => s.smoothRendering);
 
 
   useEffect(() => {
@@ -65,14 +68,14 @@ export function PageView({ pageId, pageIndex, pdfProxy, scale, onRenderComplete 
 
         // Get PDF page
         const pdfPage = await pdfProxy.getPage(pageIndex + 1);
-        
+
         // Check again before continuing
         if (isCancelled || currentRenderId !== renderIdRef.current) {
           return;
         }
 
         const viewport = pdfPage.getViewport({ scale: scale * window.devicePixelRatio });
-        
+
         // Calculate CSS display size (actual size user sees)
         const displayWidth = viewport.width / window.devicePixelRatio;
         const displayHeight = viewport.height / window.devicePixelRatio;
@@ -80,11 +83,11 @@ export function PageView({ pageId, pageIndex, pdfProxy, scale, onRenderComplete 
         // Set canvas bitmap size (high-res for Retina)
         canvas.width = viewport.width;
         canvas.height = viewport.height;
-        
+
         // Set CSS display size explicitly
         canvas.style.width = `${displayWidth}px`;
         canvas.style.height = `${displayHeight}px`;
-        
+
 
         const context = canvas.getContext('2d');
         if (!context) {
@@ -116,7 +119,7 @@ export function PageView({ pageId, pageIndex, pdfProxy, scale, onRenderComplete 
         if (err?.name === 'RenderingCancelledException') {
           return;
         }
-        
+
         if (!isCancelled && currentRenderId === renderIdRef.current && mountedRef.current) {
           console.error('Failed to render page:', err);
           setError(err instanceof Error ? err.message : 'Rendering failed');
@@ -153,8 +156,8 @@ export function PageView({ pageId, pageIndex, pdfProxy, scale, onRenderComplete 
   }, []);
 
   return (
-    <div style={{ 
-      position: 'relative', 
+    <div style={{
+      position: 'relative',
       display: 'block',
       width: 'fit-content',
       height: 'fit-content'
@@ -212,15 +215,22 @@ export function PageView({ pageId, pageIndex, pdfProxy, scale, onRenderComplete 
         ref={canvasRef}
         style={{
           display: 'block',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-          borderRadius: '8px',
           backgroundColor: '#ffffff',
           pointerEvents: 'none',
           border: '1px solid #E0E0E0',
           opacity: 1,
           visibility: 'visible',
           position: 'relative',
-          zIndex: 1
+          zIndex: 1,
+          // Smooth rendering conditional styles
+          ...(smoothRendering ? {
+            borderRadius: '8px',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          } : {
+            borderRadius: '0px',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+            imageRendering: '-webkit-optimize-contrast' as any,
+          }),
         } as React.CSSProperties}
       />
     </div>

@@ -81,6 +81,10 @@ interface ViewStore {
 
   /** 뷰포트 내 좌표 확인 */
   isPointInViewport: (x: number, y: number) => boolean;
+
+  // ── Rendering Options ──
+  smoothRendering: boolean;
+  toggleSmoothRendering: () => void;
 }
 
 export const useViewStore = create<ViewStore>()(
@@ -97,6 +101,7 @@ export const useViewStore = create<ViewStore>()(
     },
     isViewLoading: false,
     viewError: null,
+    smoothRendering: false, // 기본: OFF (선명, 가벼움)
 
     // ============================================
     // View Actions
@@ -218,6 +223,12 @@ export const useViewStore = create<ViewStore>()(
       const { viewportWidth, viewportHeight } = state.view;
 
       return x >= 0 && x <= viewportWidth && y >= 0 && y <= viewportHeight;
-    }
+    },
+
+    toggleSmoothRendering: () => {
+      set((state) => {
+        state.smoothRendering = !state.smoothRendering;
+      });
+    },
   }))
 );

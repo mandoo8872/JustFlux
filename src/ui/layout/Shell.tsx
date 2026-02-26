@@ -56,7 +56,7 @@ export function Shell() {
   const { document } = useDocumentStore();
   const { undo, redo, canUndo, canRedo } = useHistoryStore();
   const { selection, updateAnnotation, selectAnnotations, setActiveTool } = useAnnotationStore();
-  const { view, setScale, fitToPage, setViewportSize } = useViewStore();
+  const { view, setScale, fitToPage, setViewportSize, smoothRendering, toggleSmoothRendering } = useViewStore();
   const { pages, currentPageId, setCurrentPage } = usePageStore();
   const { pdfProxy } = usePDFStore();
 
@@ -124,10 +124,12 @@ export function Shell() {
         totalPages={pages.length}
         canUndo={canUndo}
         canRedo={canRedo}
+        smoothRendering={smoothRendering}
         onFileSelect={fileDrop.handleFileSelect}
         onUndo={undo}
         onRedo={redo}
         onExport={() => setExportModalOpen(true)}
+        onToggleSmooth={toggleSmoothRendering}
       />
 
       <Sidebar
