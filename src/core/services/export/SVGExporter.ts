@@ -29,7 +29,7 @@ export class SVGExporter {
 
       // 1. 페이지 범위 결정
       const targetPages = this.getTargetPages(document, options);
-      
+
       eventBus.emit(EVENTS.EXPORT_PROGRESS, {
         format: 'svg',
         progress: 30,
@@ -38,7 +38,7 @@ export class SVGExporter {
 
       // 2. SVG 문서 생성
       const svgContent = await this.generateSVG(document, targetPages, options);
-      
+
       eventBus.emit(EVENTS.EXPORT_PROGRESS, {
         format: 'svg',
         progress: 90,
@@ -63,7 +63,7 @@ export class SVGExporter {
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'SVG 내보내기 실패';
-      
+
       eventBus.emit(EVENTS.EXPORT_FAILED, {
         format: 'svg',
         error: errorMessage,
@@ -84,7 +84,7 @@ export class SVGExporter {
    */
   private getTargetPages(document: Document, options: ExportOptions): number[] {
     const { pageRange, customPageRange } = options;
-    
+
     if (pageRange === 'all') {
       return document.pages.map((_, index) => index);
     } else if (pageRange === 'current') {
@@ -92,7 +92,7 @@ export class SVGExporter {
     } else if (pageRange === 'custom') {
       return this.parseCustomPageRange(customPageRange, document.pages.length);
     }
-    
+
     return [0];
   }
 
@@ -101,11 +101,11 @@ export class SVGExporter {
    */
   private async generateSVG(document: Document, targetPages: number[], options: ExportOptions): Promise<string> {
     const { backgroundColor, transparent } = options;
-    
+
     // 전체 문서 크기 계산
     const totalWidth = Math.max(...document.pages.map(p => p.width));
     const totalHeight = document.pages.reduce((sum, p) => sum + p.height, 0);
-    
+
     let svgContent = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" 
      xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -123,22 +123,22 @@ export class SVGExporter {
     let currentY = 0;
     for (const pageIndex of targetPages) {
       const page = document.pages[pageIndex];
-      
+
       svgContent += `
   <!-- Page ${pageIndex + 1} -->
   <g id="page-${pageIndex + 1}" transform="translate(0, ${currentY})">`;
-      
+
       // 페이지 콘텐츠
       svgContent += await this.renderPageContent(page);
-      
+
       // 주석 렌더링
       if (options.includeAnnotations && page.layers?.annotations) {
         svgContent += this.renderAnnotations(page.layers.annotations);
       }
-      
+
       svgContent += `
   </g>`;
-      
+
       currentY += page.height;
     }
 
@@ -165,11 +165,11 @@ export class SVGExporter {
    */
   private renderAnnotations(annotations: any[]): string {
     let svgContent = '';
-    
+
     for (const annotation of annotations) {
       svgContent += this.renderAnnotation(annotation);
     }
-    
+
     return svgContent;
   }
 
@@ -178,7 +178,7 @@ export class SVGExporter {
    */
   private renderAnnotation(annotation: any): string {
     const { type } = annotation;
-    
+
     switch (type) {
       case 'text':
         return this.renderTextAnnotation(annotation);
@@ -192,8 +192,6 @@ export class SVGExporter {
         return this.renderArrowAnnotation(annotation);
       case 'star':
         return this.renderStarAnnotation(annotation);
-      case 'heart':
-        return this.renderHeartAnnotation(annotation);
       case 'lightning':
         return this.renderLightningAnnotation(annotation);
       default:
@@ -207,7 +205,7 @@ export class SVGExporter {
   private renderTextAnnotation(annotation: any): string {
     const { bbox, content, style } = annotation;
     const { x, y } = bbox;
-    
+
     return `
     <text x="${x}" y="${y + (style.fontSize || 12)}" 
           font-family="${style.fontFamily || 'Arial'}" 
@@ -224,7 +222,7 @@ export class SVGExporter {
   private renderHighlightAnnotation(annotation: any): string {
     const { bbox, style } = annotation;
     const { x, y, width, height } = bbox;
-    
+
     return `
     <rect x="${x}" y="${y}" width="${width}" height="${height}" 
           fill="${style.fill || '#FFFF00'}" 
@@ -237,21 +235,21 @@ export class SVGExporter {
   private renderRectangleAnnotation(annotation: any): string {
     const { bbox, style, cornerRadius } = annotation;
     const { x, y, width, height } = bbox;
-    
+
     let rect = `<rect x="${x}" y="${y}" width="${width}" height="${height}"`;
-    
+
     if (cornerRadius) {
       rect += ` rx="${cornerRadius}" ry="${cornerRadius}"`;
     }
-    
+
     if (style.fill) {
       rect += ` fill="${style.fill}"`;
     }
-    
+
     if (style.stroke) {
       rect += ` stroke="${style.stroke}" stroke-width="${style.strokeWidth || 1}"`;
     }
-    
+
     rect += '/>';
     return rect;
   }
@@ -262,22 +260,22 @@ export class SVGExporter {
   private renderEllipseAnnotation(annotation: any): string {
     const { bbox, style } = annotation;
     const { x, y, width, height } = bbox;
-    
+
     const centerX = x + width / 2;
     const centerY = y + height / 2;
     const radiusX = width / 2;
     const radiusY = height / 2;
-    
+
     let ellipse = `<ellipse cx="${centerX}" cy="${centerY}" rx="${radiusX}" ry="${radiusY}"`;
-    
+
     if (style.fill) {
       ellipse += ` fill="${style.fill}"`;
     }
-    
+
     if (style.stroke) {
       ellipse += ` stroke="${style.stroke}" stroke-width="${style.strokeWidth || 1}"`;
     }
-    
+
     ellipse += '/>';
     return ellipse;
   }
@@ -287,16 +285,16 @@ export class SVGExporter {
    */
   private renderArrowAnnotation(annotation: any): string {
     const { startPoint, endPoint, style } = annotation;
-    
+
     const angle = Math.atan2(endPoint.y - startPoint.y, endPoint.x - startPoint.x);
     const arrowLength = 10;
     const arrowAngle = Math.PI / 6;
-    
+
     const arrowHeadX1 = endPoint.x - arrowLength * Math.cos(angle - arrowAngle);
     const arrowHeadY1 = endPoint.y - arrowLength * Math.sin(angle - arrowAngle);
     const arrowHeadX2 = endPoint.x - arrowLength * Math.cos(angle + arrowAngle);
     const arrowHeadY2 = endPoint.y - arrowLength * Math.sin(angle + arrowAngle);
-    
+
     return `
     <line x1="${startPoint.x}" y1="${startPoint.y}" 
           x2="${endPoint.x}" y2="${endPoint.y}" 
@@ -312,15 +310,15 @@ export class SVGExporter {
   private renderStarAnnotation(annotation: any): string {
     const { bbox, style, points, innerRadius } = annotation;
     const { x, y, width, height } = bbox;
-    
+
     const centerX = x + width / 2;
     const centerY = y + height / 2;
     const outerRadius = Math.min(width, height) / 2;
     const innerRadiusValue = outerRadius * (innerRadius || 0.5);
     const pointCount = points || 5;
-    
+
     let path = `M ${centerX} ${centerY - outerRadius}`;
-    
+
     for (let i = 1; i < pointCount * 2; i++) {
       const radius = i % 2 === 0 ? outerRadius : innerRadiusValue;
       const angle = (Math.PI / pointCount) * i - Math.PI / 2;
@@ -328,39 +326,12 @@ export class SVGExporter {
       const pointY = centerY + radius * Math.sin(angle);
       path += ` L ${pointX} ${pointY}`;
     }
-    
+
     path += ' Z';
-    
+
     return `
     <path d="${path}" 
           fill="${style.fill || 'transparent'}" 
-          stroke="${style.stroke || '#000000'}" 
-          stroke-width="${style.strokeWidth || 1}"/>`;
-  }
-
-  /**
-   * 하트 주석 렌더링
-   */
-  private renderHeartAnnotation(annotation: any): string {
-    const { bbox, style } = annotation;
-    const { x, y, width, height } = bbox;
-    
-    const centerX = x + width / 2;
-    const centerY = y + height / 2;
-    const scaleX = width / 100;
-    const scaleY = height / 100;
-    
-    const path = `M ${centerX} ${centerY + 20 * scaleY} 
-                  C ${centerX - 20 * scaleX} ${centerY - 10 * scaleY}, 
-                    ${centerX - 40 * scaleX} ${centerY + 10 * scaleY}, 
-                    ${centerX} ${centerY + 30 * scaleY}
-                  C ${centerX + 40 * scaleX} ${centerY + 10 * scaleY}, 
-                    ${centerX + 20 * scaleX} ${centerY - 10 * scaleY}, 
-                    ${centerX} ${centerY + 20 * scaleY} Z`;
-    
-    return `
-    <path d="${path}" 
-          fill="${style.fill || '#FF0000'}" 
           stroke="${style.stroke || '#000000'}" 
           stroke-width="${style.strokeWidth || 1}"/>`;
   }
@@ -371,14 +342,14 @@ export class SVGExporter {
   private renderLightningAnnotation(annotation: any): string {
     const { bbox, style } = annotation;
     const { x, y, width, height } = bbox;
-    
+
     const path = `M ${x + width * 0.4} ${y + height * 0.05} 
                   L ${x + width * 0.1} ${y + height * 0.5} 
                   L ${x + width * 0.4} ${y + height * 0.4} 
                   L ${x + width * 0.6} ${y + height * 0.95} 
                   L ${x + width * 0.9} ${y + height * 0.5} 
                   L ${x + width * 0.6} ${y + height * 0.6} Z`;
-    
+
     return `
     <path d="${path}" 
           fill="${style.fill || '#FFD700'}" 
@@ -412,7 +383,7 @@ export class SVGExporter {
   private parseCustomPageRange(range: string, totalPages: number): number[] {
     const pages: number[] = [];
     const parts = range.split(',');
-    
+
     for (const part of parts) {
       if (part.includes('-')) {
         const [start, end] = part.split('-').map(n => parseInt(n.trim()) - 1);
@@ -428,7 +399,7 @@ export class SVGExporter {
         }
       }
     }
-    
+
     return pages;
   }
 }

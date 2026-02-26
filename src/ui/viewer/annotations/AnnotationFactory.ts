@@ -152,19 +152,6 @@ const ANNOTATION_CREATORS: Record<string, AnnotationCreator> = {
     } as Annotation;
   },
 
-  // ─── Heart ───
-  heart: ({ pageId, bbox }) => {
-    if (!isMinSize(bbox)) return null;
-    return {
-      id: generateId(),
-      type: 'heart',
-      pageId,
-      bbox,
-      style: { stroke: '#000000', strokeWidth: 1, fill: 'transparent' },
-      ...timestamps(),
-    } as Annotation;
-  },
-
   // ─── Lightning ───
   lightning: ({ pageId, bbox }) => {
     if (!isMinSize(bbox)) return null;
@@ -213,7 +200,7 @@ export function isImmediateCreateTool(tool: ToolType): boolean {
  */
 export const DRAWING_TOOLS: readonly string[] = [
   'text', 'highlight', 'highlighter', 'rectangle', 'roundedRect', 'ellipse',
-  'arrow', 'star', 'heart', 'lightning', 'brush',
+  'arrow', 'star', 'lightning', 'brush',
 ] as const;
 
 /**

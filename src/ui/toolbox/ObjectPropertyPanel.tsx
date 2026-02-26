@@ -12,7 +12,7 @@ import { useState } from 'react';
 import {
     Copy, Trash, CaretRight, CaretDown,
     Rectangle, Circle, ArrowUpRight, Minus,
-    TextT, Image as ImageIcon, PencilSimple, StarFour, Heart,
+    TextT, Image as ImageIcon, PencilSimple, StarFour,
     HighlighterCircle,
 } from 'phosphor-react';
 import type { Annotation, ArrowAnnotation, LineAnnotation } from '../../types/annotation';
@@ -47,7 +47,6 @@ const TYPE_META: Record<string, { label: string; icon: React.ElementType }> = {
     arrow: { label: '화살표', icon: ArrowUpRight },
     line: { label: '직선', icon: Minus },
     star: { label: '별', icon: StarFour },
-    heart: { label: '하트', icon: Heart },
     image: { label: '이미지', icon: ImageIcon },
     freehand: { label: '펜', icon: PencilSimple },
     highlighter: { label: '형광펜', icon: HighlighterCircle },
@@ -103,8 +102,8 @@ export function ObjectPropertyPanel({
 
     const isTextAnnotation = type === 'text';
     const isImageAnnotation = type === 'image';
-    const isShapeAnnotation = ['rectangle', 'roundedRect', 'ellipse', 'arrow', 'line', 'star', 'heart', 'freehand', 'highlighter'].includes(type);
-    const isClosedShape = ['rectangle', 'roundedRect', 'ellipse', 'star', 'heart'].includes(type);
+    const isShapeAnnotation = ['rectangle', 'roundedRect', 'ellipse', 'arrow', 'line', 'star', 'freehand', 'highlighter'].includes(type);
+    const isClosedShape = ['rectangle', 'roundedRect', 'ellipse', 'star'].includes(type);
     const isLineOrArrow = type === 'line' || type === 'arrow';
 
     const style = selectedAnnotation.style || {};

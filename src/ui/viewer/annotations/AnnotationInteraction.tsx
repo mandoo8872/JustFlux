@@ -70,7 +70,6 @@ export function useAnnotationInteraction({
       case 'ellipse':
       case 'arrow':
       case 'star':
-      case 'heart':
       case 'lightning':
         handleDrawingTool(_event, x, y);
         break;

@@ -17,7 +17,6 @@ import type {
     EllipseAnnotation,
     RoundedRectAnnotation,
     StarAnnotation,
-    HeartAnnotation,
 
     ImageAnnotation as ImageAnnotationType,
     FreehandAnnotation,
@@ -29,7 +28,6 @@ import { TextAnnotationComponent } from './annotations/TextAnnotation';
 import { HighlightAnnotationComponent } from './annotations/HighlightAnnotation';
 import { ShapeAnnotationComponent } from './annotations/ShapeAnnotation';
 import { StarAnnotationComponent } from './annotations/StarAnnotation';
-import { HeartAnnotationComponent } from './annotations/HeartAnnotation';
 
 import { ImageAnnotationComponent } from './annotations/ImageAnnotation';
 import { FreehandAnnotationComponent } from './annotations/FreehandAnnotation';
@@ -98,19 +96,6 @@ const ANNOTATION_RENDERERS: Record<string, AnnotationRenderer> = {
         <div key={annotation.id} style={{ position: 'relative' }}>
             <StarAnnotationComponent
                 annotation={annotation as StarAnnotation}
-                isSelected={isSelected}
-                scale={scale}
-                onSelect={() => callbacks.onSelect(annotation.id)}
-                onUpdate={(updates) => callbacks.onUpdate(annotation.id, updates)}
-                onDelete={() => callbacks.onDelete(annotation.id)}
-            />
-        </div>
-    ),
-
-    heart: ({ annotation, isSelected, scale, callbacks }) => (
-        <div key={annotation.id} style={{ position: 'relative' }}>
-            <HeartAnnotationComponent
-                annotation={annotation as HeartAnnotation}
                 isSelected={isSelected}
                 scale={scale}
                 onSelect={() => callbacks.onSelect(annotation.id)}

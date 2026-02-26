@@ -26,7 +26,6 @@ const annotationViewMap = {
   rectangle: ShapeAnnotationView,
   arrow: ShapeAnnotationView,
   star: ShapeAnnotationView,
-  heart: ShapeAnnotationView,
   lightning: ShapeAnnotationView,
   freehand: FreehandAnnotationView,
   image: ImageAnnotationView,

@@ -15,7 +15,6 @@ import { ImageAnnotationComponent } from '../../../ui/viewer/annotations/ImageAn
 import { ArrowAnnotationComponent } from '../../../ui/viewer/annotations/ArrowAnnotation';
 
 import { StarAnnotationComponent } from '../../../ui/viewer/annotations/StarAnnotation';
-import { HeartAnnotationComponent } from '../../../ui/viewer/annotations/HeartAnnotation';
 import { FreehandAnnotationComponent } from '../../../ui/viewer/annotations/FreehandAnnotation';
 import { HighlighterAnnotationComponent } from '../../../ui/viewer/annotations/HighlighterAnnotation';
 
@@ -120,20 +119,13 @@ const ANNOTATION_CONFIGS: AnnotationConfig[] = [
     validate: (a) => a.type === 'line' && 'startPoint' in a && 'endPoint' in a && !!a.startPoint && !!a.endPoint,
     defaultProps: () => ({ type: 'line', startPoint: { x: 0, y: 0 }, endPoint: { x: 100, y: 100 }, style: { strokeColor: '#000000', strokeWidth: 1 } }),
   },
-  // ── Star, Heart ──
+  // ── Star ──
   {
     type: 'star',
     Component: StarAnnotationComponent,
     propsMapper: withHoverDrag,
     validate: (a) => a.type === 'star' && !!a.bbox,
     defaultProps: () => ({ type: 'star', numPoints: 5, innerRadius: 0.4, style: { stroke: '#000000', strokeWidth: 1, fill: '#FFD700' } }),
-  },
-  {
-    type: 'heart',
-    Component: HeartAnnotationComponent,
-    propsMapper: coreProps,
-    validate: (a) => a.type === 'heart' && !!a.bbox,
-    defaultProps: () => ({ type: 'heart', style: { strokeColor: '#ff0000', strokeWidth: 1, fillColor: '#ff0000' } }),
   },
   // ── Freehand ──
   {

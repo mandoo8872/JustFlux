@@ -191,7 +191,6 @@ function getCursorForTool(tool: ToolType): string {
     case 'ellipse':
     case 'arrow':
     case 'star':
-    case 'heart':
     case 'lightning':
       return 'crosshair';
     case 'brush':

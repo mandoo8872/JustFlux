@@ -9,7 +9,6 @@ import type {
   RectangleAnnotation,
   ArrowAnnotation,
   StarAnnotation,
-  HeartAnnotation,
   LightningAnnotation
 } from '../../types/annotation';
 
@@ -18,7 +17,6 @@ type ShapeAnnotation =
   | RectangleAnnotation
   | ArrowAnnotation
   | StarAnnotation
-  | HeartAnnotation
   | LightningAnnotation;
 
 interface ShapeAnnotationViewProps {

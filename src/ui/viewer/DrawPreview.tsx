@@ -146,7 +146,7 @@ const PREVIEW_RENDERERS: Record<string, PreviewRenderer> = {
         );
     },
 
-    // star, heart, lightning은 기본 사각형 프리뷰 사용
+    // star, lightning은 기본 사각형 프리뷰 사용
     star: ({ drawStart, drawCurrent, scale }) => {
         const bbox = scaledBBox(drawStart, drawCurrent, scale);
         return (
@@ -155,20 +155,6 @@ const PREVIEW_RENDERERS: Record<string, PreviewRenderer> = {
                     ...baseStyle(bbox),
                     border: '2px dashed #F59E0B',
                     backgroundColor: 'transparent',
-                }}
-            />
-        );
-    },
-
-    heart: ({ drawStart, drawCurrent, scale }) => {
-        const bbox = scaledBBox(drawStart, drawCurrent, scale);
-        return (
-            <div
-                style={{
-                    ...baseStyle(bbox),
-                    border: '2px dashed #EF4444',
-                    backgroundColor: 'transparent',
-                    borderRadius: '8px',
                 }}
             />
         );
@@ -193,7 +179,7 @@ export function DrawPreview({ activeTool, drawStart, drawCurrent, scale }: DrawP
     if (!renderer) return null;
 
     // Pass shift state via a modified drawCurrent for box-based tools
-    const boxTools = ['rectangle', 'roundedRect', 'ellipse', 'star', 'heart', 'highlight'];
+    const boxTools = ['rectangle', 'roundedRect', 'ellipse', 'star', 'highlight'];
     let effectiveCurrent = drawCurrent;
     if (shiftHeld && boxTools.includes(activeTool)) {
         const w = Math.abs(drawCurrent.x - drawStart.x);

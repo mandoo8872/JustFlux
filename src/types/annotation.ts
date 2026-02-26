@@ -141,15 +141,6 @@ export interface StarAnnotation extends BaseAnnotation {
   };
 }
 
-export interface HeartAnnotation extends BaseAnnotation {
-  type: 'heart';
-  style: AnnotationStyle & {
-    fill: string;
-    stroke: string;
-    strokeWidth: number;
-  };
-}
-
 export interface LightningAnnotation extends BaseAnnotation {
   type: 'lightning';
   points: Point[];
@@ -259,7 +250,6 @@ export type Annotation =
   | ArrowAnnotation
   | LineAnnotation
   | StarAnnotation
-  | HeartAnnotation
   | LightningAnnotation
   | FreehandAnnotation
   | HighlighterAnnotation
@@ -286,10 +276,9 @@ export function isShapeAnnotation(annotation: Annotation): annotation is
   | ArrowAnnotation
   | LineAnnotation
   | StarAnnotation
-  | HeartAnnotation
   | LightningAnnotation
   | FreehandAnnotation {
-  return ['ellipse', 'rectangle', 'arrow', 'line', 'star', 'heart', 'lightning', 'freehand'].includes(annotation.type);
+  return ['ellipse', 'rectangle', 'arrow', 'line', 'star', 'lightning', 'freehand'].includes(annotation.type);
 }
 
 export function isFreehandAnnotation(annotation: Annotation): annotation is FreehandAnnotation {

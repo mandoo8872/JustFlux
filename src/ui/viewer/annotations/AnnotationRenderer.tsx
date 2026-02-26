@@ -27,7 +27,7 @@ export function renderAnnotation(props: RenderProps): React.ReactElement {
  * 새로운 주석 타입 등록 - 새로운 구조로 위임
  */
 export function registerAnnotationRenderer(
-  type: string, 
+  type: string,
   renderer: (props: RenderProps) => React.ReactElement
 ): void {
   // 새로운 구조의 registerAnnotationView로 위임
@@ -41,5 +41,5 @@ export function registerAnnotationRenderer(
  */
 export function getRegisteredAnnotationTypes(): string[] {
   // 임시로 기본 타입들 반환
-  return ['text', 'highlight', 'ellipse', 'rectangle', 'arrow', 'star', 'heart', 'lightning', 'image', 'stamp'];
+  return ['text', 'highlight', 'ellipse', 'rectangle', 'arrow', 'star', 'lightning', 'image', 'stamp'];
 }

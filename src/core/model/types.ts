@@ -94,7 +94,6 @@ import type {
   RectangleAnnotation,
   ArrowAnnotation,
   StarAnnotation,
-  HeartAnnotation,
   LightningAnnotation,
   ImageAnnotation,
   StampAnnotation,
@@ -113,7 +112,6 @@ export type {
   RectangleAnnotation,
   ArrowAnnotation,
   StarAnnotation,
-  HeartAnnotation,
   LightningAnnotation,
   ImageAnnotation,
   StampAnnotation,
@@ -128,7 +126,7 @@ export interface Point {
 }
 
 // 기존 코드 호환성을 위한 별칭
-export type AnnotationType = 'text' | 'highlight' | 'rect' | 'ellipse' | 'arrow' | 'line' | 'star' | 'heart' | 'lightning' | 'image' | 'stamp';
+export type AnnotationType = 'text' | 'highlight' | 'rect' | 'ellipse' | 'arrow' | 'line' | 'star' | 'lightning' | 'image' | 'stamp';
 
 // Import한 타입을 다시 export하여 사용 가능하게 함
 import type { RectangleAnnotation as RectangleAnnotationType, ArrowAnnotation as ArrowAnnotationType } from '../../types/annotation';
@@ -238,7 +236,6 @@ export type ToolType =
   | 'arrow'
   | 'line' // 직선 도구 추가
   | 'star'
-  | 'heart'
   | 'lightning'
   | 'brush'
   | 'eraser'

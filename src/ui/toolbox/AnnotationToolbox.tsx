@@ -13,7 +13,6 @@ import {
   Eraser,
   Minus,
   StarFour,
-  Heart,
   MagnifyingGlass,
   Crop,
   Copy,
@@ -137,15 +136,6 @@ const toolGroups: ToolGroup[] = [
         shadowColor: 'rgba(251, 191, 36, 0.4)'
       },
       {
-        id: 'heart',
-        icon: Heart,
-        label: '하트',
-        shortcut: 'H',
-        description: '하트 모양 그리기',
-        gradient: { from: 'rgb(236, 72, 153)', to: 'rgb(219, 39, 119)' },
-        shadowColor: 'rgba(236, 72, 153, 0.4)'
-      },
-      {
         id: 'brush',
         icon: Pen,
         label: '펜',
@@ -215,8 +205,7 @@ export function AnnotationToolbox({ activeTool, onToolChange }: AnnotationToolbo
     toolGroups[1].tools[3], // arrow
     toolGroups[1].tools[4], // line
     toolGroups[2].tools[0], // star
-    toolGroups[2].tools[1], // heart
-    toolGroups[2].tools[2], // brush (pen)
+    toolGroups[2].tools[1], // brush (pen)
   ];
 
   return (
