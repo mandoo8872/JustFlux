@@ -15,6 +15,7 @@ export interface BaseAnnotation {
   createdAt: number;
   modifiedAt: number;
   style: AnnotationStyle;
+  groupId?: string;
 }
 
 export interface BBox {

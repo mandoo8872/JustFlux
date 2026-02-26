@@ -43,6 +43,21 @@ export function useKeyboardShortcuts(): void {
                 } catch (error) {
                     console.error('[KeyboardShortcuts] Paste failed:', error);
                 }
+                return;
+            }
+
+            // ── Ctrl+G: 그룹화 / Ctrl+Shift+G: 그룹 해제 ──
+            if (mod && e.key.toLowerCase() === 'g') {
+                e.preventDefault();
+                const { selection, groupAnnotations, ungroupAnnotations } = useAnnotationStore.getState();
+                const ids = selection.selectedAnnotationIds;
+                if (ids.length < 2) return;
+
+                if (e.shiftKey) {
+                    ungroupAnnotations(ids);
+                } else {
+                    groupAnnotations(ids);
+                }
             }
         };
 

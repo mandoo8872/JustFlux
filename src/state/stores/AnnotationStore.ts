@@ -63,6 +63,8 @@ interface AnnotationStore {
   // ── Multi-Select Operations ──
   alignAnnotations: (ids: string[], alignment: 'left' | 'center' | 'right' | 'top' | 'middle' | 'bottom') => void;
   distributeAnnotations: (ids: string[], direction: 'horizontal' | 'vertical') => void;
+  groupAnnotations: (ids: string[]) => void;
+  ungroupAnnotations: (ids: string[]) => void;
 }
 
 export const useAnnotationStore = create<AnnotationStore>()(
@@ -97,7 +99,16 @@ export const useAnnotationStore = create<AnnotationStore>()(
             state.selection.selectedAnnotationIds.push(id);
           }
         } else {
-          state.selection.selectedAnnotationIds = [id];
+          // Auto-select group members
+          const annotation = state.annotations.find(a => a.id === id);
+          if (annotation?.groupId) {
+            const groupIds = state.annotations
+              .filter(a => a.groupId === annotation.groupId)
+              .map(a => a.id);
+            state.selection.selectedAnnotationIds = groupIds;
+          } else {
+            state.selection.selectedAnnotationIds = [id];
+          }
         }
       });
     },
@@ -408,6 +419,28 @@ export const useAnnotationStore = create<AnnotationStore>()(
               if (Array.isArray(pts)) { for (const p of pts) { p.y += dy; } }
             }
             cursor += a.bbox.height + gap;
+          }
+        }
+      });
+    },
+
+    groupAnnotations: (ids: string[]) => {
+      set((state) => {
+        if (ids.length < 2) return;
+        const groupId = generateAnnotationId();
+        for (const a of state.annotations) {
+          if (ids.includes(a.id)) {
+            a.groupId = groupId;
+          }
+        }
+      });
+    },
+
+    ungroupAnnotations: (ids: string[]) => {
+      set((state) => {
+        for (const a of state.annotations) {
+          if (ids.includes(a.id)) {
+            a.groupId = undefined;
           }
         }
       });

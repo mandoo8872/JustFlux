@@ -7,7 +7,7 @@ import {
     AlignLeft, AlignCenterHorizontal, AlignRight,
     AlignTop, AlignCenterVertical, AlignBottom,
     Rows, Columns,
-    Trash, Copy,
+    Trash, Copy, LinkSimple, LinkBreak,
 } from 'phosphor-react';
 import type { Annotation } from '../../types/annotation';
 import { useAnnotationStore } from '../../state/stores/AnnotationStore';
@@ -28,9 +28,12 @@ export function MultiSelectPanel({
     onDeleteAll,
     onCopyAll,
 }: MultiSelectPanelProps) {
-    const { alignAnnotations, distributeAnnotations, updateAnnotation } = useAnnotationStore();
+    const { alignAnnotations, distributeAnnotations, updateAnnotation, groupAnnotations, ungroupAnnotations } = useAnnotationStore();
     const ids = selectedAnnotations.map(a => a.id);
     const count = selectedAnnotations.length;
+
+    // Check if already grouped
+    const isGrouped = selectedAnnotations.every(a => a.groupId && a.groupId === selectedAnnotations[0]?.groupId);
 
     const handleAlign = (alignment: 'left' | 'center' | 'right' | 'top' | 'middle' | 'bottom') => {
         alignAnnotations(ids, alignment);
@@ -118,6 +121,39 @@ export function MultiSelectPanel({
                                 onClick={() => handleStrokeColorChange(color)}
                             />
                         ))}
+                    </div>
+                </div>
+
+                {/* Group / Ungroup */}
+                <div style={dividerStyle} />
+                <div style={sectionStyle}>
+                    <div style={labelStyle}>그룹</div>
+                    <div style={{ display: 'flex', gap: '4px', marginTop: '4px' }}>
+                        <button
+                            style={{
+                                ...iconButtonStyle,
+                                flex: 1, width: 'auto', gap: '4px',
+                                backgroundColor: isGrouped ? '#E0F2FE' : '#F1F5F9',
+                                borderColor: isGrouped ? '#3B82F6' : '#CBD5E1',
+                                color: isGrouped ? '#1D4ED8' : '#475569',
+                            }}
+                            onClick={() => groupAnnotations(ids)}
+                            title="그룹화 (Ctrl+G)"
+                        >
+                            <LinkSimple size={14} weight="bold" />
+                            {isGrouped ? '그룹됨' : '그룹'}
+                        </button>
+                        <button
+                            style={{
+                                ...iconButtonStyle,
+                                flex: 1, width: 'auto', gap: '4px',
+                            }}
+                            onClick={() => ungroupAnnotations(ids)}
+                            title="그룹 해제 (Ctrl+Shift+G)"
+                            disabled={!isGrouped}
+                        >
+                            <LinkBreak size={14} /> 해제
+                        </button>
                     </div>
                 </div>
             </div>
