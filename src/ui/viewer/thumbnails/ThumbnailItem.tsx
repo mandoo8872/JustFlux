@@ -147,10 +147,13 @@ export function ThumbnailItem({
           <img
             src={thumbnail}
             alt={`Page ${page.index + 1}`}
+            draggable={false}
             style={{
               maxWidth: '100%',
               maxHeight: '100%',
-              objectFit: 'contain'
+              objectFit: 'contain',
+              userSelect: 'none',
+              pointerEvents: 'none',
             }}
           />
         ) : (
