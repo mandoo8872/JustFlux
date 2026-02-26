@@ -18,7 +18,7 @@ import type {
     RoundedRectAnnotation,
     StarAnnotation,
     HeartAnnotation,
-    LightningAnnotation,
+
     ImageAnnotation as ImageAnnotationType,
     FreehandAnnotation,
 } from '../../types/annotation';
@@ -30,7 +30,7 @@ import { HighlightAnnotationComponent } from './annotations/HighlightAnnotation'
 import { ShapeAnnotationComponent } from './annotations/ShapeAnnotation';
 import { StarAnnotationComponent } from './annotations/StarAnnotation';
 import { HeartAnnotationComponent } from './annotations/HeartAnnotation';
-import { LightningAnnotationComponent } from './annotations/LightningAnnotation';
+
 import { ImageAnnotationComponent } from './annotations/ImageAnnotation';
 import { FreehandAnnotationComponent } from './annotations/FreehandAnnotation';
 
@@ -120,19 +120,7 @@ const ANNOTATION_RENDERERS: Record<string, AnnotationRenderer> = {
         </div>
     ),
 
-    lightning: ({ annotation, isSelected, scale, callbacks }) => (
-        <div key={annotation.id} style={{ position: 'relative' }}>
-            <LightningAnnotationComponent
-                annotation={annotation as LightningAnnotation}
-                isSelected={isSelected}
-                scale={scale}
-                onSelect={() => callbacks.onSelect(annotation.id)}
-                onUpdate={(updates) => callbacks.onUpdate(annotation.id, updates)}
-                onDelete={() => callbacks.onDelete(annotation.id)}
-                onDragStart={callbacks.onDragStart}
-            />
-        </div>
-    ),
+
 
     image: ({ annotation, isSelected, isHovered, scale, callbacks }) => (
         <div key={annotation.id} style={{ position: 'relative' }}>
