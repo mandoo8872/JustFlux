@@ -1,9 +1,9 @@
 /**
- * LayerOrderButtons — 레이어 순서 조작 버튼
+ * LayerOrderButtons — 레이어 순서 조작 (컴팩트 아이콘 전용)
  */
 
-import { CaretUp, CaretDown } from 'phosphor-react';
-import { sectionStyle, labelStyle, buttonStyle } from './panelStyles';
+import { CaretDoubleUp, CaretUp, CaretDown, CaretDoubleDown } from 'phosphor-react';
+import { iconButtonStyle } from './panelStyles';
 
 interface LayerOrderButtonsProps {
     onMoveUp: () => void;
@@ -14,40 +14,35 @@ interface LayerOrderButtonsProps {
 
 export function LayerOrderButtons({ onMoveUp, onMoveDown, onMoveToTop, onMoveToBottom }: LayerOrderButtonsProps) {
     return (
-        <div style={sectionStyle}>
-            <label style={labelStyle}>레이어 순서</label>
-            <div style={{ display: 'flex', gap: '8px' }}>
-                <button
-                    style={{ ...buttonStyle, backgroundColor: '#6366F1', color: 'white', padding: '8px' }}
-                    onClick={onMoveToTop}
-                    title="맨 앞으로"
-                >
-                    <CaretUp size={16} weight="bold" />
-                    <CaretUp size={16} weight="bold" style={{ marginLeft: '-8px' }} />
-                </button>
-                <button
-                    style={{ ...buttonStyle, backgroundColor: '#6366F1', color: 'white', padding: '8px' }}
-                    onClick={onMoveUp}
-                    title="앞으로"
-                >
-                    <CaretUp size={16} />
-                </button>
-                <button
-                    style={{ ...buttonStyle, backgroundColor: '#6366F1', color: 'white', padding: '8px' }}
-                    onClick={onMoveDown}
-                    title="뒤로"
-                >
-                    <CaretDown size={16} />
-                </button>
-                <button
-                    style={{ ...buttonStyle, backgroundColor: '#6366F1', color: 'white', padding: '8px' }}
-                    onClick={onMoveToBottom}
-                    title="맨 뒤로"
-                >
-                    <CaretDown size={16} weight="bold" />
-                    <CaretDown size={16} weight="bold" style={{ marginLeft: '-8px' }} />
-                </button>
-            </div>
+        <div style={{ display: 'flex', gap: '4px' }}>
+            <button
+                style={{ ...iconButtonStyle, flex: 1 }}
+                onClick={onMoveToTop}
+                title="맨 앞으로"
+            >
+                <CaretDoubleUp size={14} weight="bold" />
+            </button>
+            <button
+                style={{ ...iconButtonStyle, flex: 1 }}
+                onClick={onMoveUp}
+                title="앞으로"
+            >
+                <CaretUp size={14} />
+            </button>
+            <button
+                style={{ ...iconButtonStyle, flex: 1 }}
+                onClick={onMoveDown}
+                title="뒤로"
+            >
+                <CaretDown size={14} />
+            </button>
+            <button
+                style={{ ...iconButtonStyle, flex: 1 }}
+                onClick={onMoveToBottom}
+                title="맨 뒤로"
+            >
+                <CaretDoubleDown size={14} weight="bold" />
+            </button>
         </div>
     );
 }

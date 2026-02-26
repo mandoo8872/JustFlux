@@ -13,7 +13,7 @@ import { HighlightAnnotationComponent } from '../../../ui/viewer/annotations/Hig
 import { ShapeAnnotationComponent } from '../../../ui/viewer/annotations/ShapeAnnotation';
 import { ImageAnnotationComponent } from '../../../ui/viewer/annotations/ImageAnnotation';
 import { ArrowAnnotationComponent } from '../../../ui/viewer/annotations/ArrowAnnotation';
-import { LightningAnnotationComponent } from '../../../ui/viewer/annotations/LightningAnnotation';
+
 import { StarAnnotationComponent } from '../../../ui/viewer/annotations/StarAnnotation';
 import { HeartAnnotationComponent } from '../../../ui/viewer/annotations/HeartAnnotation';
 import { FreehandAnnotationComponent } from '../../../ui/viewer/annotations/FreehandAnnotation';
@@ -120,14 +120,7 @@ const ANNOTATION_CONFIGS: AnnotationConfig[] = [
     validate: (a) => a.type === 'line' && 'startPoint' in a && 'endPoint' in a && !!a.startPoint && !!a.endPoint,
     defaultProps: () => ({ type: 'line', startPoint: { x: 0, y: 0 }, endPoint: { x: 100, y: 100 }, style: { strokeColor: '#000000', strokeWidth: 1 } }),
   },
-  // ── Lightning, Star, Heart (core only) ──
-  {
-    type: 'lightning',
-    Component: LightningAnnotationComponent,
-    propsMapper: coreProps,
-    validate: (a) => a.type === 'lightning' && !!a.bbox,
-    defaultProps: () => ({ type: 'lightning', startPoint: { x: 0, y: 0 }, endPoint: { x: 100, y: 100 }, style: { strokeColor: '#000000', strokeWidth: 1 } }),
-  },
+  // ── Star, Heart ──
   {
     type: 'star',
     Component: StarAnnotationComponent,

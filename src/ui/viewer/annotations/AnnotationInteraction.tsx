@@ -199,7 +199,7 @@ export function useAnnotationInteraction({
         onAnnotationCreate(annotation);
       }
     }
-    
+
     setState(prev => ({
       ...prev,
       isDrawing: false,
@@ -253,7 +253,7 @@ export function useAnnotationInteraction({
     const y = Math.min(start.y, current.y);
     const width = Math.abs(current.x - start.x);
     const height = Math.abs(current.y - start.y);
-    
+
     return { x, y, width, height };
   }, []);
 

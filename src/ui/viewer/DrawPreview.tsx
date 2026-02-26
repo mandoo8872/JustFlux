@@ -174,18 +174,6 @@ const PREVIEW_RENDERERS: Record<string, PreviewRenderer> = {
         );
     },
 
-    lightning: ({ drawStart, drawCurrent, scale }) => {
-        const bbox = scaledBBox(drawStart, drawCurrent, scale);
-        return (
-            <div
-                style={{
-                    ...baseStyle(bbox),
-                    border: '2px dashed #8B5CF6',
-                    backgroundColor: 'transparent',
-                }}
-            />
-        );
-    },
 };
 
 // ── 메인 컴포넌트 ────────────────────────────
@@ -205,7 +193,7 @@ export function DrawPreview({ activeTool, drawStart, drawCurrent, scale }: DrawP
     if (!renderer) return null;
 
     // Pass shift state via a modified drawCurrent for box-based tools
-    const boxTools = ['rectangle', 'roundedRect', 'ellipse', 'star', 'heart', 'lightning', 'highlight'];
+    const boxTools = ['rectangle', 'roundedRect', 'ellipse', 'star', 'heart', 'highlight'];
     let effectiveCurrent = drawCurrent;
     if (shiftHeld && boxTools.includes(activeTool)) {
         const w = Math.abs(drawCurrent.x - drawStart.x);

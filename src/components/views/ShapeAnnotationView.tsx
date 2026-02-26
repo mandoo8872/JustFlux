@@ -4,21 +4,21 @@
  */
 
 import React from 'react';
-import type { 
-  EllipseAnnotation, 
-  RectangleAnnotation, 
-  ArrowAnnotation, 
-  StarAnnotation, 
-  HeartAnnotation, 
-  LightningAnnotation 
+import type {
+  EllipseAnnotation,
+  RectangleAnnotation,
+  ArrowAnnotation,
+  StarAnnotation,
+  HeartAnnotation,
+  LightningAnnotation
 } from '../../types/annotation';
 
-type ShapeAnnotation = 
-  | EllipseAnnotation 
-  | RectangleAnnotation 
-  | ArrowAnnotation 
-  | StarAnnotation 
-  | HeartAnnotation 
+type ShapeAnnotation =
+  | EllipseAnnotation
+  | RectangleAnnotation
+  | ArrowAnnotation
+  | StarAnnotation
+  | HeartAnnotation
   | LightningAnnotation;
 
 interface ShapeAnnotationViewProps {
@@ -60,8 +60,8 @@ export function ShapeAnnotationView({
     width: annotation.bbox.width * scale,
     height: annotation.bbox.height * scale,
     border: isSelected ? '2px solid #007bff' : '1px solid #000',
-    backgroundColor: isHovered 
-      ? 'rgba(255, 255, 0, 0.5)' 
+    backgroundColor: isHovered
+      ? 'rgba(255, 255, 0, 0.5)'
       : annotation.style.fill || 'transparent',
     stroke: annotation.style.stroke || '#000',
     strokeWidth: annotation.style.strokeWidth || 1,

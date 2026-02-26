@@ -1,12 +1,14 @@
 /**
- * TextControls — 텍스트 주석 전용 편집 UI
- * (텍스트 입력, 폰트 크기, 색상/투명도 탭, 스타일, 정렬)
+ * TextControls — 텍스트 주석 편집 UI (Figma Inspector 스타일)
  */
 
 import { useState } from 'react';
-import { CaretUp, CaretDown, CaretLeft, CaretRight } from 'phosphor-react';
+import { CaretUp, CaretDown } from 'phosphor-react';
 import type { Annotation, TextAnnotation } from '../../types/annotation';
-import { COLORS, sectionStyle, labelStyle, inputStyle, buttonStyle, colorButtonStyle } from './panelStyles';
+import {
+    COLORS, labelStyle, inputStyle, colorButtonStyle,
+    inlineRowStyle, valueDisplayStyle, iconButtonStyle, buttonStyle,
+} from './panelStyles';
 
 interface TextControlsProps {
     annotation: Annotation;
@@ -27,74 +29,137 @@ export function TextControls({ annotation, style, onUpdate }: TextControlsProps)
         }
     };
 
-    const handleFontSizeChange = (size: number) => {
-        onUpdate({ style: { ...style, fontSize: size } });
-    };
+    const fontSize = style.fontSize || 16;
 
     return (
         <>
             {/* Text Input */}
-            <div style={sectionStyle}>
-                <label style={labelStyle}>텍스트</label>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                    <input
-                        type="text"
-                        value={(annotation as TextAnnotation).content || ''}
-                        onChange={(e) => onUpdate({ content: e.target.value } as Partial<Annotation>)}
-                        style={{ ...inputStyle, flex: 1 }}
-                        placeholder="텍스트 입력"
-                    />
-                    <button
-                        style={{ ...buttonStyle, backgroundColor: '#3B82F6', color: 'white', flex: 'none', width: '60px' }}
-                        onClick={() => { }}
-                    >
-                        입력
-                    </button>
-                </div>
+            <div>
+                <input
+                    type="text"
+                    value={(annotation as TextAnnotation).content || ''}
+                    onChange={(e) => onUpdate({ content: e.target.value } as Partial<Annotation>)}
+                    style={inputStyle}
+                    placeholder="텍스트 입력..."
+                />
             </div>
 
             {/* Font Size */}
-            <div style={sectionStyle}>
-                <label style={labelStyle}>폰트 크기</label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ ...inlineRowStyle, marginTop: '4px' }}>
+                <span style={{ ...labelStyle, margin: 0 }}>크기</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <button
-                        style={{ ...inputStyle, width: '32px', padding: '6px', textAlign: 'center' }}
-                        onClick={() => handleFontSizeChange((style.fontSize || 16) - 1)}
+                        style={{ ...iconButtonStyle, width: '24px', height: '24px' }}
+                        onClick={() => onUpdate({ style: { ...style, fontSize: Math.max(8, fontSize - 1) } })}
                     >
-                        <CaretDown size={14} />
+                        <CaretDown size={10} />
                     </button>
-                    <span style={{ flex: 1, textAlign: 'center' }}>{style.fontSize || 16}px</span>
+                    <span style={valueDisplayStyle}>{fontSize}px</span>
                     <button
-                        style={{ ...inputStyle, width: '32px', padding: '6px', textAlign: 'center' }}
-                        onClick={() => handleFontSizeChange((style.fontSize || 16) + 1)}
+                        style={{ ...iconButtonStyle, width: '24px', height: '24px' }}
+                        onClick={() => onUpdate({ style: { ...style, fontSize: fontSize + 1 } })}
                     >
-                        <CaretUp size={14} />
+                        <CaretUp size={10} />
                     </button>
                 </div>
             </div>
 
+            {/* Text Style (Bold/Italic) */}
+            <div style={{ display: 'flex', gap: '4px', marginTop: '4px' }}>
+                <button
+                    style={{
+                        ...iconButtonStyle,
+                        flex: 1,
+                        height: '28px',
+                        fontWeight: 'bold',
+                        backgroundColor: style.fontWeight === 'bold' ? '#3B82F6' : '#F1F5F9',
+                        color: style.fontWeight === 'bold' ? 'white' : '#475569',
+                        borderColor: style.fontWeight === 'bold' ? '#2563EB' : '#CBD5E1',
+                        fontSize: '12px',
+                    }}
+                    onClick={() => onUpdate({ style: { ...style, fontWeight: style.fontWeight === 'bold' ? 'normal' : 'bold' } })}
+                >
+                    B
+                </button>
+                <button
+                    style={{
+                        ...iconButtonStyle,
+                        flex: 1,
+                        height: '28px',
+                        fontStyle: 'italic',
+                        backgroundColor: style.fontStyle === 'italic' ? '#3B82F6' : '#F1F5F9',
+                        color: style.fontStyle === 'italic' ? 'white' : '#475569',
+                        borderColor: style.fontStyle === 'italic' ? '#2563EB' : '#CBD5E1',
+                        fontSize: '12px',
+                    }}
+                    onClick={() => onUpdate({ style: { ...style, fontStyle: style.fontStyle === 'italic' ? 'normal' : 'italic' } })}
+                >
+                    I
+                </button>
+            </div>
+
+            {/* Text Alignment */}
+            <div style={{ display: 'flex', gap: '4px', marginTop: '4px' }}>
+                {(['left', 'center', 'right'] as const).map((align) => (
+                    <button
+                        key={align}
+                        style={{
+                            ...iconButtonStyle,
+                            flex: 1,
+                            height: '28px',
+                            backgroundColor: style.textAlign === align ? '#3B82F6' : '#F1F5F9',
+                            color: style.textAlign === align ? 'white' : '#475569',
+                            borderColor: style.textAlign === align ? '#2563EB' : '#CBD5E1',
+                        }}
+                        onClick={() => onUpdate({ style: { ...style, textAlign: align } })}
+                    >
+                        <svg width="14" height="10" viewBox="0 0 14 10">
+                            {align === 'left' ? (
+                                <>
+                                    <rect x="0" y="0" width="14" height="2" fill="currentColor" rx="1" />
+                                    <rect x="0" y="4" width="10" height="2" fill="currentColor" rx="1" />
+                                    <rect x="0" y="8" width="12" height="2" fill="currentColor" rx="1" />
+                                </>
+                            ) : align === 'center' ? (
+                                <>
+                                    <rect x="0" y="0" width="14" height="2" fill="currentColor" rx="1" />
+                                    <rect x="2" y="4" width="10" height="2" fill="currentColor" rx="1" />
+                                    <rect x="1" y="8" width="12" height="2" fill="currentColor" rx="1" />
+                                </>
+                            ) : (
+                                <>
+                                    <rect x="0" y="0" width="14" height="2" fill="currentColor" rx="1" />
+                                    <rect x="4" y="4" width="10" height="2" fill="currentColor" rx="1" />
+                                    <rect x="2" y="8" width="12" height="2" fill="currentColor" rx="1" />
+                                </>
+                            )}
+                        </svg>
+                    </button>
+                ))}
+            </div>
+
             {/* Color Tabs */}
-            <div style={sectionStyle}>
-                <label style={labelStyle}>색상</label>
-                <div style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
+            <div style={{ marginTop: '4px' }}>
+                <div style={{ display: 'flex', gap: '2px', marginBottom: '6px' }}>
                     {(['text', 'background', 'border'] as const).map((tab) => (
                         <button
                             key={tab}
                             style={{
                                 ...buttonStyle,
-                                backgroundColor: activeColorTab === tab ? '#3B82F6' : '#E5E5E5',
-                                color: activeColorTab === tab ? 'white' : '#333333',
-                                padding: '6px 12px',
+                                padding: '4px 8px',
+                                fontSize: '10px',
+                                backgroundColor: activeColorTab === tab ? '#3B82F6' : '#F1F5F9',
+                                color: activeColorTab === tab ? 'white' : '#64748B',
+                                borderColor: activeColorTab === tab ? '#2563EB' : '#CBD5E1',
                             }}
                             onClick={() => setActiveColorTab(tab)}
                         >
-                            {tab === 'text' ? '텍스트' : tab === 'background' ? '배경' : '테두리'}
+                            {tab === 'text' ? '글자' : tab === 'background' ? '배경' : '테두리'}
                         </button>
                     ))}
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '4px' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                     <button
-                        key="transparent"
                         style={colorButtonStyle('transparent',
                             (activeColorTab === 'text' && (style.color === 'transparent' || !style.color)) ||
                             (activeColorTab === 'background' && (style.backgroundColor === 'transparent' || !style.backgroundColor)) ||
@@ -103,7 +168,7 @@ export function TextControls({ annotation, style, onUpdate }: TextControlsProps)
                         onClick={() => handleColorChange('transparent')}
                         title="투명"
                     />
-                    {COLORS.slice(0, 11).map((color) => (
+                    {COLORS.map((color) => (
                         <button
                             key={color}
                             style={colorButtonStyle(color,
@@ -114,113 +179,6 @@ export function TextControls({ annotation, style, onUpdate }: TextControlsProps)
                             onClick={() => handleColorChange(color)}
                         />
                     ))}
-                </div>
-                {activeColorTab === 'text' && (
-                    <div style={{ marginTop: '8px' }}>
-                        <div style={{ fontSize: '11px', color: '#666666', marginBottom: '4px' }}>텍스트 투명도: {Math.round((style.opacity ?? 1) * 100)}%</div>
-                        <input
-                            type="range" min="0" max="100"
-                            value={Math.round((style.opacity ?? 1) * 100)}
-                            onChange={(e) => onUpdate({ style: { ...style, opacity: parseInt(e.target.value) / 100 } })}
-                            style={{ width: '100%' }}
-                        />
-                    </div>
-                )}
-                {activeColorTab === 'background' && (
-                    <div style={{ marginTop: '8px' }}>
-                        <div style={{ fontSize: '11px', color: '#666666', marginBottom: '4px' }}>배경 투명도: {Math.round((style.backgroundOpacity ?? 1) * 100)}%</div>
-                        <input
-                            type="range" min="0" max="100"
-                            value={Math.round((style.backgroundOpacity ?? 1) * 100)}
-                            onChange={(e) => onUpdate({ style: { ...style, backgroundOpacity: parseInt(e.target.value) / 100 } })}
-                            style={{ width: '100%' }}
-                        />
-                    </div>
-                )}
-                {activeColorTab === 'border' && (
-                    <div style={{ marginTop: '8px' }}>
-                        <div style={{ fontSize: '11px', color: '#666666', marginBottom: '4px' }}>테두리 굵기: {style.borderWidth ?? 1}px</div>
-                        <input
-                            type="range" min="0" max="10"
-                            value={style.borderWidth ?? 1}
-                            onChange={(e) => onUpdate({ style: { ...style, borderWidth: parseInt(e.target.value) } })}
-                            style={{ width: '100%' }}
-                        />
-                    </div>
-                )}
-            </div>
-
-            {/* Text Style (Bold/Italic) */}
-            <div style={sectionStyle}>
-                <label style={labelStyle}>텍스트 스타일</label>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                    <button
-                        style={{
-                            ...buttonStyle,
-                            backgroundColor: style.fontWeight === 'bold' ? '#3B82F6' : '#E5E5E5',
-                            color: style.fontWeight === 'bold' ? 'white' : '#333333',
-                            padding: '8px 16px',
-                        }}
-                        onClick={() => onUpdate({ style: { ...style, fontWeight: style.fontWeight === 'bold' ? 'normal' : 'bold' } })}
-                    >
-                        굵게
-                    </button>
-                    <button
-                        style={{
-                            ...buttonStyle,
-                            backgroundColor: style.fontStyle === 'italic' ? '#3B82F6' : '#E5E5E5',
-                            color: style.fontStyle === 'italic' ? 'white' : '#333333',
-                            padding: '8px 16px',
-                        }}
-                        onClick={() => onUpdate({ style: { ...style, fontStyle: style.fontStyle === 'italic' ? 'normal' : 'italic' } })}
-                    >
-                        기울임
-                    </button>
-                </div>
-            </div>
-
-            {/* Text Alignment */}
-            <div style={sectionStyle}>
-                <label style={labelStyle}>텍스트 정렬</label>
-                <div style={{ marginBottom: '8px' }}>
-                    <div style={{ fontSize: '11px', color: '#666666', marginBottom: '4px' }}>가로</div>
-                    <div style={{ display: 'flex', gap: '4px' }}>
-                        {(['left', 'center', 'right'] as const).map((align) => (
-                            <button
-                                key={align}
-                                style={{
-                                    ...buttonStyle,
-                                    flex: 1,
-                                    backgroundColor: style.textAlign === align ? '#3B82F6' : '#E5E5E5',
-                                    color: style.textAlign === align ? 'white' : '#333333',
-                                    padding: '6px',
-                                }}
-                                onClick={() => onUpdate({ style: { ...style, textAlign: align } })}
-                            >
-                                {align === 'left' ? <CaretLeft size={14} /> : align === 'right' ? <CaretRight size={14} /> : '━'}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-                <div>
-                    <div style={{ fontSize: '11px', color: '#666666', marginBottom: '4px' }}>세로</div>
-                    <div style={{ display: 'flex', gap: '4px' }}>
-                        {(['top', 'middle', 'bottom'] as const).map((align) => (
-                            <button
-                                key={align}
-                                style={{
-                                    ...buttonStyle,
-                                    flex: 1,
-                                    backgroundColor: (style.verticalAlign === align || (align === 'middle' && !style.verticalAlign)) ? '#3B82F6' : '#E5E5E5',
-                                    color: (style.verticalAlign === align || (align === 'middle' && !style.verticalAlign)) ? 'white' : '#333333',
-                                    padding: '6px',
-                                }}
-                                onClick={() => onUpdate({ style: { ...style, verticalAlign: align } })}
-                            >
-                                {align === 'top' ? <CaretUp size={14} /> : align === 'bottom' ? <CaretDown size={14} /> : '‖'}
-                            </button>
-                        ))}
-                    </div>
                 </div>
             </div>
         </>

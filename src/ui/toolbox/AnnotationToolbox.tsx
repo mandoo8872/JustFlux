@@ -14,7 +14,6 @@ import {
   Minus,
   StarFour,
   Heart,
-  LightningSlash,
   MagnifyingGlass,
   Crop,
   Copy,
@@ -147,15 +146,6 @@ const toolGroups: ToolGroup[] = [
         shadowColor: 'rgba(236, 72, 153, 0.4)'
       },
       {
-        id: 'lightning',
-        icon: LightningSlash,
-        label: '번개',
-        shortcut: 'Z',
-        description: '번개 모양 그리기',
-        gradient: { from: 'rgb(251, 191, 36)', to: 'rgb(245, 158, 11)' },
-        shadowColor: 'rgba(251, 191, 36, 0.4)'
-      },
-      {
         id: 'brush',
         icon: Pen,
         label: '펜',
@@ -226,8 +216,7 @@ export function AnnotationToolbox({ activeTool, onToolChange }: AnnotationToolbo
     toolGroups[1].tools[4], // line
     toolGroups[2].tools[0], // star
     toolGroups[2].tools[1], // heart
-    toolGroups[2].tools[2], // lightning
-    toolGroups[2].tools[3], // brush (pen)
+    toolGroups[2].tools[2], // brush (pen)
   ];
 
   return (
