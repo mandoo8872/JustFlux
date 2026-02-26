@@ -57,7 +57,8 @@ export function EllipseArcHandles({
 }: EllipseArcHandlesProps) {
     const [activeHandle, setActiveHandle] = useState<'start' | 'sweep' | 'ratio' | null>(null);
     const containerRef = useRef<SVGSVGElement | null>(null);
-    const lastAngleRef = useRef<number>(0);
+    // Refs to store initial values at drag start (avoids closure stale state)
+    const dragInitRef = useRef<{ startAngle: number; mouseAngle: number }>({ startAngle: 0, mouseAngle: 0 });
 
     // Only show arc handles when we have a partial arc or inner radius
     const isFullCircle = sweepAngle >= 360 && innerRadiusRatio === 0;
@@ -85,6 +86,14 @@ export function EllipseArcHandles({
         const parentRect = containerRef.current?.closest('div')?.getBoundingClientRect();
         if (!parentRect) return;
 
+        // Store initial values at drag start
+        const initialMouseAngle = angleFromCenter(
+            cx, cy,
+            e.clientX - parentRect.left,
+            e.clientY - parentRect.top
+        );
+        dragInitRef.current = { startAngle, mouseAngle: initialMouseAngle };
+
         const handleMove = (moveEvent: PointerEvent) => {
             const localX = moveEvent.clientX - parentRect.left;
             const localY = moveEvent.clientY - parentRect.top;
@@ -99,13 +108,12 @@ export function EllipseArcHandles({
                 const angle = angleFromCenter(cx, cy, localX, localY);
 
                 if (type === 'start') {
-                    // Start: rotate the arc start
-                    const delta = angle - lastAngleRef.current;
-                    let newStart = (startAngle + delta + 360) % 360;
+                    // Start: absolute offset from initial position
+                    const totalDelta = angle - dragInitRef.current.mouseAngle;
+                    const newStart = (dragInitRef.current.startAngle + totalDelta + 360) % 360;
                     onUpdate({ startAngle: Math.round(newStart * 10) / 10 });
-                    lastAngleRef.current = angle;
                 } else {
-                    // Sweep: change the arc extent
+                    // Sweep: change the arc extent (absolute from current startAngle)
                     let newSweep = ((angle - startAngle + 360) % 360);
                     if (newSweep < 5) newSweep = 5; // Minimum 5°
                     if (newSweep > 360) newSweep = 360;
@@ -113,12 +121,6 @@ export function EllipseArcHandles({
                 }
             }
         };
-
-        lastAngleRef.current = angleFromCenter(
-            cx, cy,
-            e.clientX - parentRect.left,
-            e.clientY - parentRect.top
-        );
 
         const handleUp = () => {
             setActiveHandle(null);
