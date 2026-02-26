@@ -42,7 +42,7 @@ export function ObjectPropertyPanel({
 
     const isTextAnnotation = selectedAnnotation.type === 'text';
     const isImageAnnotation = selectedAnnotation.type === 'image';
-    const isShapeAnnotation = ['rectangle', 'roundedRect', 'ellipse', 'arrow', 'star', 'heart', 'lightning', 'freehand'].includes(selectedAnnotation.type);
+    const isShapeAnnotation = ['rectangle', 'roundedRect', 'ellipse', 'arrow', 'star', 'heart', 'lightning', 'freehand', 'highlighter'].includes(selectedAnnotation.type);
     const isClosedShape = ['rectangle', 'roundedRect', 'ellipse'].includes(selectedAnnotation.type);
 
     const style = selectedAnnotation.style || {};

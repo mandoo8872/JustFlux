@@ -56,7 +56,7 @@ export function FreehandAnnotationComponent({
     const [localHovered, setLocalHovered] = useState(false);
     const isHovered = isHoveredProp ?? localHovered;
 
-    const { points = [], bbox, style } = annotation;
+    const { points = [], style } = annotation;
     const { stroke = '#000000', strokeWidth = 3 } = style || {};
 
     const pathString = pointsToScaledPath(points, scale);
@@ -129,17 +129,16 @@ export function FreehandAnnotationComponent({
                 />
             )}
 
-            {/* Selection bounding box */}
-            {isSelected && bbox && (
-                <rect
-                    x={bbox.x * scale - 10}
-                    y={bbox.y * scale - 10}
-                    width={bbox.width * scale + 20}
-                    height={bbox.height * scale + 20}
-                    fill="transparent"
+            {/* Selection indicator — path-following blue outline */}
+            {isSelected && (
+                <path
+                    d={pathString}
+                    fill="none"
                     stroke="#3B82F6"
-                    strokeWidth={2}
-                    strokeDasharray="4 2"
+                    strokeWidth={(strokeWidth + 6) * scale}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeOpacity={0.4}
                     style={{ pointerEvents: 'all', cursor: 'move' }}
                     onPointerDown={handlePointerDown}
                     onClick={handleClick}

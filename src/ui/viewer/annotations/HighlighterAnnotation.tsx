@@ -3,9 +3,8 @@
  * FreehandAnnotation 기반, 반투명하고 두꺼운 스트로크
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import type { HighlighterAnnotation, Point } from '../../../types/annotation';
-import { ResizeHandles } from './ResizeHandles';
 
 interface HighlighterAnnotationProps {
     annotation: HighlighterAnnotation;
@@ -50,7 +49,7 @@ export function HighlighterAnnotationComponent({
     isHovered: isHoveredProp,
     scale,
     onSelect,
-    onUpdate,
+    onUpdate: _onUpdate,
     onHover,
     onHoverEnd,
     onPointerDown,
@@ -58,7 +57,7 @@ export function HighlighterAnnotationComponent({
     const [localHovered, setLocalHovered] = useState(false);
     const isHovered = isHoveredProp ?? localHovered;
 
-    const { points = [], bbox, style } = annotation;
+    const { points = [], style } = annotation;
     // Highlighter defaults: yellow color, thick stroke, semi-transparent
     const { stroke = '#FFFF00', strokeWidth = 20, opacity = 0.4 } = style || {};
 
@@ -87,142 +86,77 @@ export function HighlighterAnnotationComponent({
         onHoverEnd?.();
     };
 
-    // Handle resize - scale all points relative to bbox
-    const handleResize = useCallback((dWidth: number, dHeight: number, dX: number, dY: number) => {
-        if (!bbox || !points.length) return;
-
-        const dW_scaled = dWidth / scale;
-        const dH_scaled = dHeight / scale;
-        const dX_scaled = dX / scale;
-        const dY_scaled = dY / scale;
-
-        const newWidth = Math.max(10 / scale, bbox.width + dW_scaled);
-        const newHeight = Math.max(10 / scale, bbox.height + dH_scaled);
-
-        // Calculate scale factors
-        const scaleX = newWidth / bbox.width;
-        const scaleY = newHeight / bbox.height;
-
-        // Transform all points relative to the old bbox origin
-        const newPoints = points.map(point => ({
-            x: bbox.x + dX_scaled + (point.x - bbox.x) * scaleX,
-            y: bbox.y + dY_scaled + (point.y - bbox.y) * scaleY,
-        }));
-
-        onUpdate({
-            bbox: {
-                x: bbox.x + dX_scaled,
-                y: bbox.y + dY_scaled,
-                width: newWidth,
-                height: newHeight,
-            },
-            points: newPoints,
-        });
-    }, [bbox, points, scale, onUpdate]);
-
-    // Calculate scaled bbox for handles
-    const scaledBBox = bbox ? {
-        x: bbox.x * scale,
-        y: bbox.y * scale,
-        width: bbox.width * scale,
-        height: bbox.height * scale,
-    } : null;
-
     return (
-        <>
-            <svg
+        <svg
+            style={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: '100%',
+                height: '100%',
+                overflow: 'visible',
+                pointerEvents: 'none',
+            }}
+        >
+            {/* Hit area (invisible thick path) */}
+            <path
+                d={pathString}
+                fill="none"
+                stroke="transparent"
+                strokeWidth={Math.max(50, strokeWidth * 2)}
+                strokeLinecap="round"
+                strokeLinejoin="round"
                 style={{
-                    position: 'absolute',
-                    left: 0,
-                    top: 0,
-                    width: '100%',
-                    height: '100%',
-                    overflow: 'visible',
-                    pointerEvents: 'none',
+                    pointerEvents: 'stroke',
+                    cursor: isSelected ? 'move' : 'pointer'
                 }}
-            >
-                {/* Hit area (invisible thick path) */}
+                onPointerDown={handlePointerDown}
+                onClick={handleClick}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+            />
+
+            {/* Hover indicator */}
+            {isHovered && !isSelected && (
                 <path
                     d={pathString}
                     fill="none"
-                    stroke="transparent"
-                    strokeWidth={Math.max(50, strokeWidth * 2)}
+                    stroke="#93C5FD"
+                    strokeWidth={(strokeWidth + 10) * scale}
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    style={{
-                        pointerEvents: 'stroke',
-                        cursor: isSelected ? 'move' : 'pointer'
-                    }}
-                    onPointerDown={handlePointerDown}
-                    onClick={handleClick}
-                    onMouseEnter={handleMouseEnter}
-                    onMouseLeave={handleMouseLeave}
-                />
-
-                {/* Hover indicator */}
-                {isHovered && !isSelected && (
-                    <path
-                        d={pathString}
-                        fill="none"
-                        stroke="#93C5FD"
-                        strokeWidth={(strokeWidth + 10) * scale}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeOpacity={0.4}
-                        style={{ pointerEvents: 'none' }}
-                    />
-                )}
-
-                {/* Selection bounding box */}
-                {isSelected && bbox && (
-                    <rect
-                        x={bbox.x * scale - 5}
-                        y={bbox.y * scale - 5}
-                        width={bbox.width * scale + 10}
-                        height={bbox.height * scale + 10}
-                        fill="transparent"
-                        stroke="#3B82F6"
-                        strokeWidth={2}
-                        strokeDasharray="4 2"
-                        style={{ pointerEvents: 'all', cursor: 'move' }}
-                        onPointerDown={handlePointerDown}
-                        onClick={handleClick}
-                    />
-                )}
-
-                {/* Visible path - semi-transparent highlighter effect */}
-                <path
-                    d={pathString}
-                    fill="none"
-                    stroke={stroke}
-                    strokeWidth={strokeWidth * scale}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeOpacity={opacity}
+                    strokeOpacity={0.4}
                     style={{ pointerEvents: 'none' }}
                 />
-            </svg>
-
-            {/* Resize handles */}
-            {isSelected && scaledBBox && (
-                <div
-                    style={{
-                        position: 'absolute',
-                        left: scaledBBox.x - 5,
-                        top: scaledBBox.y - 5,
-                        width: scaledBBox.width + 10,
-                        height: scaledBBox.height + 10,
-                        pointerEvents: 'none',
-                        zIndex: 51,
-                    }}
-                >
-                    <ResizeHandles
-                        width={scaledBBox.width + 10}
-                        height={scaledBBox.height + 10}
-                        onResize={handleResize}
-                    />
-                </div>
             )}
-        </>
+
+            {/* Selection indicator — path-following blue outline */}
+            {isSelected && (
+                <path
+                    d={pathString}
+                    fill="none"
+                    stroke="#3B82F6"
+                    strokeWidth={(strokeWidth + 8) * scale}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeOpacity={0.35}
+                    style={{ pointerEvents: 'all', cursor: 'move' }}
+                    onPointerDown={handlePointerDown}
+                    onClick={handleClick}
+                />
+            )}
+
+            {/* Visible path - semi-transparent highlighter effect */}
+            <path
+                d={pathString}
+                fill="none"
+                stroke={stroke}
+                strokeWidth={strokeWidth * scale}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeOpacity={opacity}
+                style={{ pointerEvents: 'none' }}
+            />
+        </svg>
     );
 }

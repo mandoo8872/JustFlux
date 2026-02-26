@@ -168,7 +168,7 @@ const ANNOTATION_CONFIGS: AnnotationConfig[] = [
       onHoverEnd: p.onHoverEnd,
     }),
     validate: (a) => a.type === 'highlighter' && !!a.bbox && 'points' in a && Array.isArray(a.points),
-    defaultProps: () => ({ type: 'highlighter', points: [], style: { stroke: '#FFFF00', strokeWidth: 20, opacity: 0.4 } }),
+    defaultProps: () => ({ type: 'highlighter', points: [], style: { stroke: '#FF9800', strokeWidth: 20, opacity: 0.3 } }),
   },
 ];
 
