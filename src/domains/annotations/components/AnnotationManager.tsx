@@ -43,13 +43,69 @@ export function AnnotationManager({
   // Filter annotations for current page
   const pageAnnotations = annotations.filter(annotation => annotation.pageId === pageId);
 
+  // Marquee selection state
+  const [marquee, setMarquee] = React.useState<{
+    startX: number; startY: number; currentX: number; currentY: number;
+  } | null>(null);
+
   // Canvas interaction (Creation & Clear Selection)
   const onCanvasPointerDown = useCallback((e: React.PointerEvent) => {
 
-    // If clicking on the background (ref matches target), clear selection
+    // Select tool: marquee drag or clear selection
     if (activeTool === 'select') {
       if (e.target === layerRef.current) {
+        e.preventDefault();
+        const rect = layerRef.current?.getBoundingClientRect();
+        if (!rect) { clearSelection(); return; }
+
+        const startX = (e.clientX - rect.left) / scale;
+        const startY = (e.clientY - rect.top) / scale;
+
+        setMarquee({ startX, startY, currentX: startX, currentY: startY });
         clearSelection();
+
+        const handleMarqueeMove = (moveEvent: PointerEvent) => {
+          const cx = (moveEvent.clientX - rect.left) / scale;
+          const cy = (moveEvent.clientY - rect.top) / scale;
+          setMarquee(prev => prev ? { ...prev, currentX: cx, currentY: cy } : null);
+        };
+
+        const handleMarqueeUp = (upEvent: PointerEvent) => {
+          window.removeEventListener('pointermove', handleMarqueeMove);
+          window.removeEventListener('pointerup', handleMarqueeUp);
+
+          const endX = (upEvent.clientX - rect.left) / scale;
+          const endY = (upEvent.clientY - rect.top) / scale;
+
+          const minX = Math.min(startX, endX);
+          const minY = Math.min(startY, endY);
+          const maxX = Math.max(startX, endX);
+          const maxY = Math.max(startY, endY);
+          const w = maxX - minX;
+          const h = maxY - minY;
+
+          // Only select if dragged enough (> 5px)
+          if (w > 5 || h > 5) {
+            const { selectAnnotations } = useAnnotationStore.getState();
+            const insideIds = pageAnnotations
+              .filter(a => {
+                const b = a.bbox;
+                if (!b) return false;
+                return b.x >= minX && b.y >= minY &&
+                  b.x + b.width <= maxX && b.y + b.height <= maxY;
+              })
+              .map(a => a.id);
+
+            if (insideIds.length > 0) {
+              selectAnnotations(insideIds);
+            }
+          }
+
+          setMarquee(null);
+        };
+
+        window.addEventListener('pointermove', handleMarqueeMove);
+        window.addEventListener('pointerup', handleMarqueeUp);
       }
       return;
     }
@@ -281,6 +337,23 @@ export function AnnotationManager({
           />
         </React.Fragment>
       ))}
+
+      {/* Marquee selection overlay */}
+      {marquee && (
+        <div
+          style={{
+            position: 'absolute',
+            left: Math.min(marquee.startX, marquee.currentX) * scale,
+            top: Math.min(marquee.startY, marquee.currentY) * scale,
+            width: Math.abs(marquee.currentX - marquee.startX) * scale,
+            height: Math.abs(marquee.currentY - marquee.startY) * scale,
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            border: '1px dashed #3B82F6',
+            pointerEvents: 'none',
+            zIndex: 9999,
+          }}
+        />
+      )}
     </div>
   );
 }

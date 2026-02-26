@@ -59,6 +59,10 @@ interface AnnotationStore {
   sendToBack: (id: string) => void;
   bringForward: (id: string) => void;
   sendBackward: (id: string) => void;
+
+  // ── Multi-Select Operations ──
+  alignAnnotations: (ids: string[], alignment: 'left' | 'center' | 'right' | 'top' | 'middle' | 'bottom') => void;
+  distributeAnnotations: (ids: string[], direction: 'horizontal' | 'vertical') => void;
 }
 
 export const useAnnotationStore = create<AnnotationStore>()(
@@ -305,6 +309,106 @@ export const useAnnotationStore = create<AnnotationStore>()(
           const temp = state.annotations[index];
           state.annotations[index] = state.annotations[index - 1];
           state.annotations[index - 1] = temp;
+        }
+      });
+    },
+
+    // ============================================
+    // Multi-Select Operations
+    // ============================================
+
+    alignAnnotations: (ids: string[], alignment: 'left' | 'center' | 'right' | 'top' | 'middle' | 'bottom') => {
+      set((state) => {
+        const targets = state.annotations.filter(a => ids.includes(a.id));
+        if (targets.length < 2) return;
+
+        const bboxes = targets.map(a => a.bbox);
+        const minX = Math.min(...bboxes.map(b => b.x));
+        const maxX = Math.max(...bboxes.map(b => b.x + b.width));
+        const minY = Math.min(...bboxes.map(b => b.y));
+        const maxY = Math.max(...bboxes.map(b => b.y + b.height));
+        const centerX = (minX + maxX) / 2;
+        const centerY = (minY + maxY) / 2;
+
+        for (const a of targets) {
+          const oldX = a.bbox.x;
+          const oldY = a.bbox.y;
+          let dx = 0, dy = 0;
+
+          switch (alignment) {
+            case 'left': dx = minX - oldX; break;
+            case 'center': dx = centerX - (oldX + a.bbox.width / 2); break;
+            case 'right': dx = maxX - (oldX + a.bbox.width); break;
+            case 'top': dy = minY - oldY; break;
+            case 'middle': dy = centerY - (oldY + a.bbox.height / 2); break;
+            case 'bottom': dy = maxY - (oldY + a.bbox.height); break;
+          }
+
+          a.bbox.x += dx;
+          a.bbox.y += dy;
+
+          // Move startPoint/endPoint for arrow/line
+          if ((a.type === 'arrow' || a.type === 'line') && 'startPoint' in a) {
+            const typed = a as any;
+            typed.startPoint.x += dx; typed.startPoint.y += dy;
+            typed.endPoint.x += dx; typed.endPoint.y += dy;
+          }
+          // Move freehand points
+          if ((a.type === 'freehand' || a.type === 'highlighter') && 'points' in a) {
+            const pts = (a as any).points as Array<{ x: number; y: number }>;
+            if (Array.isArray(pts)) { for (const p of pts) { p.x += dx; p.y += dy; } }
+          }
+        }
+      });
+    },
+
+    distributeAnnotations: (ids: string[], direction: 'horizontal' | 'vertical') => {
+      set((state) => {
+        const targets = state.annotations.filter(a => ids.includes(a.id));
+        if (targets.length < 3) return;
+
+        if (direction === 'horizontal') {
+          targets.sort((a, b) => a.bbox.x - b.bbox.x);
+          const first = targets[0].bbox.x;
+          const last = targets[targets.length - 1].bbox.x + targets[targets.length - 1].bbox.width;
+          const totalWidth = targets.reduce((s, a) => s + a.bbox.width, 0);
+          const gap = (last - first - totalWidth) / (targets.length - 1);
+
+          let cursor = first;
+          for (const a of targets) {
+            const dx = cursor - a.bbox.x;
+            a.bbox.x = cursor;
+            if ((a.type === 'arrow' || a.type === 'line') && 'startPoint' in a) {
+              const typed = a as any;
+              typed.startPoint.x += dx; typed.endPoint.x += dx;
+            }
+            if ((a.type === 'freehand' || a.type === 'highlighter') && 'points' in a) {
+              const pts = (a as any).points as Array<{ x: number; y: number }>;
+              if (Array.isArray(pts)) { for (const p of pts) { p.x += dx; } }
+            }
+            cursor += a.bbox.width + gap;
+          }
+        } else {
+          targets.sort((a, b) => a.bbox.y - b.bbox.y);
+          const first = targets[0].bbox.y;
+          const last = targets[targets.length - 1].bbox.y + targets[targets.length - 1].bbox.height;
+          const totalHeight = targets.reduce((s, a) => s + a.bbox.height, 0);
+          const gap = (last - first - totalHeight) / (targets.length - 1);
+
+          let cursor = first;
+          for (const a of targets) {
+            const dy = cursor - a.bbox.y;
+            a.bbox.y = cursor;
+            if ((a.type === 'arrow' || a.type === 'line') && 'startPoint' in a) {
+              const typed = a as any;
+              typed.startPoint.y += dy; typed.endPoint.y += dy;
+            }
+            if ((a.type === 'freehand' || a.type === 'highlighter') && 'points' in a) {
+              const pts = (a as any).points as Array<{ x: number; y: number }>;
+              if (Array.isArray(pts)) { for (const p of pts) { p.y += dy; } }
+            }
+            cursor += a.bbox.height + gap;
+          }
         }
       });
     },
