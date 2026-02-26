@@ -5,6 +5,7 @@
  * 새로운 도구를 추가할 때 이 파일에만 프리뷰 렌더러를 추가하면 됨.
  */
 
+import { useState, useEffect } from 'react';
 import type { ToolType, BBox } from '../../core/model/types';
 
 // ── Props ────────────────────────────────────
@@ -21,14 +22,22 @@ interface DrawPreviewProps {
 function scaledBBox(
     start: { x: number; y: number },
     current: { x: number; y: number },
-    scale: number
+    scale: number,
+    constrain = false
 ): BBox {
-    return {
-        x: Math.min(start.x, current.x) * scale,
-        y: Math.min(start.y, current.y) * scale,
-        width: Math.abs(current.x - start.x) * scale,
-        height: Math.abs(current.y - start.y) * scale,
-    };
+    let width = Math.abs(current.x - start.x) * scale;
+    let height = Math.abs(current.y - start.y) * scale;
+
+    if (constrain) {
+        const maxSide = Math.max(width, height);
+        width = maxSide;
+        height = maxSide;
+    }
+
+    const x = (current.x >= start.x ? start.x : start.x - width / scale) * scale;
+    const y = (current.y >= start.y ? start.y : start.y - height / scale) * scale;
+
+    return { x, y, width, height };
 }
 
 function baseStyle(bbox: BBox): React.CSSProperties {
@@ -182,9 +191,33 @@ const PREVIEW_RENDERERS: Record<string, PreviewRenderer> = {
 // ── 메인 컴포넌트 ────────────────────────────
 
 export function DrawPreview({ activeTool, drawStart, drawCurrent, scale }: DrawPreviewProps) {
+    const [shiftHeld, setShiftHeld] = useState(false);
+
+    useEffect(() => {
+        const down = (e: KeyboardEvent) => { if (e.key === 'Shift') setShiftHeld(true); };
+        const up = (e: KeyboardEvent) => { if (e.key === 'Shift') setShiftHeld(false); };
+        window.addEventListener('keydown', down);
+        window.addEventListener('keyup', up);
+        return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up); };
+    }, []);
+
     const renderer = PREVIEW_RENDERERS[activeTool];
     if (!renderer) return null;
-    return <>{renderer({ activeTool, drawStart, drawCurrent, scale })}</>;
+
+    // Pass shift state via a modified drawCurrent for box-based tools
+    const boxTools = ['rectangle', 'roundedRect', 'ellipse', 'star', 'heart', 'lightning', 'highlight'];
+    let effectiveCurrent = drawCurrent;
+    if (shiftHeld && boxTools.includes(activeTool)) {
+        const w = Math.abs(drawCurrent.x - drawStart.x);
+        const h = Math.abs(drawCurrent.y - drawStart.y);
+        const maxSide = Math.max(w, h);
+        effectiveCurrent = {
+            x: drawCurrent.x >= drawStart.x ? drawStart.x + maxSide : drawStart.x - maxSide,
+            y: drawCurrent.y >= drawStart.y ? drawStart.y + maxSide : drawStart.y - maxSide,
+        };
+    }
+
+    return <>{renderer({ activeTool, drawStart, drawCurrent: effectiveCurrent, scale })}</>;
 }
 
 /**

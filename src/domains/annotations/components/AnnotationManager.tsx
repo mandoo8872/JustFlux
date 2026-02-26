@@ -128,10 +128,18 @@ export function AnnotationManager({
             }
           } else {
             // Update BBox for Box-based shapes
-            const width = Math.abs(currentX - startX);
-            const height = Math.abs(currentY - startY);
-            const newX = Math.min(startX, currentX);
-            const newY = Math.min(startY, currentY);
+            let width = Math.abs(currentX - startX);
+            let height = Math.abs(currentY - startY);
+
+            // Shift key: constrain to 1:1 ratio (perfect square/circle)
+            if (moveEvent.shiftKey) {
+              const maxSide = Math.max(width, height);
+              width = maxSide;
+              height = maxSide;
+            }
+
+            const newX = currentX >= startX ? startX : startX - width;
+            const newY = currentY >= startY ? startY : startY - height;
 
             onUpdate(createdAnnotationId, {
               bbox: { x: newX, y: newY, width, height }

@@ -131,9 +131,9 @@ const ANNOTATION_CONFIGS: AnnotationConfig[] = [
   {
     type: 'star',
     Component: StarAnnotationComponent,
-    propsMapper: coreProps,
+    propsMapper: withHoverDrag,
     validate: (a) => a.type === 'star' && !!a.bbox,
-    defaultProps: () => ({ type: 'star', style: { strokeColor: '#000000', strokeWidth: 1, fillColor: '#ffff00' } }),
+    defaultProps: () => ({ type: 'star', numPoints: 5, innerRadius: 0.4, style: { stroke: '#000000', strokeWidth: 1, fill: '#FFD700' } }),
   },
   {
     type: 'heart',

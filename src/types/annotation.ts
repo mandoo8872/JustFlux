@@ -131,7 +131,8 @@ export interface LineAnnotation extends BaseAnnotation {
 export interface StarAnnotation extends BaseAnnotation {
   type: 'star';
   points: Point[];
-  innerRadius?: number;
+  numPoints?: number;       // 3-12, number of outer vertices (default: 5)
+  innerRadius?: number;     // 0.1-0.9, inner radius ratio (default: 0.4)
   style: AnnotationStyle & {
     fill: string;
     stroke: string;

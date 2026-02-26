@@ -223,6 +223,10 @@ export function AnnotationToolbox({ activeTool, onToolChange }: AnnotationToolbo
     toolGroups[1].tools[1], // roundedRect
     toolGroups[1].tools[2], // ellipse
     toolGroups[1].tools[3], // arrow
+    toolGroups[1].tools[4], // line
+    toolGroups[2].tools[0], // star
+    toolGroups[2].tools[1], // heart
+    toolGroups[2].tools[2], // lightning
     toolGroups[2].tools[3], // brush (pen)
   ];
 

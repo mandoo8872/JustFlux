@@ -145,9 +145,9 @@ const ANNOTATION_CREATORS: Record<string, AnnotationCreator> = {
       type: 'star',
       pageId,
       bbox,
-      points: 5 as any, // StarAnnotation의 points는 number (꼭짓점 수)
+      numPoints: 5,
       innerRadius: 0.4,
-      style: { stroke: '#000000', strokeWidth: 1, fill: 'transparent' },
+      style: { stroke: '#000000', strokeWidth: 1, fill: '#FFD700' },
       ...timestamps(),
     } as Annotation;
   },
