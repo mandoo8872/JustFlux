@@ -65,7 +65,7 @@ const ANNOTATION_CONFIGS: AnnotationConfig[] = [
     Component: TextAnnotationComponent,
     propsMapper: withHoverDrag,
     validate: (a) => a.type === 'text' && 'content' in a && typeof a.content === 'string',
-    defaultProps: () => ({ type: 'text', text: '', style: { fontSize: 14, color: '#000000', backgroundColor: '#FFFFFF' } }),
+    defaultProps: () => ({ type: 'text', content: '', style: { fontSize: 14, color: '#000000', backgroundColor: '#FFFFFF' } }),
   },
   // ── Highlight ──
   {
