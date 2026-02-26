@@ -30,13 +30,22 @@ export const useAnnotationInteraction = ({ scale, activeTool }: UseAnnotationInt
             e.preventDefault();
             if (!dragState.startPoint || !dragState.annotationId) return;
 
-            const { deltaX, deltaY } = getDelta(
+            let { deltaX, deltaY } = getDelta(
                 e.clientX,
                 e.clientY,
                 dragState.startPoint.x,
                 dragState.startPoint.y,
                 scale
             );
+
+            // Shift key: constrain to dominant axis
+            if (e.shiftKey) {
+                if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                    deltaY = 0;
+                } else {
+                    deltaX = 0;
+                }
+            }
 
             if (Math.abs(deltaX) > 0 || Math.abs(deltaY) > 0) {
                 moveAnnotation(dragState.annotationId, deltaX, deltaY);

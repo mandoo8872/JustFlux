@@ -3,7 +3,7 @@
  * Refactored to use modular architecture (board6 style)
  */
 
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useRef, useEffect } from 'react';
 import { useAnnotationStore } from '../../../state/stores/AnnotationStore';
 import { annotationService } from '../services/AnnotationService';
 import { AnnotationLayer } from './AnnotationLayer';
@@ -32,6 +32,7 @@ export function AnnotationManager({
   const { annotations, selection, clearSelection } = useAnnotationStore();
   const selectedAnnotationIds = selection.selectedAnnotationIds;
   const layerRef = useRef<HTMLDivElement>(null);
+  const autoSwitchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Hook manages drag state and pointer down events
   const { handlePointerDown, startDrag, draggedAnnotationId } = useAnnotationInteraction({
@@ -164,10 +165,22 @@ export function AnnotationManager({
         }
 
         if (createdAnnotationId) {
-          // If created, switch to select tool and select the new annotation
           const { setActiveTool, selectAnnotation } = useAnnotationStore.getState();
-          setActiveTool('select');
-          selectAnnotation(createdAnnotationId);
+          const isFreehand = activeTool === 'brush' || activeTool === 'highlighter';
+
+          if (isFreehand) {
+            // Freedraw: 2s delay before switching to select
+            selectAnnotation(createdAnnotationId);
+            if (autoSwitchTimerRef.current) clearTimeout(autoSwitchTimerRef.current);
+            autoSwitchTimerRef.current = setTimeout(() => {
+              setActiveTool('select');
+              autoSwitchTimerRef.current = null;
+            }, 2000);
+          } else {
+            // Other tools: switch immediately
+            setActiveTool('select');
+            selectAnnotation(createdAnnotationId);
+          }
         }
       };
 
@@ -176,17 +189,54 @@ export function AnnotationManager({
     }
   }, [activeTool, scale, pageId, onCreate, onUpdate, clearSelection]);
 
-  // Global Key handler using window event to ensure capture
+  // Clear auto-switch timer on unmount
+  useEffect(() => {
+    return () => {
+      if (autoSwitchTimerRef.current) clearTimeout(autoSwitchTimerRef.current);
+    };
+  }, []);
+
+  // Cancel auto-switch timer when starting a new drawing
+  useEffect(() => {
+    if (activeTool === 'brush' || activeTool === 'highlighter') {
+      if (autoSwitchTimerRef.current) {
+        clearTimeout(autoSwitchTimerRef.current);
+        autoSwitchTimerRef.current = null;
+      }
+    }
+  }, [activeTool]);
+
+  // Global Key handler: Delete + Arrow nudge
   React.useEffect(() => {
+    const { moveAnnotation } = useAnnotationStore.getState();
+
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if user is typing in an input
+      if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') return;
+      if ((document.activeElement as HTMLElement)?.isContentEditable) return;
+
+      // Delete/Backspace
       if (e.key === 'Delete' || e.key === 'Backspace') {
         if (selectedAnnotationIds.length > 0) {
-          // Ignore if user is typing in an input
-          if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') return;
-
           selectedAnnotationIds.forEach(id => onDelete(id));
           e.preventDefault();
         }
+        return;
+      }
+
+      // Arrow key nudge
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+        if (selectedAnnotationIds.length === 0) return;
+        e.preventDefault();
+
+        const step = e.shiftKey ? 10 : 1;
+        let dx = 0, dy = 0;
+        if (e.key === 'ArrowUp') dy = -step;
+        if (e.key === 'ArrowDown') dy = step;
+        if (e.key === 'ArrowLeft') dx = -step;
+        if (e.key === 'ArrowRight') dx = step;
+
+        selectedAnnotationIds.forEach(id => moveAnnotation(id, dx, dy));
       }
     };
 
