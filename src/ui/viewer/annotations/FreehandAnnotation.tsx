@@ -56,7 +56,7 @@ export function FreehandAnnotationComponent({
     const [localHovered, setLocalHovered] = useState(false);
     const isHovered = isHoveredProp ?? localHovered;
 
-    const { points = [], style } = annotation;
+    const { points = [], bbox, style } = annotation;
     const { stroke = '#000000', strokeWidth = 3 } = style || {};
 
     const pathString = pointsToScaledPath(points, scale);
@@ -115,16 +115,19 @@ export function FreehandAnnotationComponent({
                 onMouseLeave={handleMouseLeave}
             />
 
-            {/* Hover indicator - shows when hovering but not selected */}
-            {isHovered && !isSelected && (
-                <path
-                    d={pathString}
+            {/* Hover indicator — dashed bbox like other objects */}
+            {isHovered && !isSelected && bbox && (
+                <rect
+                    x={bbox.x * scale - 4}
+                    y={bbox.y * scale - 4}
+                    width={bbox.width * scale + 8}
+                    height={bbox.height * scale + 8}
                     fill="none"
                     stroke="#93C5FD"
-                    strokeWidth={(strokeWidth + 8) * scale}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeOpacity={0.6}
+                    strokeWidth={2}
+                    strokeDasharray="6 3"
+                    rx={4}
+                    ry={4}
                     style={{ pointerEvents: 'none' }}
                 />
             )}
