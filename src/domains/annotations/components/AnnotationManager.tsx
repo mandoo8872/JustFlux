@@ -338,6 +338,45 @@ export function AnnotationManager({
         </React.Fragment>
       ))}
 
+      {/* Group / Multi-select bounding box outline */}
+      {selectedAnnotationIds.length >= 2 && (() => {
+        const selected = pageAnnotations.filter(a => selectedAnnotationIds.includes(a.id));
+        if (selected.length < 2) return null;
+        const minX = Math.min(...selected.map(a => a.bbox.x));
+        const minY = Math.min(...selected.map(a => a.bbox.y));
+        const maxX = Math.max(...selected.map(a => a.bbox.x + a.bbox.width));
+        const maxY = Math.max(...selected.map(a => a.bbox.y + a.bbox.height));
+        const isGrouped = selected.every(a => a.groupId && a.groupId === selected[0]?.groupId);
+        return (
+          <div
+            style={{
+              position: 'absolute',
+              left: minX * scale - 4,
+              top: minY * scale - 4,
+              width: (maxX - minX) * scale + 8,
+              height: (maxY - minY) * scale + 8,
+              border: isGrouped ? '2px solid #3B82F6' : '1.5px dashed #94A3B8',
+              borderRadius: isGrouped ? '4px' : '2px',
+              pointerEvents: 'none',
+              zIndex: 9998,
+              boxShadow: isGrouped ? '0 0 0 1px rgba(59,130,246,0.2)' : 'none',
+            }}
+          >
+            {/* Group badge */}
+            {isGrouped && (
+              <div style={{
+                position: 'absolute', top: '-10px', left: '4px',
+                fontSize: '9px', color: '#3B82F6', fontWeight: 700,
+                backgroundColor: 'white', padding: '0 4px', borderRadius: '2px',
+                border: '1px solid #3B82F6', lineHeight: '14px',
+              }}>
+                그룹 ({selected.length})
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
       {/* Marquee selection overlay */}
       {marquee && (
         <div

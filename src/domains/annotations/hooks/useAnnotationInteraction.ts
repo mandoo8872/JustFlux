@@ -48,7 +48,11 @@ export const useAnnotationInteraction = ({ scale, activeTool }: UseAnnotationInt
             }
 
             if (Math.abs(deltaX) > 0 || Math.abs(deltaY) > 0) {
-                moveAnnotation(dragState.annotationId, deltaX, deltaY);
+                // Move ALL selected annotations together (group drag)
+                const currentSelectedIds = useAnnotationStore.getState().selection.selectedAnnotationIds;
+                for (const id of currentSelectedIds) {
+                    moveAnnotation(id, deltaX, deltaY);
+                }
                 setDragState((prev) => ({
                     ...prev,
                     startPoint: { x: e.clientX, y: e.clientY },
