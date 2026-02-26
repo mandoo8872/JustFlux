@@ -57,7 +57,7 @@ export function HighlighterAnnotationComponent({
     const [localHovered, setLocalHovered] = useState(false);
     const isHovered = isHoveredProp ?? localHovered;
 
-    const { points = [], bbox, style } = annotation;
+    const { points = [], style } = annotation;
     // Highlighter defaults: yellow color, thick stroke, semi-transparent
     const { stroke = '#FFFF00', strokeWidth = 20, opacity = 0.4 } = style || {};
 
@@ -116,19 +116,16 @@ export function HighlighterAnnotationComponent({
                 onMouseLeave={handleMouseLeave}
             />
 
-            {/* Hover indicator — dashed bbox like other objects */}
-            {isHovered && !isSelected && bbox && (
-                <rect
-                    x={bbox.x * scale - 4}
-                    y={bbox.y * scale - 4}
-                    width={bbox.width * scale + 8}
-                    height={bbox.height * scale + 8}
+            {/* Hover indicator */}
+            {isHovered && !isSelected && (
+                <path
+                    d={pathString}
                     fill="none"
                     stroke="#93C5FD"
-                    strokeWidth={2}
-                    strokeDasharray="6 3"
-                    rx={4}
-                    ry={4}
+                    strokeWidth={(strokeWidth + 10) * scale}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeOpacity={0.4}
                     style={{ pointerEvents: 'none' }}
                 />
             )}

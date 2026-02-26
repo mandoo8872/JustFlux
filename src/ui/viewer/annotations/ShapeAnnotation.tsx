@@ -1,10 +1,12 @@
 /**
  * ShapeAnnotation Component - 도형 주석 (Rect, RoundedRect, Ellipse)
+ * Ellipse: Figma UI3 스타일 arc/donut 편집 핸들 지원
  */
 
 import React, { useState, useRef, useCallback } from 'react';
 import type { RectangleAnnotation, EllipseAnnotation, RoundedRectAnnotation } from '../../../types/annotation';
 import { ResizeHandles } from './ResizeHandles';
+import { EllipseArcHandles } from './EllipseArcHandles';
 
 type ShapeAnnotationType = RectangleAnnotation | RoundedRectAnnotation | EllipseAnnotation;
 
@@ -19,6 +21,78 @@ interface ShapeAnnotationProps {
   onHover?: () => void;
   onHoverEnd?: () => void;
   onPointerDown?: (e: React.PointerEvent) => void;
+}
+
+// ── SVG Arc Path Builder ──
+
+function degToRad(deg: number): number {
+  return (deg - 90) * (Math.PI / 180);
+}
+
+function polarToCartesian(cx: number, cy: number, rx: number, ry: number, angleDeg: number) {
+  const rad = degToRad(angleDeg);
+  return { x: cx + rx * Math.cos(rad), y: cy + ry * Math.sin(rad) };
+}
+
+/** Build SVG path for arc/donut shape */
+function buildArcPath(
+  cx: number, cy: number,
+  rx: number, ry: number,
+  startAngle: number, sweepAngle: number,
+  innerRatio: number
+): string {
+  const endAngle = startAngle + sweepAngle;
+  const largeArc = sweepAngle > 180 ? 1 : 0;
+
+  const outerStart = polarToCartesian(cx, cy, rx, ry, startAngle);
+  const outerEnd = polarToCartesian(cx, cy, rx, ry, endAngle);
+
+  if (innerRatio <= 0) {
+    // Pie slice (no inner hole)
+    if (sweepAngle >= 359.99) {
+      const mid = polarToCartesian(cx, cy, rx, ry, startAngle + 180);
+      return [
+        `M ${outerStart.x} ${outerStart.y}`,
+        `A ${rx} ${ry} 0 1 1 ${mid.x} ${mid.y}`,
+        `A ${rx} ${ry} 0 1 1 ${outerStart.x} ${outerStart.y}`,
+        'Z'
+      ].join(' ');
+    }
+    return [
+      `M ${cx} ${cy}`,
+      `L ${outerStart.x} ${outerStart.y}`,
+      `A ${rx} ${ry} 0 ${largeArc} 1 ${outerEnd.x} ${outerEnd.y}`,
+      'Z'
+    ].join(' ');
+  }
+
+  // Donut / ring arc
+  const irx = rx * innerRatio;
+  const iry = ry * innerRatio;
+  const innerStart = polarToCartesian(cx, cy, irx, iry, startAngle);
+  const innerEnd = polarToCartesian(cx, cy, irx, iry, endAngle);
+
+  if (sweepAngle >= 359.99) {
+    const outerMid = polarToCartesian(cx, cy, rx, ry, startAngle + 180);
+    const innerMid = polarToCartesian(cx, cy, irx, iry, startAngle + 180);
+    return [
+      `M ${outerStart.x} ${outerStart.y}`,
+      `A ${rx} ${ry} 0 1 1 ${outerMid.x} ${outerMid.y}`,
+      `A ${rx} ${ry} 0 1 1 ${outerStart.x} ${outerStart.y}`,
+      `M ${innerStart.x} ${innerStart.y}`,
+      `A ${irx} ${iry} 0 1 0 ${innerMid.x} ${innerMid.y}`,
+      `A ${irx} ${iry} 0 1 0 ${innerStart.x} ${innerStart.y}`,
+      'Z'
+    ].join(' ');
+  }
+
+  return [
+    `M ${outerStart.x} ${outerStart.y}`,
+    `A ${rx} ${ry} 0 ${largeArc} 1 ${outerEnd.x} ${outerEnd.y}`,
+    `L ${innerEnd.x} ${innerEnd.y}`,
+    `A ${irx} ${iry} 0 ${largeArc} 0 ${innerStart.x} ${innerStart.y}`,
+    'Z'
+  ].join(' ');
 }
 
 export function ShapeAnnotationComponent({
@@ -78,21 +152,14 @@ export function ShapeAnnotationComponent({
     setIsDraggingCorner(true);
 
     const currentRadius = (annotation as RoundedRectAnnotation).cornerRadius || 0;
-    cornerStartRef.current = {
-      x: e.clientX,
-      radius: currentRadius,
-    };
+    cornerStartRef.current = { x: e.clientX, radius: currentRadius };
 
     const handlePointerMove = (moveEvent: PointerEvent) => {
       if (!cornerStartRef.current) return;
-
       const deltaX = (moveEvent.clientX - cornerStartRef.current.x) / scale;
       const maxRadius = Math.min(bbox.width, bbox.height) / 2;
       const newRadius = Math.max(0, Math.min(maxRadius, cornerStartRef.current.radius + deltaX));
-
-      onUpdate({
-        cornerRadius: newRadius,
-      } as Partial<RoundedRectAnnotation>);
+      onUpdate({ cornerRadius: newRadius } as Partial<RoundedRectAnnotation>);
     };
 
     const handlePointerUp = () => {
@@ -108,15 +175,32 @@ export function ShapeAnnotationComponent({
 
   const isEllipse = annotation.type === 'ellipse';
   const isRoundedRect = annotation.type === 'roundedRect';
-  const strokeWidth = (annotation.style?.strokeWidth || 2) * scale;
+  const strokeWidth = (annotation.style?.strokeWidth || 1) * scale;
 
-  // Corner radius for rectangles
   const cornerRadius = (annotation as RoundedRectAnnotation).cornerRadius || 0;
   const scaledCornerRadius = cornerRadius * scale;
-
-  // Corner handle position (top-left corner, offset by corner radius)
   const cornerHandleX = scaledCornerRadius + 10;
   const cornerHandleY = 10;
+
+  // ── Ellipse arc properties ──
+  const ellipseAnn = annotation as EllipseAnnotation;
+  const startAngle = ellipseAnn.startAngle ?? 0;
+  const sweepAngle = ellipseAnn.sweepAngle ?? 360;
+  const innerRadiusRatio = ellipseAnn.innerRadiusRatio ?? 0;
+  const isArc = isEllipse && (sweepAngle < 360 || innerRadiusRatio > 0);
+
+  const sCx = scaledBBox.width / 2;
+  const sCy = scaledBBox.height / 2;
+  const sRx = Math.max(0, scaledBBox.width / 2 - strokeWidth / 2);
+  const sRy = Math.max(0, scaledBBox.height / 2 - strokeWidth / 2);
+
+  const handleArcUpdate = useCallback((updates: {
+    startAngle?: number;
+    sweepAngle?: number;
+    innerRadiusRatio?: number;
+  }) => {
+    onUpdate(updates as Partial<EllipseAnnotation>);
+  }, [onUpdate]);
 
   return (
     <div
@@ -131,42 +215,42 @@ export function ShapeAnnotationComponent({
       onPointerDown={onPointerDown}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      onClick={(e) => {
-        e.stopPropagation();
-        onSelect();
-      }}
+      onClick={(e) => { e.stopPropagation(); onSelect(); }}
     >
       {/* SVG Shape */}
       <svg
         style={{
-          position: 'absolute',
-          inset: 0,
-          width: '100%',
-          height: '100%',
-          pointerEvents: 'none',
-          overflow: 'visible',
+          position: 'absolute', inset: 0,
+          width: '100%', height: '100%',
+          pointerEvents: 'none', overflow: 'visible',
         }}
       >
         {isEllipse ? (
-          <ellipse
-            cx={scaledBBox.width / 2}
-            cy={scaledBBox.height / 2}
-            rx={Math.max(0, scaledBBox.width / 2 - strokeWidth / 2)}
-            ry={Math.max(0, scaledBBox.height / 2 - strokeWidth / 2)}
-            fill={annotation.style?.fill || 'transparent'}
-            fillOpacity={annotation.style?.opacity ?? 1}
-            stroke={annotation.style?.stroke || '#000000'}
-            strokeWidth={strokeWidth}
-            strokeDasharray={annotation.style?.strokeDasharray ? annotation.style.strokeDasharray.split(' ').map(v => String(parseFloat(v) * scale)).join(' ') : undefined}
-          />
+          isArc ? (
+            <path
+              d={buildArcPath(sCx, sCy, sRx, sRy, startAngle, sweepAngle, innerRadiusRatio)}
+              fill={annotation.style?.fill || 'transparent'}
+              fillOpacity={annotation.style?.opacity ?? 1}
+              stroke={annotation.style?.stroke || '#000000'}
+              strokeWidth={strokeWidth}
+              fillRule="evenodd"
+            />
+          ) : (
+            <ellipse
+              cx={sCx} cy={sCy} rx={sRx} ry={sRy}
+              fill={annotation.style?.fill || 'transparent'}
+              fillOpacity={annotation.style?.opacity ?? 1}
+              stroke={annotation.style?.stroke || '#000000'}
+              strokeWidth={strokeWidth}
+              strokeDasharray={annotation.style?.strokeDasharray ? annotation.style.strokeDasharray.split(' ').map(v => String(parseFloat(v) * scale)).join(' ') : undefined}
+            />
+          )
         ) : (
           <rect
-            x={strokeWidth / 2}
-            y={strokeWidth / 2}
+            x={strokeWidth / 2} y={strokeWidth / 2}
             width={Math.max(0, scaledBBox.width - strokeWidth)}
             height={Math.max(0, scaledBBox.height - strokeWidth)}
-            rx={scaledCornerRadius}
-            ry={scaledCornerRadius}
+            rx={scaledCornerRadius} ry={scaledCornerRadius}
             fill={annotation.style?.fill || 'transparent'}
             fillOpacity={annotation.style?.opacity ?? 1}
             stroke={annotation.style?.stroke || '#000000'}
@@ -179,8 +263,7 @@ export function ShapeAnnotationComponent({
       {/* Hover indicator */}
       {isHovered && !isSelected && (
         <div style={{
-          position: 'absolute',
-          inset: '-3px',
+          position: 'absolute', inset: '-3px',
           border: '2px dashed #93C5FD',
           borderRadius: isEllipse ? '50%' : `${scaledCornerRadius + 3}px`,
           pointerEvents: 'none',
@@ -190,8 +273,7 @@ export function ShapeAnnotationComponent({
       {/* Selection indicator */}
       {isSelected && (
         <div style={{
-          position: 'absolute',
-          inset: 0,
+          position: 'absolute', inset: 0,
           boxShadow: '0 0 0 2px #3B82F6, 0 0 0 3px rgba(59, 130, 246, 0.3)',
           borderRadius: isEllipse ? '50%' : `${scaledCornerRadius}px`,
           pointerEvents: 'none',
@@ -200,30 +282,34 @@ export function ShapeAnnotationComponent({
 
       {/* Resize handles */}
       {isSelected && (
-        <ResizeHandles
-          width={scaledBBox.width}
-          height={scaledBBox.height}
-          onResize={handleResize}
+        <ResizeHandles width={scaledBBox.width} height={scaledBBox.height} onResize={handleResize} />
+      )}
+
+      {/* Ellipse Arc Handles (Figma UI3) */}
+      {isSelected && isEllipse && (
+        <EllipseArcHandles
+          cx={sCx} cy={sCy} rx={sRx} ry={sRy}
+          startAngle={startAngle}
+          sweepAngle={sweepAngle}
+          innerRadiusRatio={innerRadiusRatio}
+          scale={scale}
+          onUpdate={handleArcUpdate}
         />
       )}
 
-      {/* Corner radius handle - only for roundedRect type */}
+      {/* Corner radius handle */}
       {isSelected && isRoundedRect && (
         <div
           onPointerDown={handleCornerPointerDown}
           style={{
             position: 'absolute',
-            left: cornerHandleX - 5,
-            top: cornerHandleY - 5,
-            width: 10,
-            height: 10,
+            left: cornerHandleX - 5, top: cornerHandleY - 5,
+            width: 10, height: 10,
             backgroundColor: isDraggingCorner ? '#F97316' : '#FBBF24',
-            border: '2px solid white',
-            borderRadius: '2px',
+            border: '2px solid white', borderRadius: '2px',
             cursor: 'ew-resize',
             boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
-            zIndex: 100,
-            pointerEvents: 'auto',
+            zIndex: 100, pointerEvents: 'auto',
           }}
           title={`모서리 반경: ${Math.round(cornerRadius)}px (드래그로 조정)`}
         />

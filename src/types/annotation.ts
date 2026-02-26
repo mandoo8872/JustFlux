@@ -76,6 +76,10 @@ export interface HighlightAnnotation extends BaseAnnotation {
 
 export interface EllipseAnnotation extends BaseAnnotation {
   type: 'ellipse';
+  // Arc editing (Figma UI3 style)
+  startAngle?: number;      // 0-360, arc start position (default: 0)
+  sweepAngle?: number;      // 0-360, arc sweep angle (default: 360 = full circle)
+  innerRadiusRatio?: number; // 0-1, inner radius as ratio of outer radius (default: 0, 1 = thinnest ring)
   style: AnnotationStyle & {
     fill: string;
     stroke: string;
