@@ -8,6 +8,7 @@ import type { Page } from '../../../core/model/types';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import { ThumbnailItem } from './ThumbnailItem';
 import { ThumbnailDragDrop } from './ThumbnailDragDrop';
+import { useTranslation } from '../../../i18n';
 
 interface ThumbnailListProps {
   pages: Page[];
@@ -34,6 +35,7 @@ export function ThumbnailList({
   onAddPdfPages,
   sidebarWidth
 }: ThumbnailListProps) {
+  const { t } = useTranslation();
 
   // 모든 페이지를 렌더링 (스크롤 가능하도록)
   // 가상화는 나중에 필요시 구현
@@ -145,7 +147,7 @@ export function ThumbnailList({
           color: '#6b7280',
           fontWeight: 500
         }}>
-          빈 페이지 추가
+          {t('sidebar.blankPage')}
         </span>
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
           {pages.length > 0 ? (
@@ -155,7 +157,7 @@ export function ThumbnailList({
               style={addButtonStyle('60px', '60px')}
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
-              title={`빈 페이지 추가 (${Math.round(pages[pages.length - 1].width)}×${Math.round(pages[pages.length - 1].height)})`}
+              title={`${t('sidebar.blankPage')} (${Math.round(pages[pages.length - 1].width)}×${Math.round(pages[pages.length - 1].height)})`}
             >
               {plusIcon(22)}
             </div>
