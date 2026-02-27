@@ -1,0 +1,341 @@
+/* ============================================
+ * JustFlux — Component Classes
+ * Design-token-based reusable UI primitives
+ * ============================================ */
+
+/* ── Icon Button ── */
+.btn-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    color: var(--color-text-secondary);
+    transition: background var(--transition-fast), color var(--transition-fast);
+    padding: 0;
+    outline: none;
+}
+
+.btn-icon:hover {
+    background: var(--color-bg-hover);
+}
+
+.btn-icon:active {
+    background: var(--color-bg-active);
+}
+
+.btn-icon:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+.btn-icon.active {
+    background: var(--color-brand);
+    color: white;
+}
+
+.btn-icon:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.btn-icon:disabled:hover {
+    background: transparent;
+}
+
+/* ── Tool Button (36x36 icon button) ── */
+.btn-tool {
+    width: 36px;
+    height: 36px;
+}
+
+/* ── Action Button (text or icon+text) ── */
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-1);
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border-input);
+    background: var(--color-bg-elevated);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    outline: none;
+}
+
+.btn-action:hover {
+    background: var(--color-bg-hover);
+    border-color: var(--color-border);
+}
+
+.btn-action:active {
+    background: var(--color-bg-active);
+}
+
+.btn-action:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+.btn-action.primary {
+    background: var(--color-brand);
+    color: white;
+    border-color: var(--color-brand-hover);
+}
+
+.btn-action.primary:hover {
+    background: var(--color-brand-hover);
+}
+
+.btn-action.danger {
+    color: var(--color-danger);
+    border-color: var(--color-danger);
+}
+
+.btn-action.danger:hover {
+    background: #FEF2F2;
+}
+
+/* ── Header Bar ── */
+.header-bar {
+    background: var(--color-bg-surface);
+    border-bottom: 1px solid var(--color-border);
+    height: var(--header-height);
+    display: flex;
+    align-items: center;
+    padding: 0 var(--space-3);
+    z-index: 100;
+}
+
+/* ── Sidebar Panel ── */
+.sidebar-panel {
+    position: fixed;
+    top: var(--header-height);
+    height: calc(100vh - var(--header-height));
+    background: var(--color-bg-surface);
+    display: flex;
+    flex-direction: column;
+    z-index: 30;
+    transition: width var(--transition-slow), left var(--transition-slow);
+}
+
+.sidebar-panel--left {
+    left: 0;
+    border-right: 1px solid var(--color-border);
+}
+
+.sidebar-panel--right {
+    right: 0;
+    border-left: 1px solid var(--color-border);
+}
+
+/* ── Sidebar Header ── */
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 32px;
+    padding: 0 var(--space-2);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-bg-card);
+}
+
+.sidebar-header__title {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-secondary);
+}
+
+/* ── Canvas Area ── */
+.canvas-area {
+    position: fixed;
+    top: var(--header-height);
+    bottom: 0;
+    background: var(--color-bg-app);
+    overflow: auto;
+    overflow-x: hidden;
+    touch-action: pan-y pan-x;
+    -webkit-touch-callout: none;
+    transition: left var(--transition-slow), right var(--transition-slow);
+}
+
+/* ── Glass Panel (Glassmorphism) ── */
+.glass-panel {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    padding: var(--space-3);
+    transition: box-shadow var(--transition-normal);
+}
+
+/* ── Property Panel ── */
+.property-panel {
+    background: var(--color-bg-elevated);
+    color: var(--color-text-primary);
+    border-radius: var(--radius-lg);
+    width: 100%;
+    font-size: var(--font-size-sm);
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--color-border-light);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.property-panel__header {
+    background: linear-gradient(135deg, #1E293B, #334155);
+    color: #F1F5F9;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: -0.01em;
+}
+
+.property-panel__body {
+    padding: 6px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+/* ── Section (Collapsible) ── */
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: var(--space-2) 14px;
+}
+
+.section__header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    user-select: none;
+    padding: var(--space-1) 0;
+}
+
+.section__label {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* ── Inputs ── */
+.input-field {
+    background: #F1F5F9;
+    border: 1px solid var(--color-border-input);
+    border-radius: var(--radius-md);
+    padding: 6px 10px;
+    color: #1E293B;
+    font-size: var(--font-size-sm);
+    width: 100%;
+    outline: none;
+    transition: border-color var(--transition-fast);
+}
+
+.input-field:focus {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 2px var(--color-accent-shadow);
+}
+
+/* ── Divider ── */
+.divider {
+    height: 1px;
+    background: var(--color-border-light);
+    margin: 2px 14px;
+}
+
+/* ── Zoom Display ── */
+.zoom-display {
+    width: 36px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    font-weight: var(--font-weight-medium);
+}
+
+/* ── Toggle Button ── */
+.btn-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: 3px var(--space-2);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+    border: 1px solid var(--color-border-input);
+    outline: none;
+}
+
+.btn-toggle:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+.btn-toggle--on {
+    background: var(--color-brand-light);
+    color: #1D4ED8;
+    border-color: #93C5FD;
+}
+
+.btn-toggle--off {
+    background: #F1F5F9;
+    color: var(--color-text-muted);
+    border-color: var(--color-border-input);
+}
+
+/* ── File Drop Overlay ── */
+.drop-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 120, 212, 0.08);
+    border: 3px dashed var(--color-brand);
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9998;
+    pointer-events: none;
+}
+
+.drop-overlay__label {
+    padding: var(--space-5) var(--space-8);
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+}
+
+.drop-overlay__text {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-brand);
+    margin: 0;
+}
+
+/* ── Utility ── */
+.text-ellipsis {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

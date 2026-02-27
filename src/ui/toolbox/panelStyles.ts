@@ -14,16 +14,16 @@ export const COLORS = [
 // ── 패널 루트 ─────────────────────────────────
 
 export const panelStyle: React.CSSProperties = {
-    backgroundColor: '#FAFAFA',
-    color: '#1A1A1A',
-    borderRadius: '10px',
+    backgroundColor: 'var(--color-bg-elevated)',
+    color: 'var(--color-text-primary)',
+    borderRadius: 'var(--radius-lg)',
     width: '100%',
-    fontSize: '12px',
+    fontSize: 'var(--font-size-sm)',
     display: 'flex',
     flexDirection: 'column',
-    border: '1px solid #E0E0E0',
+    border: '1px solid var(--color-border-light)',
     overflow: 'hidden',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+    boxShadow: 'var(--shadow-sm)',
 };
 
 // ── 헤더 ───────────────────────────────────────
@@ -34,9 +34,9 @@ export const panelHeaderStyle: React.CSSProperties = {
     padding: '10px 14px',
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
-    fontSize: '13px',
-    fontWeight: 600,
+    gap: 'var(--space-2)',
+    fontSize: 'var(--font-size-base)',
+    fontWeight: 'var(--font-weight-semibold)' as any,
     letterSpacing: '-0.01em',
 };
 
@@ -68,9 +68,9 @@ export const sectionHeaderStyle: React.CSSProperties = {
 };
 
 export const labelStyle: React.CSSProperties = {
-    fontSize: '11px',
-    color: '#64748B',
-    fontWeight: 600,
+    fontSize: 'var(--font-size-xs)',
+    color: 'var(--color-text-muted)',
+    fontWeight: 'var(--font-weight-semibold)' as any,
     textTransform: 'uppercase',
     letterSpacing: '0.04em',
 };
@@ -79,7 +79,7 @@ export const labelStyle: React.CSSProperties = {
 
 export const dividerStyle: React.CSSProperties = {
     height: '1px',
-    background: '#E5E7EB',
+    background: 'var(--color-border-light)',
     margin: '2px 14px',
 };
 
@@ -87,14 +87,14 @@ export const dividerStyle: React.CSSProperties = {
 
 export const inputStyle: React.CSSProperties = {
     backgroundColor: '#F1F5F9',
-    border: '1px solid #CBD5E1',
-    borderRadius: '6px',
+    border: '1px solid var(--color-border-input)',
+    borderRadius: 'var(--radius-md)',
     padding: '6px 10px',
     color: '#1E293B',
-    fontSize: '12px',
+    fontSize: 'var(--font-size-sm)',
     width: '100%',
     outline: 'none',
-    transition: 'border-color 0.15s',
+    transition: 'border-color var(--transition-fast)',
 };
 
 // ── 버튼 ───────────────────────────────────────
@@ -103,17 +103,17 @@ export const buttonStyle: React.CSSProperties = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: '4px',
+    gap: 'var(--space-1)',
     padding: '6px 10px',
-    borderRadius: '6px',
-    border: '1px solid #CBD5E1',
+    borderRadius: 'var(--radius-md)',
+    border: '1px solid var(--color-border-input)',
     cursor: 'pointer',
-    fontWeight: 500,
-    fontSize: '12px',
+    fontWeight: 'var(--font-weight-medium)' as any,
+    fontSize: 'var(--font-size-sm)',
     flex: 1,
     backgroundColor: '#F8FAFC',
     color: '#334155',
-    transition: 'all 0.15s',
+    transition: 'all var(--transition-fast)',
 };
 
 export const iconButtonStyle: React.CSSProperties = {
@@ -122,19 +122,19 @@ export const iconButtonStyle: React.CSSProperties = {
     justifyContent: 'center',
     width: '30px',
     height: '30px',
-    borderRadius: '6px',
-    border: '1px solid #CBD5E1',
+    borderRadius: 'var(--radius-md)',
+    border: '1px solid var(--color-border-input)',
     cursor: 'pointer',
     backgroundColor: '#F8FAFC',
     color: '#475569',
-    transition: 'all 0.15s',
+    transition: 'all var(--transition-fast)',
 };
 
 export const activeButtonStyle: React.CSSProperties = {
     ...buttonStyle,
-    backgroundColor: '#3B82F6',
+    backgroundColor: 'var(--color-accent)',
     color: 'white',
-    borderColor: '#2563EB',
+    borderColor: 'var(--color-accent-hover)',
 };
 
 // ── 컬러 스와치 ────────────────────────────────
@@ -190,8 +190,8 @@ export const sliderStyle: React.CSSProperties = {
 
 export const actionBarStyle: React.CSSProperties = {
     display: 'flex',
-    gap: '4px',
-    padding: '8px 14px',
-    borderTop: '1px solid #E5E7EB',
+    gap: 'var(--space-1)',
+    padding: 'var(--space-2) 14px',
+    borderTop: '1px solid var(--color-border-light)',
     background: '#F8FAFC',
 };

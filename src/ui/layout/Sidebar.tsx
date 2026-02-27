@@ -11,7 +11,7 @@ interface SidebarProps {
   document: JFDocument | null;
   currentPage: Page | null;
   pdfProxy: PDFDocumentProxy | null;
-  pages: Page[]; // PageStore의 pages 추가
+  pages: Page[];
   sidebarWidth: number;
   isSidebarCollapsed: boolean;
   onPageSelect: (pageId: string) => void;
@@ -26,7 +26,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({
-  document: _document, // 사용하지 않는 변수
+  document: _document,
   currentPage,
   pdfProxy,
   pages,
@@ -44,40 +44,16 @@ export function Sidebar({
 }: SidebarProps) {
   if (isSidebarCollapsed) {
     return (
-      <div style={{
-        position: 'fixed',
-        left: 0,
-        top: '40px', // Header 높이만
-        zIndex: 30,
-        backgroundColor: '#F5F5F5',
-        borderRight: '1px solid #D0D0D0',
-        width: '24px',
-        height: 'calc(100vh - 40px)',
-        display: 'flex',
-        alignItems: 'flex-start',
-        paddingTop: '8px'
-      }}>
+      <div
+        className="sidebar-panel sidebar-panel--left"
+        style={{ width: 'var(--sidebar-collapsed-width)' }}
+      >
         <button
+          className="btn-icon"
           onClick={onToggleSidebar}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '20px',
-            height: '20px',
-            border: 'none',
-            backgroundColor: 'transparent',
-            color: '#333333',
-            cursor: 'pointer',
-            transition: 'background-color 0.15s ease-in-out'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#E0E0E0';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'transparent';
-          }}
+          style={{ width: '20px', height: '20px', marginTop: 'var(--space-2)' }}
           title="사이드바 열기"
+          aria-label="사이드바 열기"
         >
           <span style={{ fontSize: '14px' }}>▶</span>
         </button>
@@ -86,51 +62,19 @@ export function Sidebar({
   }
 
   return (
-    <div style={{
-      position: 'fixed',
-      left: 0,
-      top: '40px', // Header 높이만
-      width: `${sidebarWidth}px`,
-      height: 'calc(100vh - 40px)', // Header 높이만 제외
-      backgroundColor: '#F5F5F5',
-      borderRight: '1px solid #D0D0D0',
-      display: 'flex',
-      flexDirection: 'column',
-      zIndex: 30
-    }}>
+    <div
+      className="sidebar-panel sidebar-panel--left"
+      style={{ width: `${sidebarWidth}px` }}
+    >
       {/* Sidebar Header */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        height: '32px',
-        paddingLeft: '8px',
-        paddingRight: '8px',
-        borderBottom: '1px solid #D0D0D0',
-        backgroundColor: '#FFFFFF'
-      }}>
-        <span style={{ fontSize: '12px', fontWeight: 500, color: '#333333' }}>페이지</span>
+      <div className="sidebar-header">
+        <span className="sidebar-header__title">페이지</span>
         <button
+          className="btn-icon"
           onClick={onToggleSidebar}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '20px',
-            height: '20px',
-            border: 'none',
-            backgroundColor: 'transparent',
-            color: '#333333',
-            cursor: 'pointer',
-            transition: 'background-color 0.15s ease-in-out'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#E0E0E0';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'transparent';
-          }}
+          style={{ width: '20px', height: '20px' }}
           title="사이드바 닫기"
+          aria-label="사이드바 닫기"
         >
           <span style={{ fontSize: '12px' }}>◀</span>
         </button>
@@ -139,7 +83,7 @@ export function Sidebar({
       {/* Thumbnail List */}
       <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
         <ThumbnailSidebar
-          pages={pages} // PageStore의 pages 사용
+          pages={pages}
           allPages={pages}
           currentPageId={currentPage?.id || null}
           pdfProxy={pdfProxy!}
@@ -154,7 +98,6 @@ export function Sidebar({
           insertedPdfProxies={insertedPdfProxies}
         />
       </div>
-
     </div>
   );
 }

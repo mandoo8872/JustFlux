@@ -215,20 +215,9 @@ export function Shell() {
 
       {/* Drag Overlay */}
       {fileDrop.isDragOver && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0, 120, 212, 0.08)',
-          border: '3px dashed #0078D4', borderRadius: '8px',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          zIndex: 9998, pointerEvents: 'none',
-        }}>
-          <div style={{
-            padding: '20px 40px',
-            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-            borderRadius: '12px',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
-          }}>
-            <p style={{ fontSize: '16px', fontWeight: 500, color: '#0078D4', margin: 0 }}>
+        <div className="drop-overlay">
+          <div className="drop-overlay__label">
+            <p className="drop-overlay__text">
               파일을 여기에 놓으세요
             </p>
           </div>

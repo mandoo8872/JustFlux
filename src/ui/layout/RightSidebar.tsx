@@ -96,18 +96,10 @@ export function RightSidebar({
   };
 
   return (
-    <div style={{
-      position: 'fixed',
-      right: 0,
-      top: '40px',
+    <div className="sidebar-panel sidebar-panel--right" style={{
       width: isExpanded ? `${expandedWidth}px` : `${sidebarWidth}px`,
-      height: 'calc(100vh - 40px)',
-      backgroundColor: '#F5F5F5',
-      borderLeft: '1px solid #D0D0D0',
-      display: 'flex',
       flexDirection: 'row',
-      zIndex: 30,
-      transition: 'width 0.2s ease-in-out',
+      transition: 'width var(--transition-normal)',
       overflow: 'hidden',
     }}>
       {/* Property Panel Section - 확장 시에만 표시 */}
@@ -115,10 +107,10 @@ export function RightSidebar({
         <div style={{
           width: `${expandedWidth - sidebarWidth}px`,
           height: '100%',
-          padding: '12px',
+          padding: 'var(--space-3)',
           overflowY: 'auto',
-          borderRight: '1px solid #E5E5E5',
-          backgroundColor: '#FAFAFA',
+          borderRight: '1px solid var(--color-border-light)',
+          backgroundColor: 'var(--color-bg-elevated)',
         }}>
           {isMultiSelect ? (
             <MultiSelectPanel
@@ -147,8 +139,8 @@ export function RightSidebar({
         flexShrink: 0,
         display: 'flex',
         flexDirection: 'column',
-        padding: '12px 4px',
-        gap: '16px',
+        padding: 'var(--space-3) var(--space-1)',
+        gap: 'var(--space-4)',
         overflowY: 'auto',
       }}>
         {/* Annotation Tools */}
@@ -156,12 +148,12 @@ export function RightSidebar({
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: '4px',
-          padding: '8px 4px',
-          backgroundColor: '#FFFFFF',
-          borderRadius: '6px',
-          border: '1px solid #E5E5E5',
-          boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+          gap: 'var(--space-1)',
+          padding: 'var(--space-2) var(--space-1)',
+          backgroundColor: 'var(--color-bg-card)',
+          borderRadius: 'var(--radius-md)',
+          border: '1px solid var(--color-border-light)',
+          boxShadow: 'var(--shadow-xs)'
         }}>
           <AnnotationToolbox
             activeTool={activeTool}
@@ -175,11 +167,11 @@ export function RightSidebar({
           flexDirection: 'column',
           alignItems: 'center',
           gap: '2px',
-          padding: '8px 4px',
-          backgroundColor: '#FAFAFA',
-          borderRadius: '6px',
-          border: '1px solid #E5E5E5',
-          boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+          padding: 'var(--space-2) var(--space-1)',
+          backgroundColor: 'var(--color-bg-elevated)',
+          borderRadius: 'var(--radius-md)',
+          border: '1px solid var(--color-border-light)',
+          boxShadow: 'var(--shadow-xs)'
         }}>
           <ZoomControl
             zoom={zoom}
@@ -194,11 +186,11 @@ export function RightSidebar({
           flexDirection: 'column',
           alignItems: 'center',
           gap: '2px',
-          padding: '8px 4px',
-          backgroundColor: '#FFFFFF',
-          borderRadius: '6px',
-          border: '1px solid #E5E5E5',
-          boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+          padding: 'var(--space-2) var(--space-1)',
+          backgroundColor: 'var(--color-bg-card)',
+          borderRadius: 'var(--radius-md)',
+          border: '1px solid var(--color-border-light)',
+          boxShadow: 'var(--shadow-xs)'
         }}>
           <PageNavigator
             currentPage={currentPageIndex}

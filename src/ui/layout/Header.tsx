@@ -34,24 +34,15 @@ export function Header({
   onToggleSmooth,
 }: HeaderProps) {
   return (
-    <header style={{
-      backgroundColor: '#F5F5F5',
-      borderBottom: '1px solid #D0D0D0',
-      height: '40px',
-      display: 'flex',
-      alignItems: 'center',
-      paddingLeft: '12px',
-      paddingRight: '8px',
-      zIndex: 100
-    }}>
+    <header className="header-bar">
       {/* Left: Document name */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, overflow: 'hidden' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flex: 1, overflow: 'hidden' }}>
         {document ? (
           <>
             <span style={{
-              fontSize: '13px',
-              color: '#333333',
-              fontWeight: 500,
+              fontSize: 'var(--font-size-base)',
+              color: 'var(--color-text-secondary)',
+              fontWeight: 'var(--font-weight-medium)' as any,
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
@@ -59,8 +50,8 @@ export function Header({
               {document.name}
             </span>
             <span style={{
-              fontSize: '12px',
-              color: '#999999',
+              fontSize: 'var(--font-size-sm)',
+              color: 'var(--color-text-tertiary)',
               flexShrink: 0,
             }}>
               ({totalPages} 페이지)
@@ -68,8 +59,8 @@ export function Header({
           </>
         ) : (
           <span style={{
-            fontSize: '13px',
-            color: '#999999',
+            fontSize: 'var(--font-size-base)',
+            color: 'var(--color-text-tertiary)',
             fontStyle: 'italic',
           }}>
             JustFlux
@@ -78,22 +69,12 @@ export function Header({
       </div>
 
       {/* Center: Smooth toggle */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginRight: '8px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', marginRight: 'var(--space-2)' }}>
         <button
+          className={`btn-toggle ${smoothRendering ? 'btn-toggle--on' : 'btn-toggle--off'}`}
           onClick={onToggleSmooth}
-          style={{
-            display: 'flex', alignItems: 'center', gap: '4px',
-            padding: '3px 8px',
-            fontSize: '11px', fontWeight: 500,
-            backgroundColor: smoothRendering ? '#DBEAFE' : '#F1F5F9',
-            color: smoothRendering ? '#1D4ED8' : '#64748B',
-            border: `1px solid ${smoothRendering ? '#93C5FD' : '#CBD5E1'}`,
-            borderRadius: '4px',
-            cursor: 'pointer',
-            transition: 'all 0.15s',
-            whiteSpace: 'nowrap',
-          }}
           title={smoothRendering ? 'Smooth 렌더링 ON (부드럽지만 무거움)' : 'Smooth 렌더링 OFF (선명하고 가벼움)'}
+          aria-label={smoothRendering ? 'Smooth 렌더링 비활성화' : 'Smooth 렌더링 활성화'}
         >
           <span style={{ fontSize: '10px' }}>{smoothRendering ? '🔵' : '⚪'}</span>
           Smooth

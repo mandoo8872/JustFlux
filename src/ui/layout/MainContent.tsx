@@ -71,18 +71,10 @@ export function MainContent({
   return (
     <div
       ref={containerRef}
+      className="canvas-area"
       style={{
-        position: 'fixed',
-        top: '40px',
         left: isSidebarCollapsed ? '0' : `${sidebarWidth}px`,
         right: isRightSidebarCollapsed ? '0' : `${rightSidebarWidth}px`,
-        bottom: 0,
-        transition: 'left 0.3s ease-in-out, right 0.3s ease-in-out',
-        backgroundColor: '#E5E5E5',
-        overflow: 'auto',
-        overflowX: 'hidden',
-        touchAction: 'pan-y pan-x',
-        WebkitTouchCallout: 'none',
       }}
       onWheel={handleWheel}
       onClick={(e) => {

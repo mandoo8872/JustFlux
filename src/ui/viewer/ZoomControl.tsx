@@ -24,106 +24,41 @@ export function ZoomControl({ zoom, onZoomChange, onFitMode }: ZoomControlProps)
     onZoomChange(Math.max(zoom - ZOOM_STEP, ZOOM_MIN));
   };
 
-  const buttonBaseStyle = {
-    width: '20px',
-    height: '20px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    border: 'none',
-    background: 'transparent',
-    cursor: 'pointer',
-    transition: 'background-color 0.15s ease-in-out',
-    color: '#333333'
-  };
-
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      gap: '2px'
-    }}>
-      {/* Zoom In (+) */}
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+      {/* Zoom In */}
       <button
+        className="btn-icon btn-tool"
         onClick={handleZoomIn}
         disabled={zoom >= ZOOM_MAX}
-        style={{
-          ...buttonBaseStyle,
-          width: '36px',
-          height: '36px',
-          opacity: zoom >= ZOOM_MAX ? 0.3 : 1,
-          cursor: zoom >= ZOOM_MAX ? 'not-allowed' : 'pointer',
-          borderRadius: '4px',
-        }}
         title="확대"
-        onMouseEnter={(e) => {
-          if (zoom < ZOOM_MAX) {
-            e.currentTarget.style.backgroundColor = '#E0E0E0';
-          }
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = 'transparent';
-        }}
+        aria-label="확대"
       >
         <MagnifyingGlassPlus size={20} weight="regular" />
       </button>
 
-      {/* Zoom Level Display */}
-      <div style={{
-        width: '36px',
-        height: '24px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: '11px',
-        color: '#333333',
-        fontWeight: 500
-      }}>
+      {/* Zoom Level */}
+      <div className="zoom-display">
         {Math.round(zoom * 100)}%
       </div>
 
-      {/* Zoom Out (-) */}
+      {/* Zoom Out */}
       <button
+        className="btn-icon btn-tool"
         onClick={handleZoomOut}
         disabled={zoom <= ZOOM_MIN}
-        style={{
-          ...buttonBaseStyle,
-          width: '36px',
-          height: '36px',
-          opacity: zoom <= ZOOM_MIN ? 0.3 : 1,
-          cursor: zoom <= ZOOM_MIN ? 'not-allowed' : 'pointer',
-          borderRadius: '4px',
-        }}
         title="축소"
-        onMouseEnter={(e) => {
-          if (zoom > ZOOM_MIN) {
-            e.currentTarget.style.backgroundColor = '#E0E0E0';
-          }
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = 'transparent';
-        }}
+        aria-label="축소"
       >
         <MagnifyingGlassMinus size={20} weight="regular" />
       </button>
 
-      {/* Fit Page (*) */}
+      {/* Fit Page */}
       <button
+        className="btn-icon btn-tool"
         onClick={() => onFitMode('page')}
-        style={{
-          ...buttonBaseStyle,
-          width: '36px',
-          height: '36px',
-          borderRadius: '4px',
-        }}
         title="페이지 맞춤"
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = '#E0E0E0';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = 'transparent';
-        }}
+        aria-label="페이지 맞춤"
       >
         <ArrowsOut size={20} weight="regular" />
       </button>

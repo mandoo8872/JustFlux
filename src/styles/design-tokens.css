@@ -1,0 +1,78 @@
+:root {
+  /* ── Color: Neutral ── */
+  --color-bg-app:       #E5E5E5;
+  --color-bg-surface:   #F5F5F5;
+  --color-bg-elevated:  #FAFAFA;
+  --color-bg-card:      #FFFFFF;
+  --color-bg-hover:     #E8E8E8;
+  --color-bg-active:    #D4D4D4;
+
+  --color-border:       #D0D0D0;
+  --color-border-light: #E5E7EB;
+  --color-border-input: #CBD5E1;
+
+  --color-text-primary:   #1A1A1A;
+  --color-text-secondary: #333333;
+  --color-text-tertiary:  #999999;
+  --color-text-muted:     #64748B;
+
+  /* ── Color: Brand ── */
+  --color-brand:        #0078D4;
+  --color-brand-hover:  #106EBE;
+  --color-brand-light:  #DBEAFE;
+  --color-accent:       #3B82F6;
+  --color-accent-hover: #2563EB;
+  --color-accent-shadow: rgba(59, 130, 246, 0.3);
+  --color-danger:       #EF4444;
+  --color-danger-hover: #DC2626;
+  --color-success:      #22C55E;
+  --color-warning:      #F97316;
+
+  /* ── Typography ── */
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+  --font-size-xs:   11px;
+  --font-size-sm:   12px;
+  --font-size-base: 13px;
+  --font-size-md:   14px;
+  --font-size-lg:   16px;
+  --font-weight-normal:   400;
+  --font-weight-medium:   500;
+  --font-weight-semibold: 600;
+  --font-weight-bold:     700;
+
+  /* ── Spacing ── */
+  --space-0: 0px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* ── Radius ── */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 16px;
+  --radius-full: 50%;
+
+  /* ── Shadow ── */
+  --shadow-xs:  0 1px 2px rgba(0,0,0,0.04);
+  --shadow-sm:  0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md:  0 4px 6px rgba(0,0,0,0.07);
+  --shadow-lg:  0 10px 25px rgba(0,0,0,0.1);
+  --shadow-xl:  0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+
+  /* ── Transition ── */
+  --transition-fast:   0.15s ease-in-out;
+  --transition-normal: 0.2s ease-in-out;
+  --transition-slow:   0.3s ease-in-out;
+
+  /* ── Layout ── */
+  --header-height: 40px;
+  --sidebar-width: 280px;
+  --right-sidebar-width: 60px;
+  --right-sidebar-expanded: 320px;
+  --sidebar-collapsed-width: 24px;
+}
