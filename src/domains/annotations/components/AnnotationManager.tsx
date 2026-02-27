@@ -351,21 +351,37 @@ export function AnnotationManager({
       // onKeyDown moved to window listener
       tabIndex={0}
     >
-      {pageAnnotations.map((annotation) => (
-        <React.Fragment key={annotation.id}>
-          <AnnotationLayer
-            annotation={annotation}
-            scale={scale}
-            isSelected={selectedAnnotationIds.includes(annotation.id)}
-            isDragging={draggedAnnotationId === annotation.id}
-            onSelect={() => { }}
-            onUpdate={onUpdate}
-            onDelete={onDelete}
-            onPointerDown={handlePointerDown}
-            onDragStart={startDrag}
-          />
-        </React.Fragment>
-      ))}
+      {pageAnnotations.map((annotation) => {
+        // 그룹 전체 선택 상태: 개별 멤버의 selected 표시 숨김 (그룹 박스만 표시)
+        const isInFullGroupSelect =
+          !selection.editingGroupId &&
+          annotation.groupId &&
+          selectedAnnotationIds.includes(annotation.id) &&
+          selectedAnnotationIds.length >= 2 &&
+          pageAnnotations
+            .filter(a => a.groupId === annotation.groupId)
+            .every(a => selectedAnnotationIds.includes(a.id));
+
+        const showSelected = isInFullGroupSelect
+          ? false
+          : selectedAnnotationIds.includes(annotation.id);
+
+        return (
+          <React.Fragment key={annotation.id}>
+            <AnnotationLayer
+              annotation={annotation}
+              scale={scale}
+              isSelected={showSelected}
+              isDragging={draggedAnnotationId === annotation.id}
+              onSelect={() => { }}
+              onUpdate={onUpdate}
+              onDelete={onDelete}
+              onPointerDown={handlePointerDown}
+              onDragStart={startDrag}
+            />
+          </React.Fragment>
+        );
+      })}
 
       {/* Group / Multi-select bounding box outline */}
       {(() => {
@@ -391,7 +407,6 @@ export function AnnotationManager({
                   borderRadius: '4px',
                   pointerEvents: 'none',
                   zIndex: 9998,
-                  opacity: 0.5,
                 }}
               >
                 <div style={{
