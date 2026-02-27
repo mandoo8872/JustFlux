@@ -176,8 +176,14 @@ const ANNOTATION_CREATORS: Record<string, AnnotationCreator> = {
     // 사용 후 클리어
     if (pendingConfig) delete (globalThis as any).__pendingTableConfig;
 
-    const colWidth = bbox.width / cols;
-    const rowHeight = bbox.height / rows;
+    const colWidth = Math.round(bbox.width / cols);
+    const rowHeight = Math.round(bbox.height / rows);
+
+    // Ensure sum equals bbox exactly (distribute remainder to last col/row)
+    const colWidths = Array(cols).fill(colWidth);
+    colWidths[cols - 1] = bbox.width - colWidth * (cols - 1);
+    const rowHeights = Array(rows).fill(rowHeight);
+    rowHeights[rows - 1] = bbox.height - rowHeight * (rows - 1);
 
     const defaultCellStyle: TableCellStyle = {
       fontSize: 12,
@@ -205,8 +211,8 @@ const ANNOTATION_CREATORS: Record<string, AnnotationCreator> = {
       bbox,
       rows,
       cols,
-      colWidths: Array(cols).fill(colWidth),
-      rowHeights: Array(rows).fill(rowHeight),
+      colWidths,
+      rowHeights,
       cells,
       borderWidth: 1,
       borderColor: '#000000',
