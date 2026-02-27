@@ -216,15 +216,13 @@ export function TableAnnotationComponent({
                                 ? cellStyle.backgroundColor
                                 : undefined,
                             opacity: cellStyle.backgroundOpacity,
-                            display: 'flex',
-                            alignItems: cellStyle.verticalAlign === 'top' ? 'flex-start'
-                                : cellStyle.verticalAlign === 'bottom' ? 'flex-end' : 'center',
                             outline: isCellEditing ? '2px solid #3B82F6' : isCellSelected ? '2px solid #93C5FD' : 'none',
                             outlineOffset: -2,
                             cursor: isSelected ? 'text' : 'pointer',
                             overflow: 'hidden',
                             whiteSpace: 'pre-wrap',
-                            wordBreak: 'break-word',
+                            wordBreak: 'break-all',
+                            overflowWrap: 'break-word',
                             lineHeight: 1.4,
                             pointerEvents: 'auto',
                         }}

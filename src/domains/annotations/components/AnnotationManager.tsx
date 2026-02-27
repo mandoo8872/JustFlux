@@ -150,11 +150,14 @@ export function AnnotationManager({
       const startY = (e.clientY - rect.top) / scale;
 
       let createdAnnotationId: string | null = null;
+      let lastDragX = startX;
+      let lastDragY = startY;
 
-      // Start Dragging Logic
       const handleWindowMouseMove = (moveEvent: PointerEvent) => {
         const currentX = (moveEvent.clientX - rect.left) / scale;
         const currentY = (moveEvent.clientY - rect.top) / scale;
+        lastDragX = currentX;
+        lastDragY = currentY;
 
         // Calculate distance
         const dist = Math.sqrt(Math.pow(currentX - startX, 2) + Math.pow(currentY - startY, 2));
@@ -165,32 +168,25 @@ export function AnnotationManager({
           // Map brush tool to freehand type, highlighter stays as highlighter
           const annotationType = activeTool === 'brush' ? 'freehand' : activeTool;
 
-          const initialProps = {
-            // BBox is required by BaseAnnotation validation
-            bbox: { x: startX, y: startY, width: 0, height: 0 },
-            // For Arrow/Line/Lightning
-            startPoint: { x: startX, y: startY },
-            endPoint: { x: startX, y: startY },
-            // For Freehand - initial point
-            points: [{ x: startX, y: startY }]
-          };
-
-          let newAnnotation: Annotation | null = null;
-
+          // Table is created on mouseUp (needs final bbox for equal cell spacing)
           if (annotationType === 'table') {
-            // Table uses AnnotationFactory which has full cells/colWidths init
-            newAnnotation = createAnnotationFromDraw(activeTool, {
-              pageId,
-              bbox: { x: startX, y: startY, width: Math.abs(currentX - startX), height: Math.abs(currentY - startY) },
-              points: { start: { x: startX, y: startY }, current: { x: currentX, y: currentY } },
-            });
+            // Don't create yet, just mark that we're dragging
           } else {
-            newAnnotation = annotationService.createAnnotation(annotationType, pageId, initialProps);
-          }
+            const initialProps = {
+              // BBox is required by BaseAnnotation validation
+              bbox: { x: startX, y: startY, width: 0, height: 0 },
+              // For Arrow/Line/Lightning
+              startPoint: { x: startX, y: startY },
+              endPoint: { x: startX, y: startY },
+              // For Freehand - initial point
+              points: [{ x: startX, y: startY }]
+            };
 
-          if (newAnnotation) {
-            onCreate(newAnnotation);
-            createdAnnotationId = newAnnotation.id;
+            const newAnnotation = annotationService.createAnnotation(annotationType, pageId, initialProps);
+            if (newAnnotation) {
+              onCreate(newAnnotation);
+              createdAnnotationId = newAnnotation.id;
+            }
           }
         }
 
@@ -259,6 +255,25 @@ export function AnnotationManager({
           if (newAnnotation) {
             onCreate(newAnnotation);
             createdAnnotationId = newAnnotation.id;
+          }
+        }
+
+        // Table tool: create on mouseUp with final bbox for correct cell spacing
+        if (!createdAnnotationId && activeTool === 'table') {
+          const w = Math.abs(lastDragX - startX);
+          const h = Math.abs(lastDragY - startY);
+          if (w > 40 && h > 40) {
+            const bx = Math.min(startX, lastDragX);
+            const by = Math.min(startY, lastDragY);
+            const newAnnotation = createAnnotationFromDraw('table', {
+              pageId,
+              bbox: { x: bx, y: by, width: w, height: h },
+              points: { start: { x: startX, y: startY }, current: { x: lastDragX, y: lastDragY } },
+            });
+            if (newAnnotation) {
+              onCreate(newAnnotation);
+              createdAnnotationId = newAnnotation.id;
+            }
           }
         }
 
