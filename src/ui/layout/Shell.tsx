@@ -116,7 +116,7 @@ export function Shell() {
       style={{
         display: 'flex', flexDirection: 'column',
         height: '100vh', width: '100vw',
-        backgroundColor: '#E5E5E5', overflow: 'hidden', position: 'relative',
+        overflow: 'hidden', position: 'relative',
       }}
     >
       <Header

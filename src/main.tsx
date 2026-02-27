@@ -1,8 +1,8 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import './styles/design-tokens.css'
-import './styles/components.css'
-import './index.css'
+import './index.css'                    // Tailwind base/components/utilities (lowest priority)
+import './styles/design-tokens.css'     // CSS custom properties (override Tailwind vars)
+import './styles/components.css'        // Component classes (highest priority)
 import App from './App.tsx'
 import { initializeAnnotations } from './domains/annotations'
 
