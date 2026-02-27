@@ -1,11 +1,13 @@
 /**
  * Header Component - 상단 헤더
- * 문서 이름, 페이지 수, Undo/Redo, 파일 액션 표시
+ * 문서 이름, 페이지 수, Undo/Redo, 파일 액션, 테마 토글 표시
  */
 
 import React from 'react';
+import { Moon, Sun, Desktop } from 'phosphor-react';
 import { FileActions } from './FileActions';
 import { UndoRedo } from './UndoRedo';
+import { useThemeStore } from '../../state/stores/ThemeStore';
 import type { Document as JFDocument } from '../../core/model/types';
 
 interface HeaderProps {
@@ -21,6 +23,12 @@ interface HeaderProps {
   onToggleSmooth: () => void;
 }
 
+const THEME_META: Record<string, { icon: typeof Sun; label: string; emoji: string }> = {
+  system: { icon: Desktop, label: '시스템', emoji: '🖥️' },
+  light: { icon: Sun, label: '라이트', emoji: '☀️' },
+  dark: { icon: Moon, label: '다크', emoji: '🌙' },
+};
+
 export function Header({
   document,
   totalPages,
@@ -33,6 +41,10 @@ export function Header({
   onExport,
   onToggleSmooth,
 }: HeaderProps) {
+  const { preference, cycleTheme } = useThemeStore();
+  const meta = THEME_META[preference];
+  const ThemeIcon = meta.icon;
+
   return (
     <header className="header-bar">
       {/* Left: Document name */}
@@ -68,16 +80,28 @@ export function Header({
         )}
       </div>
 
-      {/* Center: Smooth toggle */}
+      {/* Center-Right: Toggles */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', marginRight: 'var(--space-2)' }}>
+        {/* Smooth toggle */}
         <button
           className={`btn-toggle ${smoothRendering ? 'btn-toggle--on' : 'btn-toggle--off'}`}
           onClick={onToggleSmooth}
-          title={smoothRendering ? 'Smooth 렌더링 ON (부드럽지만 무거움)' : 'Smooth 렌더링 OFF (선명하고 가벼움)'}
+          title={smoothRendering ? 'Smooth 렌더링 ON' : 'Smooth 렌더링 OFF'}
           aria-label={smoothRendering ? 'Smooth 렌더링 비활성화' : 'Smooth 렌더링 활성화'}
         >
           <span style={{ fontSize: '10px' }}>{smoothRendering ? '🔵' : '⚪'}</span>
           Smooth
+        </button>
+
+        {/* Theme toggle */}
+        <button
+          className={`btn-toggle ${preference === 'dark' ? 'btn-toggle--on' : 'btn-toggle--off'}`}
+          onClick={cycleTheme}
+          title={`테마: ${meta.label} (클릭하여 변경)`}
+          aria-label={`현재 테마: ${meta.label}. 클릭하여 다음 테마로 전환`}
+        >
+          <ThemeIcon size={14} weight="bold" />
+          {meta.label}
         </button>
       </div>
 
