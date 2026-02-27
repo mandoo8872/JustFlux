@@ -1,11 +1,10 @@
 /**
  * UndoRedo Component - 실행 취소/다시 실행 버튼
+ * ArrowUUpLeft / ArrowUUpRight 아이콘으로 회전 버튼과 시각적 구분
  */
 
-import {
-  ArrowCounterClockwise,
-  ArrowClockwise,
-} from 'phosphor-react';
+import { ArrowUUpLeft, ArrowUUpRight } from 'phosphor-react';
+import { useTranslation } from '../../i18n';
 
 interface UndoRedoProps {
   canUndo: boolean;
@@ -14,68 +13,31 @@ interface UndoRedoProps {
   onRedo: () => void;
 }
 
-export function UndoRedo({
-  canUndo,
-  canRedo,
-  onUndo,
-  onRedo,
-}: UndoRedoProps) {
+export function UndoRedo({ canUndo, canRedo, onUndo, onRedo }: UndoRedoProps) {
+  const { t } = useTranslation();
+
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '0px' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
       <button
+        className="btn-icon btn-tool"
         onClick={onUndo}
         disabled={!canUndo}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: '28px',
-          height: '28px',
-          border: 'none',
-          backgroundColor: 'transparent',
-          color: canUndo ? '#333333' : '#999999',
-          cursor: canUndo ? 'pointer' : 'not-allowed',
-          transition: 'background-color 0.15s ease-in-out'
-        }}
-        onMouseEnter={(e) => {
-          if (canUndo) {
-            e.currentTarget.style.backgroundColor = '#E0E0E0';
-          }
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = 'transparent';
-        }}
-        title="실행 취소"
+        title={t('header.undo')}
+        aria-label={t('header.undo')}
+        style={{ width: '28px', height: '28px', opacity: canUndo ? 1 : 0.35 }}
       >
-        <ArrowCounterClockwise size={16} weight="regular" />
+        <ArrowUUpLeft size={16} weight="bold" />
       </button>
-      
+
       <button
+        className="btn-icon btn-tool"
         onClick={onRedo}
         disabled={!canRedo}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: '28px',
-          height: '28px',
-          border: 'none',
-          backgroundColor: 'transparent',
-          color: canRedo ? '#333333' : '#999999',
-          cursor: canRedo ? 'pointer' : 'not-allowed',
-          transition: 'background-color 0.15s ease-in-out'
-        }}
-        onMouseEnter={(e) => {
-          if (canRedo) {
-            e.currentTarget.style.backgroundColor = '#E0E0E0';
-          }
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = 'transparent';
-        }}
-        title="다시 실행"
+        title={t('header.redo')}
+        aria-label={t('header.redo')}
+        style={{ width: '28px', height: '28px', opacity: canRedo ? 1 : 0.35 }}
       >
-        <ArrowClockwise size={16} weight="regular" />
+        <ArrowUUpRight size={16} weight="bold" />
       </button>
     </div>
   );

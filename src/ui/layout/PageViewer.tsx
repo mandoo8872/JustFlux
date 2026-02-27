@@ -28,7 +28,6 @@ interface PageViewerProps {
   onAddAnnotation: (annotation: Omit<Annotation, 'id'>) => void;
   onUpdateAnnotation: (id: string, updates: Partial<Annotation>) => void;
   onDeleteAnnotation: (id: string) => void;
-  onAddHistoryPatch: (description: string, forward: any[], backward: any[]) => void;
   onPageSelect: (pageId: string) => void;
   scrollContainerRef?: React.RefObject<HTMLDivElement>;
 }
@@ -44,7 +43,6 @@ export function PageViewer({
   onAddAnnotation,
   onUpdateAnnotation,
   onDeleteAnnotation,
-  onAddHistoryPatch,
   onPageSelect,
   scrollContainerRef,
 }: PageViewerProps) {
@@ -122,15 +120,6 @@ export function PageViewer({
                 scale={scale}
                 activeTool={activeTool as ToolType}
                 onCreate={(annotation: Omit<Annotation, 'id'>) => {
-                  if (document) {
-                    const forward = [
-                      { op: 'add' as const, path: `/document/pages/${document.pages.findIndex(p => p.id === annotation.pageId)}/layers/annotations/-`, value: annotation }
-                    ];
-                    const backward = [
-                      { op: 'remove' as const, path: `/document/pages/${document.pages.findIndex(p => p.id === annotation.pageId)}/layers/annotations/${document.pages.find(p => p.id === annotation.pageId)?.layers.annotations.length || 0}` }
-                    ];
-                    onAddHistoryPatch('주석 추가', forward, backward);
-                  }
                   try {
                     onAddAnnotation(annotation);
                   } catch (error) {
@@ -139,29 +128,8 @@ export function PageViewer({
                 }}
                 onUpdate={(id, updates) => {
                   onUpdateAnnotation(id, updates);
-                  if (!document) return;
-                  const annotation = document.pages.flatMap(p => p.layers.annotations).find(a => a.id === id);
-                  if (annotation) {
-                    const forward = [
-                      { op: 'replace' as const, path: `/document/pages/${document.pages.findIndex(p => p.layers.annotations.some(a => a.id === id))}/layers/annotations/${document.pages.find(p => p.layers.annotations.some(a => a.id === id))?.layers.annotations.findIndex(a => a.id === id)}`, value: { ...annotation, ...updates } }
-                    ];
-                    const backward = [
-                      { op: 'replace' as const, path: `/document/pages/${document.pages.findIndex(p => p.layers.annotations.some(a => a.id === id))}/layers/annotations/${document.pages.find(p => p.layers.annotations.some(a => a.id === id))?.layers.annotations.findIndex(a => a.id === id)}`, value: annotation }
-                    ];
-                    onAddHistoryPatch('주석 수정', forward, backward);
-                  }
                 }}
                 onDelete={(id) => {
-                  if (document) {
-                    const annotation = document.pages.flatMap(p => p.layers.annotations).find(a => a.id === id);
-                    if (annotation) {
-                      const pageIndex = document.pages.findIndex(p => p.layers.annotations.some(a => a.id === id));
-                      const annotationIndex = document.pages[pageIndex].layers.annotations.findIndex(a => a.id === id);
-                      const forward = [{ op: 'remove' as const, path: `/document/pages/${pageIndex}/layers/annotations/${annotationIndex}` }];
-                      const backward = [{ op: 'add' as const, path: `/document/pages/${pageIndex}/layers/annotations/${annotationIndex}`, value: annotation }];
-                      onAddHistoryPatch('주석 삭제', forward, backward);
-                    }
-                  }
                   onDeleteAnnotation(id);
                 }}
               />

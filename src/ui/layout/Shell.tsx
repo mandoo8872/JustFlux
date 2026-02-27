@@ -191,7 +191,6 @@ export function Shell() {
         onUpdateAnnotation={updateAnnotation}
         onDeleteAnnotation={handleDeleteAnnotation}
         onSelectAnnotations={selectAnnotations}
-        onAddHistoryPatch={useHistoryStore.getState().addHistoryPatch}
       />
 
       {/* Export Modal */}

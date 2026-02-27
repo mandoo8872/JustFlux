@@ -8,7 +8,9 @@
         "smoothOff": "Smooth rendering OFF (crisp and light)",
         "pages": "pages",
         "rotateCW": "Rotate All CW (90°)",
-        "rotateCCW": "Rotate All CCW (90°)"
+        "rotateCCW": "Rotate All CCW (90°)",
+        "undo": "Undo (Ctrl+Z)",
+        "redo": "Redo (Ctrl+Y)"
     },
     "theme": {
         "system": "System",

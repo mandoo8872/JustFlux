@@ -38,7 +38,6 @@ interface MainContentProps {
   onUpdateAnnotation: (id: string, updates: Partial<Annotation>) => void;
   onDeleteAnnotation: (id: string) => void;
   onSelectAnnotations?: (ids: string[]) => void;
-  onAddHistoryPatch: (description: string, forward: any[], backward: any[]) => void;
 }
 
 export function MainContent({
@@ -59,7 +58,6 @@ export function MainContent({
   onAddAnnotation,
   onUpdateAnnotation,
   onDeleteAnnotation,
-  onAddHistoryPatch,
 }: MainContentProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const { clearSelection } = useAnnotationStore();
@@ -102,7 +100,6 @@ export function MainContent({
           onAddAnnotation={onAddAnnotation}
           onUpdateAnnotation={onUpdateAnnotation}
           onDeleteAnnotation={onDeleteAnnotation}
-          onAddHistoryPatch={onAddHistoryPatch}
           onPageSelect={onPageSelect}
           scrollContainerRef={containerRef as React.RefObject<HTMLDivElement>}
         />

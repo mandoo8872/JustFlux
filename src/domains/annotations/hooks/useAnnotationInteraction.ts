@@ -1,5 +1,6 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useAnnotationStore } from '../../../state/stores/AnnotationStore';
+import { useHistoryStore } from '../../../state/stores/HistoryStore';
 import { getDelta } from '../utils/transformUtils';
 import type { Annotation } from '../../../core/model/types';
 
@@ -22,6 +23,10 @@ export const useAnnotationInteraction = ({ scale, activeTool }: UseAnnotationInt
         startPoint: null,
         annotationId: null,
     });
+
+    // Snapshot of selected annotations before drag starts (for undo)
+    const beforeSnapshotsRef = useRef<Map<string, Annotation>>(new Map());
+    const didMoveRef = useRef(false);
 
     useEffect(() => {
         if (!dragState.isDragging) return;
@@ -48,6 +53,7 @@ export const useAnnotationInteraction = ({ scale, activeTool }: UseAnnotationInt
             }
 
             if (Math.abs(deltaX) > 0 || Math.abs(deltaY) > 0) {
+                didMoveRef.current = true;
                 // Move ALL selected annotations together (group drag)
                 const currentSelectedIds = useAnnotationStore.getState().selection.selectedAnnotationIds;
                 for (const id of currentSelectedIds) {
@@ -61,6 +67,28 @@ export const useAnnotationInteraction = ({ scale, activeTool }: UseAnnotationInt
         };
 
         const handlePointerUp = () => {
+            // Record history if annotations actually moved
+            if (didMoveRef.current && beforeSnapshotsRef.current.size > 0) {
+                const actions = Array.from(beforeSnapshotsRef.current.entries()).map(
+                    ([id, before]) => {
+                        const after = useAnnotationStore.getState().annotations.find(a => a.id === id);
+                        return {
+                            type: 'update' as const,
+                            annotationId: id,
+                            pageId: before.pageId,
+                            before: { ...before },
+                            after: after ? { ...after } : null,
+                        };
+                    }
+                );
+                if (actions.length > 0) {
+                    useHistoryStore.getState().pushAction('주석 이동', actions);
+                }
+            }
+
+            beforeSnapshotsRef.current.clear();
+            didMoveRef.current = false;
+
             setDragState({
                 isDragging: false,
                 startPoint: null,
@@ -77,6 +105,19 @@ export const useAnnotationInteraction = ({ scale, activeTool }: UseAnnotationInt
         };
     }, [dragState.isDragging, dragState.annotationId, dragState.startPoint, moveAnnotation, scale]);
 
+    /** Capture snapshots of all selected annotations before drag */
+    const captureSnapshots = useCallback(() => {
+        const store = useAnnotationStore.getState();
+        const ids = store.selection.selectedAnnotationIds;
+        const map = new Map<string, Annotation>();
+        for (const id of ids) {
+            const ann = store.annotations.find(a => a.id === id);
+            if (ann) map.set(id, { ...ann });
+        }
+        beforeSnapshotsRef.current = map;
+        didMoveRef.current = false;
+    }, []);
+
     const handlePointerDown = useCallback((e: React.PointerEvent, annotationId: string) => {
         if (activeTool !== 'select') return;
         if (e.button !== 0) return;
@@ -86,18 +127,20 @@ export const useAnnotationInteraction = ({ scale, activeTool }: UseAnnotationInt
         const isMultiSelect = e.ctrlKey || e.metaKey;
 
         if (isMultiSelect) {
-            // Ctrl+Click: toggle selection (add/remove)
             selectAnnotation(annotationId, true);
         } else if (!selectedAnnotationIds.includes(annotationId)) {
             selectAnnotation(annotationId);
         }
+
+        // Capture before-snapshots for undo (setTimeout lets selection update first)
+        setTimeout(() => captureSnapshots(), 0);
 
         setDragState({
             isDragging: true,
             startPoint: { x: e.clientX, y: e.clientY },
             annotationId,
         });
-    }, [activeTool, selectedAnnotationIds, selectAnnotation]);
+    }, [activeTool, selectedAnnotationIds, selectAnnotation, captureSnapshots]);
 
     // Direct drag start function for components like ImageAnnotation
     const startDrag = useCallback((annotation: Annotation, startPos: { x: number; y: number }) => {
@@ -107,12 +150,14 @@ export const useAnnotationInteraction = ({ scale, activeTool }: UseAnnotationInt
             selectAnnotation(annotation.id);
         }
 
+        setTimeout(() => captureSnapshots(), 0);
+
         setDragState({
             isDragging: true,
             startPoint: startPos,
             annotationId: annotation.id,
         });
-    }, [activeTool, selectedAnnotationIds, selectAnnotation]);
+    }, [activeTool, selectedAnnotationIds, selectAnnotation, captureSnapshots]);
 
     return {
         handlePointerDown,

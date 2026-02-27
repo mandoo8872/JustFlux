@@ -8,7 +8,9 @@
         "smoothOff": "스무스 렌더링 OFF (선명하고 가벼움)",
         "pages": "페이지",
         "rotateCW": "모든 페이지 우회전 (90°)",
-        "rotateCCW": "모든 페이지 좌회전 (90°)"
+        "rotateCCW": "모든 페이지 좌회전 (90°)",
+        "undo": "실행 취소 (Ctrl+Z)",
+        "redo": "다시 실행 (Ctrl+Y)"
     },
     "theme": {
         "system": "시스템",
