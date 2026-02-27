@@ -10,6 +10,7 @@ import { AnnotationLayer } from './AnnotationLayer';
 import { useAnnotationInteraction } from '../hooks/useAnnotationInteraction';
 import type { Annotation } from '../../../core/model/types';
 import type { ToolType } from '../../../core/model/types';
+import { createAnnotationFromDraw } from '../../../ui/viewer/annotations/AnnotationFactory';
 
 interface AnnotationManagerProps {
   pageId: string;
@@ -174,7 +175,19 @@ export function AnnotationManager({
             points: [{ x: startX, y: startY }]
           };
 
-          const newAnnotation = annotationService.createAnnotation(annotationType, pageId, initialProps);
+          let newAnnotation: Annotation | null = null;
+
+          if (annotationType === 'table') {
+            // Table uses AnnotationFactory which has full cells/colWidths init
+            newAnnotation = createAnnotationFromDraw(activeTool, {
+              pageId,
+              bbox: { x: startX, y: startY, width: Math.abs(currentX - startX), height: Math.abs(currentY - startY) },
+              points: { start: { x: startX, y: startY }, current: { x: currentX, y: currentY } },
+            });
+          } else {
+            newAnnotation = annotationService.createAnnotation(annotationType, pageId, initialProps);
+          }
+
           if (newAnnotation) {
             onCreate(newAnnotation);
             createdAnnotationId = newAnnotation.id;

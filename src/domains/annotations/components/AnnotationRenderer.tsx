@@ -17,6 +17,7 @@ import { ArrowAnnotationComponent } from '../../../ui/viewer/annotations/ArrowAn
 import { StarAnnotationComponent } from '../../../ui/viewer/annotations/StarAnnotation';
 import { FreehandAnnotationComponent } from '../../../ui/viewer/annotations/FreehandAnnotation';
 import { HighlighterAnnotationComponent } from '../../../ui/viewer/annotations/HighlighterAnnotation';
+import { TableAnnotationComponent } from '../../../ui/viewer/annotations/TableAnnotation';
 
 // ── 공통 Props 빌더 ──
 
@@ -154,6 +155,20 @@ const ANNOTATION_CONFIGS: AnnotationConfig[] = [
     }),
     validate: (a) => a.type === 'highlighter' && !!a.bbox && 'points' in a && Array.isArray(a.points),
     defaultProps: () => ({ type: 'highlighter', points: [], style: { stroke: '#FF9800', strokeWidth: 20, opacity: 0.3 } }),
+  },
+  // ── Table ──
+  {
+    type: 'table',
+    Component: TableAnnotationComponent,
+    propsMapper: (p: any) => ({
+      ...coreProps(p),
+      isHovered: p.isHovered,
+      onHover: p.onHover,
+      onHoverEnd: p.onHoverEnd,
+      onDragStart: p.onDragStart,
+    }),
+    validate: (a) => a.type === 'table' && !!a.bbox && 'cells' in a,
+    defaultProps: () => ({ type: 'table', rows: 3, cols: 3, colWidths: [67, 67, 66], rowHeights: [30, 30, 30], cells: [], borderWidth: 1, borderColor: '#000000', style: { stroke: '#000000', strokeWidth: 1 } }),
   },
 ];
 
