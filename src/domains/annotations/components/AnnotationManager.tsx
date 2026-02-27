@@ -56,13 +56,18 @@ export function AnnotationManager({
       if (e.target === layerRef.current) {
         e.preventDefault();
         const rect = layerRef.current?.getBoundingClientRect();
-        if (!rect) { clearSelection(); return; }
+        if (!rect) {
+          if (!(e.ctrlKey || e.metaKey)) clearSelection();
+          return;
+        }
 
         const startX = (e.clientX - rect.left) / scale;
         const startY = (e.clientY - rect.top) / scale;
 
         setMarquee({ startX, startY, currentX: startX, currentY: startY });
-        clearSelection();
+        if (!(e.ctrlKey || e.metaKey)) {
+          clearSelection();
+        }
 
         const handleMarqueeMove = (moveEvent: PointerEvent) => {
           const cx = (moveEvent.clientX - rect.left) / scale;

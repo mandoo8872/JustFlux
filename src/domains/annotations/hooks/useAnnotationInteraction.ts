@@ -83,7 +83,12 @@ export const useAnnotationInteraction = ({ scale, activeTool }: UseAnnotationInt
 
         e.stopPropagation();
 
-        if (!selectedAnnotationIds.includes(annotationId)) {
+        const isMultiSelect = e.ctrlKey || e.metaKey;
+
+        if (isMultiSelect) {
+            // Ctrl+Click: toggle selection (add/remove)
+            selectAnnotation(annotationId, true);
+        } else if (!selectedAnnotationIds.includes(annotationId)) {
             selectAnnotation(annotationId);
         }
 
