@@ -17,7 +17,6 @@ import type {
     EllipseAnnotation,
     RoundedRectAnnotation,
     StarAnnotation,
-
     ImageAnnotation as ImageAnnotationType,
     FreehandAnnotation,
 } from '../../types/annotation';
@@ -28,7 +27,7 @@ import { TextAnnotationComponent } from './annotations/TextAnnotation';
 import { HighlightAnnotationComponent } from './annotations/HighlightAnnotation';
 import { ShapeAnnotationComponent } from './annotations/ShapeAnnotation';
 import { StarAnnotationComponent } from './annotations/StarAnnotation';
-
+import { ArrowAnnotationComponent } from './annotations/ArrowAnnotation';
 import { ImageAnnotationComponent } from './annotations/ImageAnnotation';
 import { FreehandAnnotationComponent } from './annotations/FreehandAnnotation';
 
@@ -89,8 +88,10 @@ const ANNOTATION_RENDERERS: Record<string, AnnotationRenderer> = {
 
     // Rectangle, Ellipse, Arrow는 ShapeAnnotationComponent를 공유
     rectangle: shapeRenderer,
+    roundedRect: shapeRenderer,
     ellipse: shapeRenderer,
-    arrow: shapeRenderer,
+    arrow: arrowLineRenderer,
+    line: arrowLineRenderer,
 
     star: ({ annotation, isSelected, scale, callbacks }) => (
         <div key={annotation.id} style={{ position: 'relative' }}>
@@ -174,6 +175,31 @@ function shapeRenderer({ annotation, isSelected, scale, callbacks }: RenderConte
                     }}
                 />
             )}
+        </div>
+    );
+}
+
+// ── Arrow/Line 공통 렌더러 ────────────────────
+
+function arrowLineRenderer({ annotation, isSelected, isHovered, scale, callbacks }: RenderContext): React.ReactNode {
+    return (
+        <div key={annotation.id} style={{ position: 'relative' }}>
+            <ArrowAnnotationComponent
+                annotation={annotation as any}
+                isSelected={isSelected}
+                isHovered={isHovered}
+                scale={scale}
+                onSelect={() => callbacks.onSelect(annotation.id)}
+                onUpdate={(updates) => callbacks.onUpdate(annotation.id, updates)}
+                onDelete={() => callbacks.onDelete(annotation.id)}
+                onHover={() => callbacks.onHover(annotation.id)}
+                onHoverEnd={() => callbacks.onHover(null)}
+                onPointerDown={(e: React.PointerEvent) => {
+                    e.stopPropagation();
+                    callbacks.onSelect(annotation.id);
+                    callbacks.onDragStart(annotation, { x: e.clientX, y: e.clientY });
+                }}
+            />
         </div>
     );
 }

@@ -8,6 +8,7 @@ import type { Page } from '../../../core/model/types';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import { PageContextMenu } from '../PageContextMenu';
 import { usePageStore } from '../../../state/stores/PageStore';
+import { usePDFStore } from '../../../state/stores/PDFStore';
 import { useTranslation } from '../../../i18n';
 
 interface ThumbnailItemProps {
@@ -37,6 +38,7 @@ export function ThumbnailItem({
   const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
   const itemRef = useRef<HTMLDivElement>(null);
   const updatePage = usePageStore(state => state.updatePage);
+  const globalRotation = usePDFStore(state => state.globalRotation);
   const { t } = useTranslation();
 
   const handleRotateRight = useCallback(() => {
@@ -67,7 +69,7 @@ export function ThumbnailItem({
         if (pdfProxy && page.pdfRef) {
           // PDF 페이지 렌더링 (page.pdfRef.sourceIndex 사용)
           const pdfPage = await pdfProxy.getPage(page.pdfRef.sourceIndex);
-          const viewport = pdfPage.getViewport({ scale: 0.2 }); // 썸네일용 작은 스케일
+          const viewport = pdfPage.getViewport({ scale: 0.2, rotation: globalRotation });
 
           const canvas = document.createElement('canvas');
           const context = canvas.getContext('2d');
@@ -96,7 +98,7 @@ export function ThumbnailItem({
     };
 
     generateThumbnailAsync();
-  }, [page.id, page.pdfRef, pdfProxy]);
+  }, [page.id, page.pdfRef, pdfProxy, globalRotation]);
 
   // 컨텍스트 메뉴 처리
   const handleContextMenu = useCallback((event: React.MouseEvent) => {

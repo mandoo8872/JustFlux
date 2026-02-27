@@ -22,22 +22,22 @@ export interface LoadPdfResult {
 export async function loadPdfFile(file: File): Promise<LoadPdfResult> {
   try {
     logger.debug(`📄 [PDF] Loading file: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`);
-    
+
     // Read file as ArrayBuffer and convert to Uint8Array immediately
     const arrayBuffer = await file.arrayBuffer();
     const originalBytes = new Uint8Array(arrayBuffer);
-    
+
     // Load PDF with PDF.js (pass Uint8Array instead of ArrayBuffer)
     const loadingTask = pdfjsLib.getDocument({
       data: originalBytes,
       cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/cmaps/',
       cMapPacked: true,
     });
-    
+
     const pdfProxy = await loadingTask.promise;
-    
+
     logger.debug(`✅ [PDF] Loaded: ${pdfProxy.numPages} pages`);
-    
+
     // Create document model
     const document = createDocument({
       name: file.name.replace('.pdf', ''),
@@ -48,13 +48,13 @@ export async function loadPdfFile(file: File): Promise<LoadPdfResult> {
         originalBytes: originalBytes,
       },
     });
-    
+
     // Create pages
     const pages: Page[] = [];
     for (let i = 1; i <= pdfProxy.numPages; i++) {
       const pdfPage = await pdfProxy.getPage(i);
       const viewport = pdfPage.getViewport({ scale: 1.0 });
-      
+
       const page = createPage({
         docId: document.id,
         index: i - 1,
@@ -64,18 +64,18 @@ export async function loadPdfFile(file: File): Promise<LoadPdfResult> {
           sourceIndex: i,
         },
       });
-      
+
       pages.push(page);
-      
+
       if (i % 10 === 0) {
         logger.debug(`   Processed ${i}/${pdfProxy.numPages} pages...`);
       }
     }
-    
+
     document.pages = pages;
-    
+
     logger.debug(`✅ [PDF] Document created: ${pages.length} pages`);
-    
+
     return { document, pdfProxy };
   } catch (error) {
     console.error('❌ [PDF] Load failed:', error);
@@ -95,23 +95,23 @@ export async function renderPdfPage(
   try {
     const pdfPage = await pdfProxy.getPage(pageIndex + 1); // PDF pages are 1-based
     const viewport = pdfPage.getViewport({ scale });
-    
+
     canvas.width = viewport.width;
     canvas.height = viewport.height;
-    
+
     const context = canvas.getContext('2d');
     if (!context) {
       throw new Error('Failed to get 2D context');
     }
-    
+
     const renderContext = {
       canvasContext: context,
       viewport: viewport,
       canvas: canvas,
     };
-    
+
     await pdfPage.render(renderContext).promise;
-    
+
     logger.debug(`✅ [PDF] Rendered page ${pageIndex + 1} at ${scale}x scale`);
   } catch (error) {
     console.error(`❌ [PDF] Render failed for page ${pageIndex + 1}:`, error);
@@ -125,31 +125,32 @@ export async function renderPdfPage(
 export async function generateThumbnail(
   pdfProxy: pdfjsLib.PDFDocumentProxy,
   pageIndex: number,
-  maxWidth: number = 150
+  maxWidth: number = 150,
+  rotation: number = 0
 ): Promise<string> {
   try {
     const pdfPage = await pdfProxy.getPage(pageIndex + 1);
-    const viewport = pdfPage.getViewport({ scale: 1.0 });
-    
+    const viewport = pdfPage.getViewport({ scale: 1.0, rotation });
+
     // Calculate scale to fit max width
     const scale = maxWidth / viewport.width;
-    const scaledViewport = pdfPage.getViewport({ scale });
-    
+    const scaledViewport = pdfPage.getViewport({ scale, rotation });
+
     const canvas = document.createElement('canvas');
     canvas.width = scaledViewport.width;
     canvas.height = scaledViewport.height;
-    
+
     const context = canvas.getContext('2d');
     if (!context) {
       throw new Error('Failed to get 2D context');
     }
-    
+
     await pdfPage.render({
       canvasContext: context,
       viewport: scaledViewport,
       canvas: canvas,
     }).promise;
-    
+
     return canvas.toDataURL('image/png');
   } catch (error) {
     console.error(`❌ [PDF] Thumbnail generation failed for page ${pageIndex + 1}:`, error);

@@ -10,6 +10,7 @@ import type { PDFDocumentProxy } from 'pdfjs-dist';
 import { t } from '../../i18n';
 import type { Page } from '../../core/model/types';
 import { generateThumbnail } from '../../core/pdf/pdfLoader';
+import { usePDFStore } from '../../state/stores/PDFStore';
 
 /** placeholder 캔버스 생성 (중복 제거) */
 function createPlaceholderThumbnail(width: number, height: number, label: string): string {
@@ -50,6 +51,7 @@ export function useThumbnailGenerator({
     insertedPdfProxies = new Map(),
 }: UseThumbnailGeneratorOptions): Record<string, string> {
     const [thumbnails, setThumbnails] = useState<Record<string, string>>({});
+    const globalRotation = usePDFStore(state => state.globalRotation);
 
     useEffect(() => {
         if (pages.length === 0) return;
@@ -67,7 +69,7 @@ export function useThumbnailGenerator({
                     // Original PDF page
                     if (page.pdfRef && pdfProxy && !insertedPdfPages.has(page.id)) {
                         try {
-                            newThumbnails[page.id] = await generateThumbnail(pdfProxy, page.pdfRef.sourceIndex - 1, thumbnailWidth);
+                            newThumbnails[page.id] = await generateThumbnail(pdfProxy, page.pdfRef.sourceIndex - 1, thumbnailWidth, globalRotation);
                         } catch {
                             newThumbnails[page.id] = createPlaceholderThumbnail(thumbnailWidth, thumbnailHeight, t('pageView.pdfPage'));
                         }
@@ -77,7 +79,7 @@ export function useThumbnailGenerator({
                         const proxy = insertedPdfProxies.get(page.id);
                         if (proxy) {
                             try {
-                                newThumbnails[page.id] = await generateThumbnail(proxy, page.pdfRef.sourceIndex - 1, thumbnailWidth);
+                                newThumbnails[page.id] = await generateThumbnail(proxy, page.pdfRef.sourceIndex - 1, thumbnailWidth, globalRotation);
                             } catch {
                                 newThumbnails[page.id] = createPlaceholderThumbnail(thumbnailWidth, thumbnailHeight, t('pageView.pdfPage'));
                             }
@@ -98,7 +100,7 @@ export function useThumbnailGenerator({
         };
 
         generateAll();
-    }, [pdfProxy, pages, sidebarWidth, insertedPdfPages, insertedPdfProxies]);
+    }, [pdfProxy, pages, sidebarWidth, insertedPdfPages, insertedPdfProxies, globalRotation]);
 
     return thumbnails;
 }

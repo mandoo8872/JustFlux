@@ -180,6 +180,60 @@ export function TextControls({ annotation, style, onUpdate }: TextControlsProps)
                         />
                     ))}
                 </div>
+
+                {/* Sub-controls per tab */}
+                {activeColorTab === 'text' && (
+                    <div style={{ ...inlineRowStyle, marginTop: '6px' }}>
+                        <span style={{ ...labelStyle, margin: 0 }}>투명도</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1 }}>
+                            <input
+                                type="range" min="0" max="100"
+                                value={Math.round((style.opacity ?? 1) * 100)}
+                                onChange={(e) => onUpdate({ style: { ...style, opacity: parseInt(e.target.value) / 100 } })}
+                                style={{ flex: 1, height: '4px', cursor: 'pointer' }}
+                            />
+                            <span style={{ ...valueDisplayStyle, minWidth: '32px', fontSize: '11px' }}>
+                                {Math.round((style.opacity ?? 1) * 100)}%
+                            </span>
+                        </div>
+                    </div>
+                )}
+                {activeColorTab === 'background' && (
+                    <div style={{ ...inlineRowStyle, marginTop: '6px' }}>
+                        <span style={{ ...labelStyle, margin: 0 }}>투명도</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1 }}>
+                            <input
+                                type="range" min="0" max="100"
+                                value={Math.round((style.backgroundOpacity ?? 1) * 100)}
+                                onChange={(e) => onUpdate({ style: { ...style, backgroundOpacity: parseInt(e.target.value) / 100 } })}
+                                style={{ flex: 1, height: '4px', cursor: 'pointer' }}
+                            />
+                            <span style={{ ...valueDisplayStyle, minWidth: '32px', fontSize: '11px' }}>
+                                {Math.round((style.backgroundOpacity ?? 1) * 100)}%
+                            </span>
+                        </div>
+                    </div>
+                )}
+                {activeColorTab === 'border' && (
+                    <div style={{ ...inlineRowStyle, marginTop: '6px' }}>
+                        <span style={{ ...labelStyle, margin: 0 }}>두께</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <button
+                                style={{ ...iconButtonStyle, width: '24px', height: '24px' }}
+                                onClick={() => onUpdate({ style: { ...style, borderWidth: Math.max(0, (style.borderWidth || 1) - 0.5) } })}
+                            >
+                                <CaretDown size={10} />
+                            </button>
+                            <span style={valueDisplayStyle}>{style.borderWidth || 1}px</span>
+                            <button
+                                style={{ ...iconButtonStyle, width: '24px', height: '24px' }}
+                                onClick={() => onUpdate({ style: { ...style, borderWidth: (style.borderWidth || 1) + 0.5 } })}
+                            >
+                                <CaretUp size={10} />
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
         </>
     );
