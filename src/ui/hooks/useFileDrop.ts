@@ -89,12 +89,15 @@ export function useFileDrop(
 
     const handleDragOver = useCallback((e: React.DragEvent) => {
         e.preventDefault();
+        // 외부 파일 드래그만 감지 (annotation/thumbnail 내부 드래그는 무시)
+        if (!e.dataTransfer.types.includes('Files')) return;
         e.stopPropagation();
         setIsDragOver(true);
     }, []);
 
     const handleDragLeave = useCallback((e: React.DragEvent) => {
         e.preventDefault();
+        if (!e.dataTransfer.types.includes('Files')) return;
         e.stopPropagation();
         if (e.currentTarget.contains(e.relatedTarget as Node)) return;
         setIsDragOver(false);
@@ -102,6 +105,8 @@ export function useFileDrop(
 
     const handleDrop = useCallback(async (e: React.DragEvent) => {
         e.preventDefault();
+        // 외부 파일 드래그만 처리
+        if (!e.dataTransfer.types.includes('Files')) return;
         e.stopPropagation();
         setIsDragOver(false);
 
