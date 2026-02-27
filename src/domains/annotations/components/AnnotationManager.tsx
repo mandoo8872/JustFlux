@@ -61,8 +61,32 @@ export function AnnotationManager({
           return;
         }
 
-        const startX = (e.clientX - rect.left) / scale;
-        const startY = (e.clientY - rect.top) / scale;
+        const clickX = (e.clientX - rect.left) / scale;
+        const clickY = (e.clientY - rect.top) / scale;
+
+        // 그룹 편집 모드 중 빈 공간 클릭 처리
+        const editingGroupId = useAnnotationStore.getState().selection.editingGroupId;
+        if (editingGroupId) {
+          const groupMembers = pageAnnotations.filter(a => a.groupId === editingGroupId);
+          if (groupMembers.length > 0) {
+            const gMinX = Math.min(...groupMembers.map(a => a.bbox.x));
+            const gMinY = Math.min(...groupMembers.map(a => a.bbox.y));
+            const gMaxX = Math.max(...groupMembers.map(a => a.bbox.x + a.bbox.width));
+            const gMaxY = Math.max(...groupMembers.map(a => a.bbox.y + a.bbox.height));
+
+            if (clickX >= gMinX && clickX <= gMaxX && clickY >= gMinY && clickY <= gMaxY) {
+              // 그룹 영역 내부 빈 공간 → 그룹 전체 선택으로 복귀
+              const { selectAnnotations, exitGroupEdit } = useAnnotationStore.getState();
+              exitGroupEdit();
+              selectAnnotations(groupMembers.map(a => a.id));
+              return;
+            }
+          }
+          // 그룹 외부 클릭 → 선택 해제
+        }
+
+        const startX = clickX;
+        const startY = clickY;
 
         setMarquee({ startX, startY, currentX: startX, currentY: startY });
         if (!(e.ctrlKey || e.metaKey)) {
@@ -344,42 +368,84 @@ export function AnnotationManager({
       ))}
 
       {/* Group / Multi-select bounding box outline */}
-      {selectedAnnotationIds.length >= 2 && (() => {
-        const selected = pageAnnotations.filter(a => selectedAnnotationIds.includes(a.id));
-        if (selected.length < 2) return null;
-        const minX = Math.min(...selected.map(a => a.bbox.x));
-        const minY = Math.min(...selected.map(a => a.bbox.y));
-        const maxX = Math.max(...selected.map(a => a.bbox.x + a.bbox.width));
-        const maxY = Math.max(...selected.map(a => a.bbox.y + a.bbox.height));
-        const isGrouped = selected.every(a => a.groupId && a.groupId === selected[0]?.groupId);
-        return (
-          <div
-            style={{
-              position: 'absolute',
-              left: minX * scale - 4,
-              top: minY * scale - 4,
-              width: (maxX - minX) * scale + 8,
-              height: (maxY - minY) * scale + 8,
-              border: isGrouped ? '2px solid #3B82F6' : '1.5px dashed #94A3B8',
-              borderRadius: isGrouped ? '4px' : '2px',
-              pointerEvents: 'none',
-              zIndex: 9998,
-              boxShadow: isGrouped ? '0 0 0 1px rgba(59,130,246,0.2)' : 'none',
-            }}
-          >
-            {/* Group badge */}
-            {isGrouped && (
-              <div style={{
-                position: 'absolute', top: '-10px', left: '4px',
-                fontSize: '9px', color: '#3B82F6', fontWeight: 700,
-                backgroundColor: 'white', padding: '0 4px', borderRadius: '2px',
-                border: '1px solid #3B82F6', lineHeight: '14px',
-              }}>
-                그룹 ({selected.length})
+      {(() => {
+        const editingGroupId = selection.editingGroupId;
+
+        // 그룹 편집 모드: 편집 중인 그룹의 바운딩 박스 표시
+        if (editingGroupId) {
+          const groupMembers = pageAnnotations.filter(a => a.groupId === editingGroupId);
+          if (groupMembers.length >= 2) {
+            const minX = Math.min(...groupMembers.map(a => a.bbox.x));
+            const minY = Math.min(...groupMembers.map(a => a.bbox.y));
+            const maxX = Math.max(...groupMembers.map(a => a.bbox.x + a.bbox.width));
+            const maxY = Math.max(...groupMembers.map(a => a.bbox.y + a.bbox.height));
+            return (
+              <div
+                style={{
+                  position: 'absolute',
+                  left: minX * scale - 4,
+                  top: minY * scale - 4,
+                  width: (maxX - minX) * scale + 8,
+                  height: (maxY - minY) * scale + 8,
+                  border: '2px dashed #3B82F6',
+                  borderRadius: '4px',
+                  pointerEvents: 'none',
+                  zIndex: 9998,
+                  opacity: 0.5,
+                }}
+              >
+                <div style={{
+                  position: 'absolute', top: '-10px', left: '4px',
+                  fontSize: '9px', color: '#3B82F6', fontWeight: 700,
+                  backgroundColor: 'white', padding: '0 4px', borderRadius: '2px',
+                  border: '1px solid #3B82F6', lineHeight: '14px',
+                }}>
+                  그룹 편집 중
+                </div>
               </div>
-            )}
-          </div>
-        );
+            );
+          }
+        }
+
+        // 일반 다중 선택 / 그룹 전체 선택
+        if (selectedAnnotationIds.length >= 2) {
+          const selected = pageAnnotations.filter(a => selectedAnnotationIds.includes(a.id));
+          if (selected.length < 2) return null;
+          const minX = Math.min(...selected.map(a => a.bbox.x));
+          const minY = Math.min(...selected.map(a => a.bbox.y));
+          const maxX = Math.max(...selected.map(a => a.bbox.x + a.bbox.width));
+          const maxY = Math.max(...selected.map(a => a.bbox.y + a.bbox.height));
+          const isGrouped = selected.every(a => a.groupId && a.groupId === selected[0]?.groupId);
+          return (
+            <div
+              style={{
+                position: 'absolute',
+                left: minX * scale - 4,
+                top: minY * scale - 4,
+                width: (maxX - minX) * scale + 8,
+                height: (maxY - minY) * scale + 8,
+                border: isGrouped ? '2px solid #3B82F6' : '1.5px dashed #94A3B8',
+                borderRadius: isGrouped ? '4px' : '2px',
+                pointerEvents: 'none',
+                zIndex: 9998,
+                boxShadow: isGrouped ? '0 0 0 1px rgba(59,130,246,0.2)' : 'none',
+              }}
+            >
+              {isGrouped && (
+                <div style={{
+                  position: 'absolute', top: '-10px', left: '4px',
+                  fontSize: '9px', color: '#3B82F6', fontWeight: 700,
+                  backgroundColor: 'white', padding: '0 4px', borderRadius: '2px',
+                  border: '1px solid #3B82F6', lineHeight: '14px',
+                }}>
+                  그룹 ({selected.length})
+                </div>
+              )}
+            </div>
+          );
+        }
+
+        return null;
       })()}
 
       {/* Marquee selection overlay */}

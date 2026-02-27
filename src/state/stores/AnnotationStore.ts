@@ -33,6 +33,8 @@ interface AnnotationStore {
   setHoveredAnnotation: (id: string | null) => void;
   setDraggedAnnotation: (id: string | null) => void;
   selectAnnotations: (annotationIds: string[]) => void;
+  enterGroupEdit: (groupId: string) => void;
+  exitGroupEdit: () => void;
 
   // ── CRUD ──
   addAnnotation: (annotation: Annotation) => void;
@@ -75,7 +77,8 @@ export const useAnnotationStore = create<AnnotationStore>()(
       selectedAnnotationIds: [],
       selectedRasterLayerId: null,
       activeTool: 'select',
-      toolOptions: {}
+      toolOptions: {},
+      editingGroupId: null
     },
     annotations: [],
     hoveredAnnotationId: null,
@@ -99,15 +102,32 @@ export const useAnnotationStore = create<AnnotationStore>()(
             state.selection.selectedAnnotationIds.push(id);
           }
         } else {
-          // Auto-select group members
           const annotation = state.annotations.find(a => a.id === id);
-          if (annotation?.groupId) {
+
+          if (annotation?.groupId && annotation.groupId === state.selection.editingGroupId) {
+            // 그룹 편집 모드: 같은 그룹 내 다른 멤버 클릭 → 개별 선택 전환
+            state.selection.selectedAnnotationIds = [id];
+          } else if (
+            annotation?.groupId &&
+            state.selection.editingGroupId === null &&
+            state.selection.selectedAnnotationIds.length > 0 &&
+            state.annotations
+              .filter(a => a.groupId === annotation.groupId)
+              .every(a => state.selection.selectedAnnotationIds.includes(a.id))
+          ) {
+            // 그룹이 이미 전체 선택된 상태에서 멤버 클릭 → 그룹 편집 모드 진입
+            state.selection.editingGroupId = annotation.groupId;
+            state.selection.selectedAnnotationIds = [id];
+          } else if (annotation?.groupId) {
+            // 첫 클릭: 그룹 전체 선택
             const groupIds = state.annotations
               .filter(a => a.groupId === annotation.groupId)
               .map(a => a.id);
             state.selection.selectedAnnotationIds = groupIds;
+            state.selection.editingGroupId = null;
           } else {
             state.selection.selectedAnnotationIds = [id];
+            state.selection.editingGroupId = null;
           }
         }
       });
@@ -116,6 +136,7 @@ export const useAnnotationStore = create<AnnotationStore>()(
     clearSelection: () => {
       set((state) => {
         state.selection.selectedAnnotationIds = [];
+        state.selection.editingGroupId = null;
       });
     },
 
@@ -273,6 +294,18 @@ export const useAnnotationStore = create<AnnotationStore>()(
     selectAnnotations: (annotationIds: string[]) => {
       set((state) => {
         state.selection.selectedAnnotationIds = annotationIds;
+      });
+    },
+
+    enterGroupEdit: (groupId: string) => {
+      set((state) => {
+        state.selection.editingGroupId = groupId;
+      });
+    },
+
+    exitGroupEdit: () => {
+      set((state) => {
+        state.selection.editingGroupId = null;
       });
     },
 

@@ -251,6 +251,8 @@ export interface SelectionState {
   selectedRasterLayerId: string | null;
   activeTool: ToolType;
   toolOptions: ToolOptions;
+  /** 그룹 편집 모드: 이 그룹의 내부 개별 객체를 선택/편집 중 */
+  editingGroupId: string | null;
 }
 
 export interface ToolOptions {
