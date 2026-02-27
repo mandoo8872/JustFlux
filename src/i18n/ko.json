@@ -45,7 +45,8 @@
         "arrow": "화살표",
         "line": "직선",
         "star": "별",
-        "brush": "펜"
+        "brush": "펜",
+        "table": "표"
     },
     "zoom": {
         "in": "확대",

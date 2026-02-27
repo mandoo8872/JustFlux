@@ -235,6 +235,7 @@ export type ToolType =
   | 'ellipse'
   | 'arrow'
   | 'line' // 직선 도구 추가
+  | 'table' // 표 도구
   | 'star'
   | 'lightning'
   | 'brush'

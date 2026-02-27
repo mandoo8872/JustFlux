@@ -13,7 +13,7 @@ import {
     Copy, Trash, CaretRight, CaretDown,
     Rectangle, Circle, ArrowUpRight, Minus,
     TextT, Image as ImageIcon, PencilSimple, StarFour,
-    HighlighterCircle,
+    HighlighterCircle, GridFour,
 } from 'phosphor-react';
 import type { Annotation, ArrowAnnotation, LineAnnotation } from '../../types/annotation';
 import {
@@ -51,6 +51,7 @@ const TYPE_META: Record<string, { label: string; icon: React.ElementType }> = {
     freehand: { label: '펜', icon: PencilSimple },
     highlighter: { label: '형광펜', icon: HighlighterCircle },
     brush: { label: '펜', icon: PencilSimple },
+    table: { label: '표', icon: GridFour },
 };
 
 // ── 접이식 섹션 컴포넌트 ───────────────────────
@@ -105,6 +106,7 @@ export function ObjectPropertyPanel({
     const isShapeAnnotation = ['rectangle', 'roundedRect', 'ellipse', 'arrow', 'line', 'star', 'freehand', 'highlighter'].includes(type);
     const isClosedShape = ['rectangle', 'roundedRect', 'ellipse', 'star'].includes(type);
     const isLineOrArrow = type === 'line' || type === 'arrow';
+    const isTableAnnotation = type === 'table';
 
     const style = selectedAnnotation.style || {};
     const bbox = selectedAnnotation.bbox;
@@ -206,6 +208,57 @@ export function ObjectPropertyPanel({
                                     <span style={{ fontSize: '11px', color: '#94A3B8' }}>각도</span>
                                     <span style={valueDisplayStyle}>{Math.round(lineAngle)}°</span>
                                 </div>
+                            </div>
+                        </CollapsibleSection>
+                        <div style={dividerStyle} />
+                    </>
+                )}
+
+                {/* ── Table Controls ── */}
+                {isTableAnnotation && (
+                    <>
+                        <CollapsibleSection title="표 속성">
+                            <div style={inlineRowStyle}>
+                                <span style={{ ...labelStyle, margin: 0 }}>테두리 두께</span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    <button
+                                        style={{ ...iconButtonStyle, width: '24px', height: '24px' }}
+                                        onClick={() => onUpdate({ borderWidth: Math.max(0.5, ((selectedAnnotation as any).borderWidth || 1) - 0.5) })}
+                                    >
+                                        <CaretDown size={10} />
+                                    </button>
+                                    <span style={valueDisplayStyle}>{(selectedAnnotation as any).borderWidth || 1}px</span>
+                                    <button
+                                        style={{ ...iconButtonStyle, width: '24px', height: '24px' }}
+                                        onClick={() => onUpdate({ borderWidth: ((selectedAnnotation as any).borderWidth || 1) + 0.5 })}
+                                    >
+                                        <CaretRight size={10} />
+                                    </button>
+                                </div>
+                            </div>
+                            <div style={inlineRowStyle}>
+                                <span style={{ ...labelStyle, margin: 0 }}>테두리 색상</span>
+                                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                    {['#000000', '#374151', '#6B7280', '#3B82F6', '#EF4444', '#22C55E'].map(color => (
+                                        <div
+                                            key={color}
+                                            onClick={() => onUpdate({ borderColor: color })}
+                                            style={{
+                                                width: 18, height: 18, borderRadius: 3,
+                                                backgroundColor: color,
+                                                border: (selectedAnnotation as any).borderColor === color
+                                                    ? '2px solid #3B82F6' : '1px solid #CBD5E1',
+                                                cursor: 'pointer',
+                                            }}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                            <div style={{ ...inlineRowStyle, marginTop: '4px' }}>
+                                <span style={{ fontSize: '11px', color: '#94A3B8' }}>크기</span>
+                                <span style={valueDisplayStyle}>
+                                    {(selectedAnnotation as any).rows}행 × {(selectedAnnotation as any).cols}열
+                                </span>
                             </div>
                         </CollapsibleSection>
                         <div style={dividerStyle} />

@@ -8,7 +8,7 @@
  *   3. 끝! AnnotationLayer 수정 불필요
  */
 
-import type { Annotation, BBox } from '../../../types/annotation';
+import type { Annotation, BBox, TableCell, TableCellStyle } from '../../../types/annotation';
 import type { ToolType } from '../../../core/model/types';
 
 // ── Creator 인터페이스 ────────────────────────
@@ -164,6 +164,56 @@ const ANNOTATION_CREATORS: Record<string, AnnotationCreator> = {
       ...timestamps(),
     } as Annotation;
   },
+
+  // ─── Table ───
+  table: ({ pageId, bbox }) => {
+    if (!isMinSize(bbox, 40)) return null;
+
+    // 그리드 피커에서 설정한 행/열 수를 전역 상태에서 읽음
+    const pendingConfig = (globalThis as any).__pendingTableConfig as { rows: number; cols: number } | undefined;
+    const rows = pendingConfig?.rows || 3;
+    const cols = pendingConfig?.cols || 3;
+    // 사용 후 클리어
+    if (pendingConfig) delete (globalThis as any).__pendingTableConfig;
+
+    const colWidth = bbox.width / cols;
+    const rowHeight = bbox.height / rows;
+
+    const defaultCellStyle: TableCellStyle = {
+      fontSize: 12,
+      fontFamily: 'sans-serif',
+      fontWeight: 'normal',
+      fontStyle: 'normal',
+      textAlign: 'left',
+      verticalAlign: 'middle',
+      color: '#000000',
+      backgroundColor: 'transparent',
+      backgroundOpacity: 1,
+    };
+
+    const cells: TableCell[][] = Array.from({ length: rows }, () =>
+      Array.from({ length: cols }, () => ({
+        content: '',
+        style: { ...defaultCellStyle },
+      }))
+    );
+
+    return {
+      id: generateId(),
+      type: 'table',
+      pageId,
+      bbox,
+      rows,
+      cols,
+      colWidths: Array(cols).fill(colWidth),
+      rowHeights: Array(rows).fill(rowHeight),
+      cells,
+      borderWidth: 1,
+      borderColor: '#000000',
+      style: { stroke: '#000000', strokeWidth: 1 },
+      ...timestamps(),
+    } as Annotation;
+  },
 };
 
 // ── 공개 API ─────────────────────────────────
@@ -200,7 +250,7 @@ export function isImmediateCreateTool(tool: ToolType): boolean {
  */
 export const DRAWING_TOOLS: readonly string[] = [
   'text', 'highlight', 'highlighter', 'rectangle', 'roundedRect', 'ellipse',
-  'arrow', 'star', 'lightning', 'brush',
+  'arrow', 'star', 'lightning', 'brush', 'table',
 ] as const;
 
 /**

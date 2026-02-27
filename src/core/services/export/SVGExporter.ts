@@ -195,6 +195,8 @@ export class SVGExporter {
         return this.renderStarAnnotation(annotation);
       case 'lightning':
         return this.renderLightningAnnotation(annotation);
+      case 'table':
+        return this.renderTableAnnotation(annotation);
       default:
         return `<!-- Unknown annotation type: ${type} -->`;
     }
@@ -377,6 +379,47 @@ export class SVGExporter {
           fill="${style.fill || '#FFD700'}" 
           stroke="${style.stroke || '#000000'}" 
           stroke-width="${style.strokeWidth || 1}"/>`;
+  }
+
+  /**
+   * 표 주석 렌더링
+   */
+  private renderTableAnnotation(annotation: any): string {
+    const { bbox, colWidths, rowHeights, cells, borderWidth = 1, borderColor = '#000' } = annotation;
+    const { x, y } = bbox;
+    const totalW = colWidths.reduce((s: number, w: number) => s + w, 0);
+    const totalH = rowHeights.reduce((s: number, h: number) => s + h, 0);
+
+    let svg = '';
+    svg += `\n    <rect x="${x}" y="${y}" width="${totalW}" height="${totalH}" fill="none" stroke="${borderColor}" stroke-width="${borderWidth}"/>`;
+
+    let cx = x;
+    for (let c = 0; c < colWidths.length - 1; c++) {
+      cx += colWidths[c];
+      svg += `\n    <line x1="${cx}" y1="${y}" x2="${cx}" y2="${y + totalH}" stroke="${borderColor}" stroke-width="${borderWidth * 0.5}"/>`;
+    }
+
+    let ry = y;
+    for (let r = 0; r < rowHeights.length - 1; r++) {
+      ry += rowHeights[r];
+      svg += `\n    <line x1="${x}" y1="${ry}" x2="${x + totalW}" y2="${ry}" stroke="${borderColor}" stroke-width="${borderWidth * 0.5}"/>`;
+    }
+
+    let cellY = y;
+    for (let r = 0; r < cells.length; r++) {
+      let cellX = x;
+      for (let c = 0; c < cells[r].length; c++) {
+        const cell = cells[r][c];
+        if (cell.content) {
+          const cs = cell.style;
+          svg += `\n    <text x="${cellX + 4}" y="${cellY + (cs.fontSize || 12) + 2}" font-family="${cs.fontFamily || 'sans-serif'}" font-size="${cs.fontSize || 12}" fill="${cs.color || '#000'}">${this.escapeXml(cell.content)}</text>`;
+        }
+        cellX += colWidths[c];
+      }
+      cellY += rowHeights[r];
+    }
+
+    return svg;
   }
 
   /**

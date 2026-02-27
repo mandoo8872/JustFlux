@@ -30,6 +30,7 @@ import { StarAnnotationComponent } from './annotations/StarAnnotation';
 import { ArrowAnnotationComponent } from './annotations/ArrowAnnotation';
 import { ImageAnnotationComponent } from './annotations/ImageAnnotation';
 import { FreehandAnnotationComponent } from './annotations/FreehandAnnotation';
+import { TableAnnotationComponent } from './annotations/TableAnnotation';
 
 // ── 공통 콜백 인터페이스 ─────────────────────
 
@@ -143,6 +144,23 @@ const ANNOTATION_RENDERERS: Record<string, AnnotationRenderer> = {
                 callbacks.onDragStart(annotation, { x: e.clientX, y: e.clientY });
             }}
         />
+    ),
+
+    table: ({ annotation, isSelected, isHovered, scale, callbacks }) => (
+        <div key={annotation.id} style={{ position: 'relative' }}>
+            <TableAnnotationComponent
+                annotation={annotation as any}
+                isSelected={isSelected}
+                isHovered={isHovered}
+                scale={scale}
+                onSelect={() => callbacks.onSelect(annotation.id)}
+                onUpdate={(updates) => callbacks.onUpdate(annotation.id, updates)}
+                onDelete={() => callbacks.onDelete(annotation.id)}
+                onHover={() => callbacks.onHover(annotation.id)}
+                onHoverEnd={() => callbacks.onHover(null)}
+                onDragStart={callbacks.onDragStart as any}
+            />
+        </div>
     ),
 };
 

@@ -45,7 +45,8 @@
         "arrow": "Arrow",
         "line": "Line",
         "star": "Star",
-        "brush": "Pen"
+        "brush": "Pen",
+        "table": "Table"
     },
     "zoom": {
         "in": "Zoom in",

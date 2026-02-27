@@ -240,6 +240,38 @@ export interface Point {
 }
 
 // ============================================
+// Table Annotation
+// ============================================
+
+export interface TableCellStyle {
+  fontSize: number;
+  fontFamily: string;
+  fontWeight: 'normal' | 'bold';
+  fontStyle: 'normal' | 'italic';
+  textAlign: 'left' | 'center' | 'right';
+  verticalAlign: 'top' | 'middle' | 'bottom';
+  color: string;
+  backgroundColor: string;
+  backgroundOpacity: number;
+}
+
+export interface TableCell {
+  content: string;
+  style: TableCellStyle;
+}
+
+export interface TableAnnotation extends BaseAnnotation {
+  type: 'table';
+  rows: number;
+  cols: number;
+  colWidths: number[];    // px, sum = bbox.width
+  rowHeights: number[];   // px, sum = bbox.height
+  cells: TableCell[][];
+  borderWidth: number;
+  borderColor: string;
+}
+
+// ============================================
 // Discriminated Union
 // ============================================
 
@@ -258,7 +290,8 @@ export type Annotation =
   | ImageAnnotation
   | StampAnnotation
   | OCRAnnotation
-  | AIAnnotation;
+  | AIAnnotation
+  | TableAnnotation;
 
 // ============================================
 // Type Guards
