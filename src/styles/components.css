@@ -99,7 +99,7 @@
 }
 
 .btn-action.danger:hover {
-    background: #FEF2F2;
+    background: var(--color-brand-light);
 }
 
 /* ── Header Bar ── */
@@ -237,11 +237,11 @@
 
 /* ── Inputs ── */
 .input-field {
-    background: #F1F5F9;
+    background: var(--color-bg-elevated);
     border: 1px solid var(--color-border-input);
     border-radius: var(--radius-md);
     padding: 6px 10px;
-    color: #1E293B;
+    color: var(--color-text-primary);
     font-size: var(--font-size-sm);
     width: 100%;
     outline: none;
@@ -295,12 +295,12 @@
 
 .btn-toggle--on {
     background: var(--color-brand-light);
-    color: #1D4ED8;
-    border-color: #93C5FD;
+    color: var(--color-accent);
+    border-color: var(--color-accent-shadow);
 }
 
 .btn-toggle--off {
-    background: #F1F5F9;
+    background: var(--color-bg-elevated);
     color: var(--color-text-muted);
     border-color: var(--color-border-input);
 }
@@ -384,7 +384,7 @@
 }
 
 .ctx-menu__item--danger:hover {
-    background: #FEE2E2;
+    background: rgba(239, 68, 68, 0.12);
 }
 
 .ctx-menu__divider {
@@ -398,4 +398,48 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+/* ══════════════════════════════════════════════
+ * Dark Mode Component Overrides
+ * ══════════════════════════════════════════════ */
+
+/* Manual toggle: data-theme="dark" */
+[data-theme="dark"] .glass-panel {
+    background: rgba(35, 35, 40, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .canvas-area {
+    background-image:
+        radial-gradient(circle, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+}
+
+[data-theme="dark"] .drop-overlay__label {
+    background: rgba(35, 35, 40, 0.95);
+}
+
+[data-theme="dark"] .property-panel__header {
+    background: linear-gradient(135deg, #0F172A, #1E293B);
+}
+
+/* OS auto-detect: prefers-color-scheme */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .glass-panel {
+        background: rgba(35, 35, 40, 0.92);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    :root:not([data-theme="light"]) .canvas-area {
+        background-image:
+            radial-gradient(circle, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+    }
+
+    :root:not([data-theme="light"]) .drop-overlay__label {
+        background: rgba(35, 35, 40, 0.95);
+    }
+
+    :root:not([data-theme="light"]) .property-panel__header {
+        background: linear-gradient(135deg, #0F172A, #1E293B);
+    }
 }
