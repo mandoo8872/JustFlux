@@ -1,12 +1,16 @@
 /**
- * DrawPreview — 드로잉 도구 사용 중 실시간 프리뷰를 표시하는 컴포넌트
+ * DrawPreview — 드로잉 도구 사용 중 실시간 프리뷰
  *
- * AnnotationLayer에서 분리되어 단일 책임 원칙(SRP)을 따름.
- * 새로운 도구를 추가할 때 이 파일에만 프리뷰 렌더러를 추가하면 됨.
+ * Agent 2 (Drawing Craftsman):
+ * - 서브픽셀 스냅: Math.round()로 1px 이하 blur 방지
+ * - Shift: 비례 잠금 (정사각형/정원)
+ * - Alt: 중심점 기준 확장 (Figma/PPT 표준)
+ * - preview-tokens.ts에서 색상 상수 참조
  */
 
 import { useState, useEffect } from 'react';
 import type { ToolType, BBox } from '../../core/model/types';
+import { PREVIEW } from './preview-tokens';
 
 // ── Props ────────────────────────────────────
 
@@ -17,27 +21,53 @@ interface DrawPreviewProps {
     scale: number;
 }
 
-// ── 공통 스타일 ──────────────────────────────
+// ── 서브픽셀 스냅 유틸 ──────────────────────
+
+/** 좌표를 정수로 반올림하여 서브픽셀 blur 방지 */
+function snap(v: number): number {
+    return Math.round(v);
+}
+
+// ── BBox 계산 (비례 + 중심점 기준) ──────────
 
 function scaledBBox(
     start: { x: number; y: number },
     current: { x: number; y: number },
     scale: number,
-    constrain = false
+    constrain = false,
+    fromCenter = false,
 ): BBox {
-    let width = Math.abs(current.x - start.x) * scale;
-    let height = Math.abs(current.y - start.y) * scale;
+    let rawW = current.x - start.x;
+    let rawH = current.y - start.y;
 
     if (constrain) {
-        const maxSide = Math.max(width, height);
-        width = maxSide;
-        height = maxSide;
+        const maxSide = Math.max(Math.abs(rawW), Math.abs(rawH));
+        rawW = Math.sign(rawW) * maxSide;
+        rawH = Math.sign(rawH) * maxSide;
     }
 
-    const x = (current.x >= start.x ? start.x : start.x - width / scale) * scale;
-    const y = (current.y >= start.y ? start.y : start.y - height / scale) * scale;
+    let x: number, y: number, width: number, height: number;
 
-    return { x, y, width, height };
+    if (fromCenter) {
+        // Alt: 중심점(start)에서 양방향으로 확장
+        width = Math.abs(rawW) * 2;
+        height = Math.abs(rawH) * 2;
+        x = start.x - Math.abs(rawW);
+        y = start.y - Math.abs(rawH);
+    } else {
+        width = Math.abs(rawW);
+        height = Math.abs(rawH);
+        x = rawW >= 0 ? start.x : start.x + rawW;
+        y = rawH >= 0 ? start.y : start.y + rawH;
+    }
+
+    // 스케일 적용 + 서브픽셀 스냅
+    return {
+        x: snap(x * scale),
+        y: snap(y * scale),
+        width: snap(width * scale),
+        height: snap(height * scale),
+    };
 }
 
 function baseStyle(bbox: BBox): React.CSSProperties {
@@ -51,125 +81,109 @@ function baseStyle(bbox: BBox): React.CSSProperties {
     };
 }
 
-// ── 도구별 프리뷰 렌더러 ─────────────────────
+// ── 프리뷰 렌더러 ────────────────────────────
 
-type PreviewRenderer = (props: DrawPreviewProps) => React.ReactNode;
+type PreviewRenderer = (props: DrawPreviewProps & { shift: boolean; alt: boolean }) => React.ReactNode;
 
 const PREVIEW_RENDERERS: Record<string, PreviewRenderer> = {
-    highlight: ({ drawStart, drawCurrent, scale }) => {
-        const bbox = scaledBBox(drawStart, drawCurrent, scale);
+    highlight: ({ drawStart, drawCurrent, scale, shift, alt }) => {
+        const bbox = scaledBBox(drawStart, drawCurrent, scale, shift, alt);
         return (
-            <div
-                style={{
-                    ...baseStyle(bbox),
-                    backgroundColor: '#FFFF00',
-                    opacity: 0.3,
-                    border: '2px dashed #FFA500',
-                }}
-            />
+            <div style={{
+                ...baseStyle(bbox),
+                backgroundColor: PREVIEW.HIGHLIGHT_BG,
+                opacity: PREVIEW.HIGHLIGHT_OPACITY,
+                border: `${PREVIEW.STROKE_WIDTH}px dashed ${PREVIEW.HIGHLIGHT_BORDER}`,
+            }} />
         );
     },
 
-    rectangle: ({ drawStart, drawCurrent, scale }) => {
-        const bbox = scaledBBox(drawStart, drawCurrent, scale);
+    rectangle: ({ drawStart, drawCurrent, scale, shift, alt }) => {
+        const bbox = scaledBBox(drawStart, drawCurrent, scale, shift, alt);
         return (
-            <div
-                style={{
-                    ...baseStyle(bbox),
-                    border: '2px dashed #3B82F6',
-                    backgroundColor: 'transparent',
-                }}
-            />
+            <div style={{
+                ...baseStyle(bbox),
+                border: `${PREVIEW.STROKE_WIDTH}px dashed ${PREVIEW.SHAPE_STROKE}`,
+                backgroundColor: 'transparent',
+            }} />
         );
     },
 
-    roundedRect: ({ drawStart, drawCurrent, scale }) => {
-        const bbox = scaledBBox(drawStart, drawCurrent, scale);
+    roundedRect: ({ drawStart, drawCurrent, scale, shift, alt }) => {
+        const bbox = scaledBBox(drawStart, drawCurrent, scale, shift, alt);
         return (
-            <div
-                style={{
-                    ...baseStyle(bbox),
-                    border: '2px dashed #3B82F6',
-                    backgroundColor: 'transparent',
-                    borderRadius: '20px',
-                }}
-            />
+            <div style={{
+                ...baseStyle(bbox),
+                border: `${PREVIEW.STROKE_WIDTH}px dashed ${PREVIEW.SHAPE_STROKE}`,
+                backgroundColor: 'transparent',
+                borderRadius: '20px',
+            }} />
         );
     },
 
-    ellipse: ({ drawStart, drawCurrent, scale }) => {
-        const bbox = scaledBBox(drawStart, drawCurrent, scale);
+    ellipse: ({ drawStart, drawCurrent, scale, shift, alt }) => {
+        const bbox = scaledBBox(drawStart, drawCurrent, scale, shift, alt);
         return (
-            <div
-                style={{
-                    ...baseStyle(bbox),
-                    border: '2px dashed #3B82F6',
-                    backgroundColor: 'transparent',
-                    borderRadius: '50%',
-                }}
-            />
+            <div style={{
+                ...baseStyle(bbox),
+                border: `${PREVIEW.STROKE_WIDTH}px dashed ${PREVIEW.SHAPE_STROKE}`,
+                backgroundColor: 'transparent',
+                borderRadius: '50%',
+            }} />
         );
     },
 
     arrow: ({ drawStart, drawCurrent, scale }) => {
-        const startX = drawStart.x * scale;
-        const startY = drawStart.y * scale;
-        const endX = drawCurrent.x * scale;
-        const endY = drawCurrent.y * scale;
-        const angle = Math.atan2(endY - startY, endX - startX);
+        const sx = snap(drawStart.x * scale);
+        const sy = snap(drawStart.y * scale);
+        const ex = snap(drawCurrent.x * scale);
+        const ey = snap(drawCurrent.y * scale);
+        const angle = Math.atan2(ey - sy, ex - sx);
+        const headLen = 10;
 
         return (
-            <svg
-                style={{
-                    position: 'absolute',
-                    left: 0,
-                    top: 0,
-                    width: '100%',
-                    height: '100%',
-                    pointerEvents: 'none',
-                }}
-            >
+            <svg style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
                 <line
-                    x1={startX}
-                    y1={startY}
-                    x2={endX}
-                    y2={endY}
-                    stroke="#3B82F6"
-                    strokeWidth="2"
-                    strokeDasharray="5,5"
+                    x1={sx} y1={sy} x2={ex} y2={ey}
+                    stroke={PREVIEW.LINE_STROKE}
+                    strokeWidth={PREVIEW.STROKE_WIDTH}
+                    strokeDasharray={PREVIEW.DASH_ARRAY}
                 />
                 <polygon
-                    points={`${endX},${endY} ${endX - 10 * Math.cos(angle - Math.PI / 6)},${endY - 10 * Math.sin(angle - Math.PI / 6)} ${endX - 10 * Math.cos(angle + Math.PI / 6)},${endY - 10 * Math.sin(angle + Math.PI / 6)}`}
-                    fill="#3B82F6"
+                    points={`${ex},${ey} ${snap(ex - headLen * Math.cos(angle - Math.PI / 6))},${snap(ey - headLen * Math.sin(angle - Math.PI / 6))} ${snap(ex - headLen * Math.cos(angle + Math.PI / 6))},${snap(ey - headLen * Math.sin(angle + Math.PI / 6))}`}
+                    fill={PREVIEW.ARROW_FILL}
                 />
             </svg>
         );
     },
 
-    // star, lightning은 기본 사각형 프리뷰 사용
-    star: ({ drawStart, drawCurrent, scale }) => {
-        const bbox = scaledBBox(drawStart, drawCurrent, scale);
+    star: ({ drawStart, drawCurrent, scale, shift, alt }) => {
+        const bbox = scaledBBox(drawStart, drawCurrent, scale, shift, alt);
         return (
-            <div
-                style={{
-                    ...baseStyle(bbox),
-                    border: '2px dashed #F59E0B',
-                    backgroundColor: 'transparent',
-                }}
-            />
+            <div style={{
+                ...baseStyle(bbox),
+                border: `${PREVIEW.STROKE_WIDTH}px dashed ${PREVIEW.SPECIAL_STROKE}`,
+                backgroundColor: 'transparent',
+            }} />
         );
     },
-
 };
 
 // ── 메인 컴포넌트 ────────────────────────────
 
 export function DrawPreview({ activeTool, drawStart, drawCurrent, scale }: DrawPreviewProps) {
     const [shiftHeld, setShiftHeld] = useState(false);
+    const [altHeld, setAltHeld] = useState(false);
 
     useEffect(() => {
-        const down = (e: KeyboardEvent) => { if (e.key === 'Shift') setShiftHeld(true); };
-        const up = (e: KeyboardEvent) => { if (e.key === 'Shift') setShiftHeld(false); };
+        const down = (e: KeyboardEvent) => {
+            if (e.key === 'Shift') setShiftHeld(true);
+            if (e.key === 'Alt') { setAltHeld(true); e.preventDefault(); }
+        };
+        const up = (e: KeyboardEvent) => {
+            if (e.key === 'Shift') setShiftHeld(false);
+            if (e.key === 'Alt') setAltHeld(false);
+        };
         window.addEventListener('keydown', down);
         window.addEventListener('keyup', up);
         return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up); };
@@ -178,25 +192,14 @@ export function DrawPreview({ activeTool, drawStart, drawCurrent, scale }: DrawP
     const renderer = PREVIEW_RENDERERS[activeTool];
     if (!renderer) return null;
 
-    // Pass shift state via a modified drawCurrent for box-based tools
+    // Shift 비례 잠금은 box 도구에만 적용
     const boxTools = ['rectangle', 'roundedRect', 'ellipse', 'star', 'highlight'];
-    let effectiveCurrent = drawCurrent;
-    if (shiftHeld && boxTools.includes(activeTool)) {
-        const w = Math.abs(drawCurrent.x - drawStart.x);
-        const h = Math.abs(drawCurrent.y - drawStart.y);
-        const maxSide = Math.max(w, h);
-        effectiveCurrent = {
-            x: drawCurrent.x >= drawStart.x ? drawStart.x + maxSide : drawStart.x - maxSide,
-            y: drawCurrent.y >= drawStart.y ? drawStart.y + maxSide : drawStart.y - maxSide,
-        };
-    }
+    const isBox = boxTools.includes(activeTool);
 
-    return <>{renderer({ activeTool, drawStart, drawCurrent: effectiveCurrent, scale })}</>;
+    return <>{renderer({ activeTool, drawStart, drawCurrent, scale, shift: isBox && shiftHeld, alt: isBox && altHeld })}</>;
 }
 
-/**
- * 외부에서 커스텀 프리뷰 렌더러를 등록 (확장용)
- */
+/** 외부에서 커스텀 프리뷰 렌더러를 등록 (확장용) */
 export function registerPreviewRenderer(toolType: string, renderer: PreviewRenderer): void {
     PREVIEW_RENDERERS[toolType] = renderer;
 }

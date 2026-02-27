@@ -1,6 +1,9 @@
 /**
- * Page Context Menu
- * Right-click menu for page operations
+ * Page Context Menu — 우클릭 페이지 조작 메뉴
+ * Agent 5: 디자인 시스템 기반 전면 리팩토링
+ * - 모든 인라인 스타일 → CSS 클래스 + design tokens
+ * - onMouseEnter/Leave 제거 → CSS :hover
+ * - aria-label 추가
  */
 
 import { useEffect, useRef } from 'react';
@@ -39,260 +42,66 @@ export function PageContextMenu({
 }: PageContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Close on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        onClose();
-      }
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) onClose();
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [onClose]);
 
-  // Close on Escape
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
-
+    const handleKeyDown = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
-  const handleDuplicate = () => {
-    onDuplicate(pageId);
-    onClose();
-  };
-
-  const handleDelete = () => {
-    onDelete(pageId);
-    onClose();
-  };
-
-  const handleAddBlank = () => {
-    onAddBlankPage(pageId);
-    onClose();
-  };
-
-  const handleAddPdf = () => {
-    onAddPdfPage(pageId);
-    onClose();
-  };
-
-  const handleRotateRight = () => {
-    onRotateRight?.(pageId);
-    onClose();
-  };
-
-  const handleRotateLeft = () => {
-    onRotateLeft?.(pageId);
-    onClose();
-  };
+  const exec = (fn: (id: string) => void) => () => { fn(pageId); onClose(); };
 
   const menuContent = (
     <div
       ref={menuRef}
-      style={{
-        position: 'fixed',
-        left: `${position.x}px`,
-        top: `${position.y}px`,
-        zIndex: 999999,
-        backgroundColor: 'white',
-        borderRadius: '12px',
-        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-        border: '1px solid rgb(229, 231, 235)',
-        padding: '8px',
-        minWidth: '200px',
-      }}
+      className="ctx-menu"
+      style={{ left: `${position.x}px`, top: `${position.y}px` }}
+      role="menu"
     >
-      {/* Duplicate Page */}
-      <button
-        onClick={handleDuplicate}
-        style={{
-          width: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          padding: '10px 12px',
-          borderRadius: '8px',
-          border: 'none',
-          backgroundColor: 'transparent',
-          cursor: 'pointer',
-          transition: 'all 0.2s ease-in-out',
-          fontSize: '14px',
-          fontWeight: '500',
-          color: 'rgb(31, 41, 55)',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = 'rgb(243, 244, 246)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = 'transparent';
-        }}
-      >
-        <Copy size={18} weight="duotone" style={{ color: 'rgb(59, 130, 246)' }} />
+      <button className="ctx-menu__item" onClick={exec(onDuplicate)} role="menuitem" aria-label="페이지 복제">
+        <Copy size={18} weight="duotone" style={{ color: 'var(--color-accent)' }} />
         <span>페이지 복제</span>
       </button>
 
-      {/* Separator */}
-      <div style={{ height: '1px', backgroundColor: 'rgb(229, 231, 235)', margin: '4px 0' }} />
+      <div className="ctx-menu__divider" />
 
-      {/* Add Blank Page */}
-      <button
-        onClick={handleAddBlank}
-        style={{
-          width: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          padding: '10px 12px',
-          borderRadius: '8px',
-          border: 'none',
-          backgroundColor: 'transparent',
-          cursor: 'pointer',
-          transition: 'all 0.2s ease-in-out',
-          fontSize: '14px',
-          fontWeight: '500',
-          color: 'rgb(31, 41, 55)',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = 'rgb(243, 244, 246)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = 'transparent';
-        }}
-      >
-        <File size={18} weight="duotone" style={{ color: 'rgb(34, 197, 94)' }} />
+      <button className="ctx-menu__item" onClick={exec(onAddBlankPage)} role="menuitem" aria-label="빈 페이지 추가">
+        <File size={18} weight="duotone" style={{ color: 'var(--color-success)' }} />
         <span>빈 페이지 추가</span>
       </button>
 
-      {/* Add PDF Page */}
-      <button
-        onClick={handleAddPdf}
-        style={{
-          width: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          padding: '10px 12px',
-          borderRadius: '8px',
-          border: 'none',
-          backgroundColor: 'transparent',
-          cursor: 'pointer',
-          transition: 'all 0.2s ease-in-out',
-          fontSize: '14px',
-          fontWeight: '500',
-          color: 'rgb(31, 41, 55)',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = 'rgb(243, 244, 246)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = 'transparent';
-        }}
-      >
-        <FileArrowUp size={18} weight="duotone" style={{ color: 'rgb(168, 85, 247)' }} />
+      <button className="ctx-menu__item" onClick={exec(onAddPdfPage)} role="menuitem" aria-label="PDF 페이지 삽입">
+        <FileArrowUp size={18} weight="duotone" style={{ color: '#A855F7' }} />
         <span>PDF 페이지 삽입</span>
       </button>
 
-      {/* Separator */}
-      <div style={{ height: '1px', backgroundColor: 'rgb(229, 231, 235)', margin: '4px 0' }} />
+      <div className="ctx-menu__divider" />
 
-      {/* Rotate Right */}
       {onRotateRight && (
-        <button
-          onClick={handleRotateRight}
-          style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            padding: '10px 12px',
-            borderRadius: '8px',
-            border: 'none',
-            backgroundColor: 'transparent',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease-in-out',
-            fontSize: '14px',
-            fontWeight: '500',
-            color: 'rgb(31, 41, 55)',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgb(243, 244, 246)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'transparent';
-          }}
-        >
-          <ArrowClockwise size={18} weight="duotone" style={{ color: 'rgb(14, 165, 233)' }} />
+        <button className="ctx-menu__item" onClick={exec(onRotateRight)} role="menuitem" aria-label="우측으로 90도 회전">
+          <ArrowClockwise size={18} weight="duotone" style={{ color: '#0EA5E9' }} />
           <span>우측으로 90° 회전</span>
         </button>
       )}
 
-      {/* Rotate Left */}
       {onRotateLeft && (
-        <button
-          onClick={handleRotateLeft}
-          style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            padding: '10px 12px',
-            borderRadius: '8px',
-            border: 'none',
-            backgroundColor: 'transparent',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease-in-out',
-            fontSize: '14px',
-            fontWeight: '500',
-            color: 'rgb(31, 41, 55)',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgb(243, 244, 246)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'transparent';
-          }}
-        >
-          <ArrowCounterClockwise size={18} weight="duotone" style={{ color: 'rgb(14, 165, 233)' }} />
+        <button className="ctx-menu__item" onClick={exec(onRotateLeft)} role="menuitem" aria-label="좌측으로 90도 회전">
+          <ArrowCounterClockwise size={18} weight="duotone" style={{ color: '#0EA5E9' }} />
           <span>좌측으로 90° 회전</span>
         </button>
       )}
 
-      {/* Separator */}
-      <div style={{ height: '1px', backgroundColor: 'rgb(229, 231, 235)', margin: '4px 0' }} />
+      <div className="ctx-menu__divider" />
 
-      {/* Delete Page */}
-      <button
-        onClick={handleDelete}
-        style={{
-          width: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          padding: '10px 12px',
-          borderRadius: '8px',
-          border: 'none',
-          backgroundColor: 'transparent',
-          cursor: 'pointer',
-          transition: 'all 0.2s ease-in-out',
-          fontSize: '14px',
-          fontWeight: '500',
-          color: 'rgb(220, 38, 38)',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = 'rgb(254, 226, 226)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = 'transparent';
-        }}
-      >
-        <Trash size={18} weight="duotone" style={{ color: 'rgb(220, 38, 38)' }} />
+      <button className="ctx-menu__item ctx-menu__item--danger" onClick={exec(onDelete)} role="menuitem" aria-label="페이지 삭제">
+        <Trash size={18} weight="duotone" />
         <span>페이지 삭제</span>
       </button>
     </div>
@@ -300,4 +109,3 @@ export function PageContextMenu({
 
   return createPortal(menuContent, document.body);
 }
-

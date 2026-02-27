@@ -333,6 +333,66 @@
     margin: 0;
 }
 
+/* ── Canvas Grid Background ── */
+.canvas-area {
+    background-color: var(--color-bg-app);
+    background-image:
+        radial-gradient(circle, rgba(0, 0, 0, 0.07) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+/* ── Context Menu ── */
+.ctx-menu {
+    position: fixed;
+    z-index: 999999;
+    background: var(--color-bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    border: 1px solid var(--color-border-light);
+    padding: var(--space-2);
+    min-width: 200px;
+}
+
+.ctx-menu__item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: 10px var(--space-3);
+    border-radius: var(--radius-lg);
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+    outline: none;
+}
+
+.ctx-menu__item:hover {
+    background: var(--color-bg-hover);
+}
+
+.ctx-menu__item:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: -2px;
+}
+
+.ctx-menu__item--danger {
+    color: var(--color-danger);
+}
+
+.ctx-menu__item--danger:hover {
+    background: #FEE2E2;
+}
+
+.ctx-menu__divider {
+    height: 1px;
+    background: var(--color-border-light);
+    margin: var(--space-1) 0;
+}
+
 /* ── Utility ── */
 .text-ellipsis {
     overflow: hidden;
