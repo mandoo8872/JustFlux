@@ -69,10 +69,18 @@ export function TableAnnotationComponent({
             });
             setEditingCell(null);
         } else {
-            setEditingCell({ row, col });
+            // Single click: select cell only
             setSelectedCells(new Set([`${row}-${col}`]));
+            setEditingCell(null);
         }
     }, [onSelect]);
+
+    const handleCellDoubleClick = useCallback((row: number, col: number, e: React.MouseEvent) => {
+        e.stopPropagation();
+        // Double click: enter inline editing
+        setEditingCell({ row, col });
+        setSelectedCells(new Set([`${row}-${col}`]));
+    }, []);
 
     const handleCellBlur = useCallback((row: number, col: number, content: string) => {
         if (cells[row]?.[col]?.content !== content) {
@@ -196,6 +204,7 @@ export function TableAnnotationComponent({
                         contentEditable={isCellEditing}
                         suppressContentEditableWarning
                         onClick={(e) => handleCellClick(r, c, e)}
+                        onDoubleClick={(e) => handleCellDoubleClick(r, c, e)}
                         onBlur={(e) => handleCellBlur(r, c, e.currentTarget.textContent || '')}
                         onKeyDown={(e) => handleCellKeyDown(e, r, c)}
                         style={{
