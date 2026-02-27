@@ -11,6 +11,7 @@ import type { PDFDocumentProxy, RenderTask } from 'pdfjs-dist';
 import { Spinner } from 'phosphor-react';
 
 import { useViewStore } from '../../state/stores/ViewStore';
+import { usePDFStore } from '../../state/stores/PDFStore';
 import { getCanvasElevation } from './preview-tokens';
 import { useTranslation } from '../../i18n';
 
@@ -31,6 +32,7 @@ export function PageView({ pageId, pageIndex, pdfProxy, scale, onRenderComplete 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const smoothRendering = useViewStore((s) => s.smoothRendering);
+  const globalRotation = usePDFStore((s) => s.globalRotation);
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -66,13 +68,13 @@ export function PageView({ pageId, pageIndex, pdfProxy, scale, onRenderComplete 
 
         // ── Agent 1: CSS/비트맵 스케일 분리 ──
         // CSS 뷰포트: 사용자가 보는 크기
-        const cssViewport = pdfPage.getViewport({ scale });
+        const cssViewport = pdfPage.getViewport({ scale, rotation: globalRotation });
         const displayWidth = cssViewport.width;
         const displayHeight = cssViewport.height;
 
         // 비트맵 뷰포트: 고해상도 렌더링 (Retina 대응)
         const dpr = window.devicePixelRatio || 1;
-        const bitmapViewport = pdfPage.getViewport({ scale: scale * dpr });
+        const bitmapViewport = pdfPage.getViewport({ scale: scale * dpr, rotation: globalRotation });
 
         // Canvas 비트맵 크기 = 고해상도
         canvas.width = Math.round(bitmapViewport.width);
@@ -119,7 +121,7 @@ export function PageView({ pageId, pageIndex, pdfProxy, scale, onRenderComplete 
         renderTaskRef.current = null;
       }
     };
-  }, [pageId, pageIndex, pdfProxy, scale]);
+  }, [pageId, pageIndex, pdfProxy, scale, globalRotation]);
 
   useEffect(() => {
     mountedRef.current = true;

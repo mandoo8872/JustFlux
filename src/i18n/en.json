@@ -6,7 +6,9 @@
         "smooth": "Smooth",
         "smoothOn": "Smooth rendering ON (softer but heavier)",
         "smoothOff": "Smooth rendering OFF (crisp and light)",
-        "pages": "pages"
+        "pages": "pages",
+        "rotateCW": "Rotate All CW (90°)",
+        "rotateCCW": "Rotate All CCW (90°)"
     },
     "theme": {
         "system": "System",

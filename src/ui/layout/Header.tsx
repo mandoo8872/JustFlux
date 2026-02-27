@@ -4,10 +4,11 @@
  */
 
 import React from 'react';
-import { Moon, Sun, Desktop, Translate } from 'phosphor-react';
+import { Moon, Sun, Desktop, Translate, ArrowClockwise, ArrowCounterClockwise } from 'phosphor-react';
 import { FileActions } from './FileActions';
 import { UndoRedo } from './UndoRedo';
 import { useThemeStore } from '../../state/stores/ThemeStore';
+import { usePDFStore } from '../../state/stores/PDFStore';
 import { useTranslation, useLocaleStore } from '../../i18n';
 import type { Document as JFDocument } from '../../core/model/types';
 
@@ -40,6 +41,7 @@ export function Header({
 }: HeaderProps) {
   const { preference, cycleTheme } = useThemeStore();
   const { locale, toggleLocale } = useLocaleStore();
+  const rotateAll = usePDFStore(state => state.rotateAll);
   const { t } = useTranslation();
 
   const ThemeIcon = THEME_ICONS[preference];
@@ -114,6 +116,28 @@ export function Header({
           <Translate size={14} weight="bold" />
           {locale === 'ko' ? '한' : 'EN'}
         </button>
+
+        {/* Global Rotation Toggles */}
+        <div style={{ display: 'flex', gap: '2px', marginLeft: 'var(--space-1)' }}>
+          <button
+            className="btn-icon btn-tool"
+            onClick={() => rotateAll(-90)}
+            title={t('header.rotateCCW')}
+            aria-label={t('header.rotateCCW')}
+            style={{ width: '28px', height: '28px' }}
+          >
+            <ArrowCounterClockwise size={16} weight="bold" />
+          </button>
+          <button
+            className="btn-icon btn-tool"
+            onClick={() => rotateAll(90)}
+            title={t('header.rotateCW')}
+            aria-label={t('header.rotateCW')}
+            style={{ width: '28px', height: '28px' }}
+          >
+            <ArrowClockwise size={16} weight="bold" />
+          </button>
+        </div>
       </div>
 
       {/* Right: Actions */}

@@ -6,7 +6,9 @@
         "smooth": "Smooth",
         "smoothOn": "스무스 렌더링 ON (부드럽지만 무거움)",
         "smoothOff": "스무스 렌더링 OFF (선명하고 가벼움)",
-        "pages": "페이지"
+        "pages": "페이지",
+        "rotateCW": "모든 페이지 우회전 (90°)",
+        "rotateCCW": "모든 페이지 좌회전 (90°)"
     },
     "theme": {
         "system": "시스템",

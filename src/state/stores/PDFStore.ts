@@ -21,35 +21,41 @@ interface PDFStore {
     modificationDate?: Date;
     pageCount: number;
   } | null;
-  
+
+  /** Global rotation applied to all pages (0, 90, 180, 270) */
+  globalRotation: number;
+
   // Loading state
   isLoading: boolean;
   error: string | null;
-  
+
   // ============================================
   // PDF Actions
   // ============================================
-  
+
   /** Load PDF file */
   loadPdf: (file: File) => Promise<void>;
-  
+
   /** Set PDF proxy */
   setPdfProxy: (proxy: PDFDocumentProxy | null) => void;
-  
+
   /** Clear PDF */
   clearPdf: () => void;
-  
+
   /** Get PDF info */
   getPdfInfo: () => any;
-  
+
   /** Get page count */
   getPageCount: () => number;
-  
+
   /** Set loading state */
   setLoading: (loading: boolean) => void;
-  
+
   /** Set error */
   setError: (error: string | null) => void;
+
+  /** Rotate all pages clockwise (+90) or counter-clockwise (-90) */
+  rotateAll: (delta: number) => void;
 }
 
 export const usePDFStore = create<PDFStore>()(
@@ -59,20 +65,21 @@ export const usePDFStore = create<PDFStore>()(
     pdfInfo: null,
     isLoading: false,
     error: null,
-    
+    globalRotation: 0,
+
     // ============================================
     // PDF Actions
     // ============================================
-    
+
     loadPdf: async (file: File) => {
       set((state) => {
         state.isLoading = true;
         state.error = null;
       });
-      
+
       try {
         const result = await loadPdfFile(file);
-        
+
         set((state) => {
           state.pdfProxy = result.pdfProxy as any; // PDFDocumentProxy 타입 호환성 문제 해결
           state.pdfInfo = {
@@ -94,13 +101,13 @@ export const usePDFStore = create<PDFStore>()(
         });
       }
     },
-    
+
     setPdfProxy: (proxy: PDFDocumentProxy | null) => {
       set((state) => {
         state.pdfProxy = proxy as any; // PDFDocumentProxy 타입 호환성 문제 해결
       });
     },
-    
+
     clearPdf: () => {
       set((state) => {
         state.pdfProxy = null;
@@ -108,27 +115,33 @@ export const usePDFStore = create<PDFStore>()(
         state.error = null;
       });
     },
-    
+
     getPdfInfo: () => {
       const state = get();
       return state.pdfInfo;
     },
-    
+
     getPageCount: () => {
       const state = get();
       return state.pdfInfo?.pageCount || 0;
     },
-    
+
     setLoading: (loading: boolean) => {
       set((state) => {
         state.isLoading = loading;
       });
     },
-    
+
     setError: (error: string | null) => {
       set((state) => {
         state.error = error;
       });
-    }
+    },
+
+    rotateAll: (delta: number) => {
+      set((state) => {
+        state.globalRotation = (state.globalRotation + delta + 360) % 360;
+      });
+    },
   }))
 );
