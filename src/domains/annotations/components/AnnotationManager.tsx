@@ -140,7 +140,7 @@ export function AnnotationManager({
     }
 
     // Creating new annotations (Drag to Create)
-    if (['text', 'highlight', 'highlighter', 'rectangle', 'roundedRect', 'ellipse', 'arrow', 'line', 'star', 'brush', 'eraser'].includes(activeTool)) {
+    if (['text', 'highlight', 'highlighter', 'rectangle', 'roundedRect', 'ellipse', 'arrow', 'line', 'star', 'brush', 'eraser', 'table'].includes(activeTool)) {
       e.preventDefault();
       const rect = layerRef.current?.getBoundingClientRect();
       if (!rect) return;

@@ -36,18 +36,34 @@ export function TableGridPicker({ onSelect, onClose }: TableGridPickerProps) {
     return (
         <div
             style={{
-                position: 'absolute',
-                left: '100%',
-                top: 0,
-                marginLeft: 4,
+                position: 'fixed',
+                zIndex: 9999,
                 backgroundColor: '#FFFFFF',
                 border: '1px solid #E2E8F0',
                 borderRadius: 8,
                 padding: 8,
-                boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
-                zIndex: 1000,
+                boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
                 width: totalWidth,
                 userSelect: 'none',
+            }}
+            ref={(el) => {
+                if (el) {
+                    // Position relative to the button (parent)
+                    const parent = el.parentElement;
+                    if (parent) {
+                        const parentRect = parent.getBoundingClientRect();
+                        el.style.left = `${parentRect.right + 8}px`;
+                        el.style.top = `${parentRect.top}px`;
+                        // Ensure it doesn't overflow the viewport
+                        const elRect = el.getBoundingClientRect();
+                        if (elRect.right > window.innerWidth) {
+                            el.style.left = `${parentRect.left - elRect.width - 8}px`;
+                        }
+                        if (elRect.bottom > window.innerHeight) {
+                            el.style.top = `${window.innerHeight - elRect.height - 8}px`;
+                        }
+                    }
+                }
             }}
             onClick={(e) => e.stopPropagation()}
             onMouseLeave={() => { setHoverRow(0); setHoverCol(0); }}
