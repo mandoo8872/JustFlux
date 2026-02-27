@@ -189,6 +189,7 @@ export class SVGExporter {
       case 'ellipse':
         return this.renderEllipseAnnotation(annotation);
       case 'arrow':
+      case 'line':
         return this.renderArrowAnnotation(annotation);
       case 'star':
         return this.renderStarAnnotation(annotation);
@@ -284,24 +285,45 @@ export class SVGExporter {
    * 화살표 주석 렌더링
    */
   private renderArrowAnnotation(annotation: any): string {
-    const { startPoint, endPoint, style } = annotation;
+    const { startPoint, endPoint, style, controlPoint, type } = annotation;
+    const strokeColor = style.stroke || '#000000';
+    const sw = style.strokeWidth || 2;
+    const dashArray = style.strokeDasharray ? ` stroke-dasharray="${style.strokeDasharray}"` : '';
+    const hasCurve = controlPoint != null;
 
-    const angle = Math.atan2(endPoint.y - startPoint.y, endPoint.x - startPoint.x);
-    const arrowLength = 10;
-    const arrowAngle = Math.PI / 6;
+    // Build path
+    let pathD: string;
+    if (hasCurve) {
+      pathD = `M ${startPoint.x} ${startPoint.y} Q ${controlPoint.x} ${controlPoint.y} ${endPoint.x} ${endPoint.y}`;
+    } else {
+      pathD = `M ${startPoint.x} ${startPoint.y} L ${endPoint.x} ${endPoint.y}`;
+    }
 
-    const arrowHeadX1 = endPoint.x - arrowLength * Math.cos(angle - arrowAngle);
-    const arrowHeadY1 = endPoint.y - arrowLength * Math.sin(angle - arrowAngle);
-    const arrowHeadX2 = endPoint.x - arrowLength * Math.cos(angle + arrowAngle);
-    const arrowHeadY2 = endPoint.y - arrowLength * Math.sin(angle + arrowAngle);
+    let svg = `
+    <path d="${pathD}" fill="none"
+          stroke="${strokeColor}" stroke-width="${sw}"
+          stroke-linecap="round"${dashArray}/>`;
 
-    return `
-    <line x1="${startPoint.x}" y1="${startPoint.y}" 
-          x2="${endPoint.x}" y2="${endPoint.y}" 
-          stroke="${style.stroke || '#000000'}" 
-          stroke-width="${style.strokeWidth || 2}"/>
-    <polygon points="${endPoint.x},${endPoint.y} ${arrowHeadX1},${arrowHeadY1} ${arrowHeadX2},${arrowHeadY2}" 
-             fill="${style.stroke || '#000000'}"/>`;
+    // Arrow head (only for arrow type)
+    if (type === 'arrow') {
+      // Tangent direction at endpoint
+      const tx = hasCurve ? endPoint.x - controlPoint.x : endPoint.x - startPoint.x;
+      const ty = hasCurve ? endPoint.y - controlPoint.y : endPoint.y - startPoint.y;
+      const angle = Math.atan2(ty, tx);
+      const arrowLength = 10;
+      const arrowAngle = Math.PI / 6;
+
+      const ax1 = endPoint.x - arrowLength * Math.cos(angle - arrowAngle);
+      const ay1 = endPoint.y - arrowLength * Math.sin(angle - arrowAngle);
+      const ax2 = endPoint.x - arrowLength * Math.cos(angle + arrowAngle);
+      const ay2 = endPoint.y - arrowLength * Math.sin(angle + arrowAngle);
+
+      svg += `
+    <polygon points="${endPoint.x},${endPoint.y} ${ax1},${ay1} ${ax2},${ay2}" 
+             fill="${strokeColor}"/>`;
+    }
+
+    return svg;
   }
 
   /**

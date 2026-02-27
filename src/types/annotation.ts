@@ -123,6 +123,8 @@ export interface LineAnnotation extends BaseAnnotation {
   type: 'line';
   startPoint: Point;
   endPoint: Point;
+  /** Quadratic Bézier control point (absolute coords). null/undefined = straight line */
+  controlPoint?: { x: number; y: number } | null;
   style: AnnotationStyle & {
     stroke: string;
     strokeWidth: number;
