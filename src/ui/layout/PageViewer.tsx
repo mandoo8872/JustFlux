@@ -13,6 +13,7 @@ import type { Document as JFDocument, Page, Annotation, ToolType } from '../../c
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import { usePageScrollTracking } from '../hooks/usePageScrollTracking';
 import { PageContentRenderer } from './PageContentRenderer';
+import { useTranslation } from '../../i18n';
 
 interface PageViewerProps {
   document: JFDocument | null;
@@ -48,6 +49,7 @@ export function PageViewer({
   scrollContainerRef,
 }: PageViewerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const { t } = useTranslation();
 
   const { registerPageRef } = usePageScrollTracking({
     hasDocument: !!document,
@@ -68,12 +70,12 @@ export function PageViewer({
           borderRadius: '4px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
         }}>
           <h2 style={{ fontSize: '18px', fontWeight: 500, color: '#333333', marginBottom: '12px' }}>
-            PDF 편집 시작하기
+            {t('fileDrop.start')}
           </h2>
           <p style={{ color: '#666666', marginBottom: '32px', lineHeight: '1.625', fontSize: '13px' }}>
-            PDF 파일을 업로드하여 편집을 시작하세요.
+            {t('fileDrop.startDesc')}
             <br />
-            텍스트, 주석, 그리기 등 다양한 기능을 사용할 수 있습니다.
+            {t('fileDrop.startFeatures')}
           </p>
         </div>
       </div>

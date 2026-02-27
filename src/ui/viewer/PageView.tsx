@@ -12,6 +12,7 @@ import { Spinner } from 'phosphor-react';
 
 import { useViewStore } from '../../state/stores/ViewStore';
 import { getCanvasElevation } from './preview-tokens';
+import { useTranslation } from '../../i18n';
 
 interface PageViewProps {
   pageId: string;
@@ -30,6 +31,7 @@ export function PageView({ pageId, pageIndex, pdfProxy, scale, onRenderComplete 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const smoothRendering = useViewStore((s) => s.smoothRendering);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -139,7 +141,7 @@ export function PageView({ pageId, pageIndex, pdfProxy, scale, onRenderComplete 
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-3)' }}>
             <Spinner size={32} className="animate-spin text-blue-500" weight="bold" />
             <p style={{ fontSize: 'var(--font-size-md)', color: 'var(--color-text-muted)', fontWeight: 'var(--font-weight-medium)' as any }}>
-              페이지 렌더링 중...
+              {t('pageView.rendering')}
             </p>
           </div>
         </div>
@@ -160,7 +162,7 @@ export function PageView({ pageId, pageIndex, pdfProxy, scale, onRenderComplete 
             border: '1px solid #fecaca'
           }}>
             <p style={{ color: 'var(--color-danger)', fontWeight: 'var(--font-weight-medium)' as any, marginBottom: 'var(--space-2)' }}>
-              렌더링 오류
+              {t('pageView.error')}
             </p>
             <p style={{ fontSize: 'var(--font-size-md)', color: 'var(--color-text-muted)' }}>{error}</p>
           </div>

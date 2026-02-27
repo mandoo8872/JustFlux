@@ -16,6 +16,7 @@ import { useAnnotationStore } from '../../state/stores/AnnotationStore';
 import { useHistoryStore } from '../../state/stores/HistoryStore';
 import { usePageStore } from '../../state/stores/PageStore';
 import { usePDFStore } from '../../state/stores/PDFStore';
+import { useTranslation } from '../../i18n';
 import { initializeContainer } from '../../core/di/ContainerSetup';
 
 // ── 레이아웃 컴포넌트 ──
@@ -46,6 +47,7 @@ export function Shell() {
   // ── 훅 기반 기능 ──
   useClipboardPaste();
   useKeyboardShortcuts();
+  const { t } = useTranslation();
 
   const [insertedPdfPages] = useState<Set<string>>(new Set());
   const [insertedPdfProxies] = useState<Map<string, PDFDocumentProxy>>(new Map());
@@ -218,7 +220,7 @@ export function Shell() {
         <div className="drop-overlay">
           <div className="drop-overlay__label">
             <p className="drop-overlay__text">
-              파일을 여기에 놓으세요
+              {t('fileDrop.drop')}
             </p>
           </div>
         </div>

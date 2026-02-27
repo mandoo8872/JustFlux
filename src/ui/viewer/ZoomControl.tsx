@@ -3,6 +3,7 @@
  */
 
 import { MagnifyingGlassMinus, MagnifyingGlassPlus, ArrowsOut } from 'phosphor-react';
+import { useTranslation } from '../../i18n';
 
 interface ZoomControlProps {
   zoom: number;
@@ -16,49 +17,39 @@ const ZOOM_MAX = 4.0;
 const ZOOM_STEP = 0.1;
 
 export function ZoomControl({ zoom, onZoomChange, onFitMode }: ZoomControlProps) {
-  const handleZoomIn = () => {
-    onZoomChange(Math.min(zoom + ZOOM_STEP, ZOOM_MAX));
-  };
-
-  const handleZoomOut = () => {
-    onZoomChange(Math.max(zoom - ZOOM_STEP, ZOOM_MIN));
-  };
+  const { t } = useTranslation();
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
-      {/* Zoom In */}
       <button
         className="btn-icon btn-tool"
-        onClick={handleZoomIn}
+        onClick={() => onZoomChange(Math.min(zoom + ZOOM_STEP, ZOOM_MAX))}
         disabled={zoom >= ZOOM_MAX}
-        title="확대"
-        aria-label="확대"
+        title={t('zoom.in')}
+        aria-label={t('zoom.in')}
       >
         <MagnifyingGlassPlus size={20} weight="regular" />
       </button>
 
-      {/* Zoom Level */}
       <div className="zoom-display">
         {Math.round(zoom * 100)}%
       </div>
 
-      {/* Zoom Out */}
       <button
         className="btn-icon btn-tool"
-        onClick={handleZoomOut}
+        onClick={() => onZoomChange(Math.max(zoom - ZOOM_STEP, ZOOM_MIN))}
         disabled={zoom <= ZOOM_MIN}
-        title="축소"
-        aria-label="축소"
+        title={t('zoom.out')}
+        aria-label={t('zoom.out')}
       >
         <MagnifyingGlassMinus size={20} weight="regular" />
       </button>
 
-      {/* Fit Page */}
       <button
         className="btn-icon btn-tool"
         onClick={() => onFitMode('page')}
-        title="페이지 맞춤"
-        aria-label="페이지 맞춤"
+        title={t('zoom.fitPage')}
+        aria-label={t('zoom.fitPage')}
       >
         <ArrowsOut size={20} weight="regular" />
       </button>

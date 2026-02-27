@@ -1,9 +1,9 @@
 /**
  * Sidebar Component - 좌측 사이드바
- * 썸네일 목록, 도구박스, 스타일 패널 등을 포함
  */
 
 import { ThumbnailSidebar } from '../viewer/ThumbnailSidebar';
+import { useTranslation } from '../../i18n';
 import type { Document as JFDocument, Page } from '../../core/model/types';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 
@@ -42,6 +42,8 @@ export function Sidebar({
   insertedPdfPages,
   insertedPdfProxies,
 }: SidebarProps) {
+  const { t } = useTranslation();
+
   if (isSidebarCollapsed) {
     return (
       <div
@@ -52,8 +54,8 @@ export function Sidebar({
           className="btn-icon"
           onClick={onToggleSidebar}
           style={{ width: '20px', height: '20px', marginTop: 'var(--space-2)' }}
-          title="사이드바 열기"
-          aria-label="사이드바 열기"
+          title={t('sidebar.open')}
+          aria-label={t('sidebar.open')}
         >
           <span style={{ fontSize: '14px' }}>▶</span>
         </button>
@@ -66,21 +68,19 @@ export function Sidebar({
       className="sidebar-panel sidebar-panel--left"
       style={{ width: `${sidebarWidth}px` }}
     >
-      {/* Sidebar Header */}
       <div className="sidebar-header">
-        <span className="sidebar-header__title">페이지</span>
+        <span className="sidebar-header__title">{t('sidebar.pages')}</span>
         <button
           className="btn-icon"
           onClick={onToggleSidebar}
           style={{ width: '20px', height: '20px' }}
-          title="사이드바 닫기"
-          aria-label="사이드바 닫기"
+          title={t('sidebar.close')}
+          aria-label={t('sidebar.close')}
         >
           <span style={{ fontSize: '12px' }}>◀</span>
         </button>
       </div>
 
-      {/* Thumbnail List */}
       <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
         <ThumbnailSidebar
           pages={pages}

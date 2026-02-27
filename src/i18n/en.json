@@ -1,0 +1,112 @@
+{
+    "app": {
+        "name": "JustFlux"
+    },
+    "header": {
+        "smooth": "Smooth",
+        "smoothOn": "Smooth rendering ON (softer but heavier)",
+        "smoothOff": "Smooth rendering OFF (crisp and light)",
+        "pages": "pages"
+    },
+    "theme": {
+        "system": "System",
+        "light": "Light",
+        "dark": "Dark",
+        "toggle": "Theme: {mode} (click to change)",
+        "ariaLabel": "Current theme: {mode}. Click to switch"
+    },
+    "locale": {
+        "ko": "한국어",
+        "en": "English",
+        "toggle": "Change language",
+        "ariaLabel": "Current language: {lang}. Click to switch"
+    },
+    "sidebar": {
+        "pages": "Pages",
+        "open": "Open sidebar",
+        "close": "Close sidebar",
+        "blankPage": "Add blank page"
+    },
+    "tools": {
+        "select": "Select",
+        "text": "Text",
+        "highlighter": "Highlighter",
+        "rectangle": "Rectangle",
+        "roundedRect": "Rounded Rect",
+        "ellipse": "Ellipse",
+        "arrow": "Arrow",
+        "line": "Line",
+        "star": "Star",
+        "brush": "Pen"
+    },
+    "zoom": {
+        "in": "Zoom in",
+        "out": "Zoom out",
+        "fitPage": "Fit page"
+    },
+    "contextMenu": {
+        "duplicate": "Duplicate page",
+        "addBlank": "Add blank page",
+        "addPdf": "Insert PDF pages",
+        "rotateRight": "Rotate 90° right",
+        "rotateLeft": "Rotate 90° left",
+        "delete": "Delete page"
+    },
+    "pageView": {
+        "rendering": "Rendering page...",
+        "error": "Rendering error",
+        "pdfPage": "PDF page",
+        "blankPage": "Blank page"
+    },
+    "pageNav": {
+        "prev": "Previous page",
+        "next": "Next page"
+    },
+    "export": {
+        "title": "Export",
+        "format": "File format",
+        "pageRange": "Page range",
+        "all": "All",
+        "current": "Current",
+        "custom": "Custom",
+        "quality": "Quality",
+        "low": "Low",
+        "high": "High",
+        "standard": "Standard",
+        "normal": "Normal",
+        "highQuality": "High quality",
+        "best": "Best quality",
+        "progress": "Exporting...",
+        "complete": "Export complete!",
+        "zipMultiPage": "Download multi-page as ZIP",
+        "invalidRange": "Enter a valid page range. (e.g. 1-5, 1,3,5)"
+    },
+    "stylePanel": {
+        "stroke": "Stroke",
+        "fill": "Fill",
+        "text": "Text"
+    },
+    "layerOrder": {
+        "toFront": "Bring to front",
+        "forward": "Bring forward",
+        "backward": "Send backward",
+        "toBack": "Send to back"
+    },
+    "multiSelect": {
+        "selected": "{count} objects selected",
+        "align": "Align",
+        "distribute": "Distribute",
+        "horizontal": "Horizontal",
+        "vertical": "Vertical",
+        "hDistribute": "Distribute horizontally",
+        "vDistribute": "Distribute vertically",
+        "strokeColor": "Common stroke color",
+        "group": "Group"
+    },
+    "fileDrop": {
+        "drop": "Drop file here",
+        "start": "Start editing PDF",
+        "startDesc": "Upload a PDF file to start editing.",
+        "startFeatures": "Use text, annotations, drawing, and more."
+    }
+}

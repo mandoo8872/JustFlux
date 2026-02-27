@@ -1,13 +1,14 @@
 /**
  * Header Component - 상단 헤더
- * 문서 이름, 페이지 수, Undo/Redo, 파일 액션, 테마 토글 표시
+ * 문서 이름, 페이지 수, Undo/Redo, 파일 액션, 테마 토글, 언어 토글
  */
 
 import React from 'react';
-import { Moon, Sun, Desktop } from 'phosphor-react';
+import { Moon, Sun, Desktop, Translate } from 'phosphor-react';
 import { FileActions } from './FileActions';
 import { UndoRedo } from './UndoRedo';
 import { useThemeStore } from '../../state/stores/ThemeStore';
+import { useTranslation, useLocaleStore } from '../../i18n';
 import type { Document as JFDocument } from '../../core/model/types';
 
 interface HeaderProps {
@@ -23,11 +24,7 @@ interface HeaderProps {
   onToggleSmooth: () => void;
 }
 
-const THEME_META: Record<string, { icon: typeof Sun; label: string; emoji: string }> = {
-  system: { icon: Desktop, label: '시스템', emoji: '🖥️' },
-  light: { icon: Sun, label: '라이트', emoji: '☀️' },
-  dark: { icon: Moon, label: '다크', emoji: '🌙' },
-};
+const THEME_ICONS = { system: Desktop, light: Sun, dark: Moon } as const;
 
 export function Header({
   document,
@@ -42,8 +39,11 @@ export function Header({
   onToggleSmooth,
 }: HeaderProps) {
   const { preference, cycleTheme } = useThemeStore();
-  const meta = THEME_META[preference];
-  const ThemeIcon = meta.icon;
+  const { locale, toggleLocale } = useLocaleStore();
+  const { t } = useTranslation();
+
+  const ThemeIcon = THEME_ICONS[preference];
+  const themeLabel = t(`theme.${preference}`);
 
   return (
     <header className="header-bar">
@@ -66,7 +66,7 @@ export function Header({
               color: 'var(--color-text-tertiary)',
               flexShrink: 0,
             }}>
-              ({totalPages} 페이지)
+              ({totalPages} {t('header.pages')})
             </span>
           </>
         ) : (
@@ -75,7 +75,7 @@ export function Header({
             color: 'var(--color-text-tertiary)',
             fontStyle: 'italic',
           }}>
-            JustFlux
+            {t('app.name')}
           </span>
         )}
       </div>
@@ -86,22 +86,33 @@ export function Header({
         <button
           className={`btn-toggle ${smoothRendering ? 'btn-toggle--on' : 'btn-toggle--off'}`}
           onClick={onToggleSmooth}
-          title={smoothRendering ? 'Smooth 렌더링 ON' : 'Smooth 렌더링 OFF'}
-          aria-label={smoothRendering ? 'Smooth 렌더링 비활성화' : 'Smooth 렌더링 활성화'}
+          title={smoothRendering ? t('header.smoothOn') : t('header.smoothOff')}
+          aria-label={smoothRendering ? t('header.smoothOn') : t('header.smoothOff')}
         >
           <span style={{ fontSize: '10px' }}>{smoothRendering ? '🔵' : '⚪'}</span>
-          Smooth
+          {t('header.smooth')}
         </button>
 
         {/* Theme toggle */}
         <button
           className={`btn-toggle ${preference === 'dark' ? 'btn-toggle--on' : 'btn-toggle--off'}`}
           onClick={cycleTheme}
-          title={`테마: ${meta.label} (클릭하여 변경)`}
-          aria-label={`현재 테마: ${meta.label}. 클릭하여 다음 테마로 전환`}
+          title={t('theme.toggle', { mode: themeLabel })}
+          aria-label={t('theme.ariaLabel', { mode: themeLabel })}
         >
           <ThemeIcon size={14} weight="bold" />
-          {meta.label}
+          {themeLabel}
+        </button>
+
+        {/* Language toggle */}
+        <button
+          className={`btn-toggle ${locale === 'en' ? 'btn-toggle--on' : 'btn-toggle--off'}`}
+          onClick={toggleLocale}
+          title={t('locale.toggle')}
+          aria-label={t('locale.ariaLabel', { lang: t(`locale.${locale}`) })}
+        >
+          <Translate size={14} weight="bold" />
+          {locale === 'ko' ? '한' : 'EN'}
         </button>
       </div>
 
