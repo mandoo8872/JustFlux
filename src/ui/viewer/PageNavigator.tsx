@@ -4,6 +4,7 @@
 
 import { useState, useEffect } from 'react';
 import { CaretUp, CaretDown } from 'phosphor-react';
+import { useTranslation } from '../../i18n';
 
 interface PageNavigatorProps {
   currentPage: number;
@@ -13,6 +14,7 @@ interface PageNavigatorProps {
 
 export function PageNavigator({ currentPage, totalPages, onPageChange }: PageNavigatorProps) {
   const [inputValue, setInputValue] = useState(String(currentPage + 1));
+  const { t } = useTranslation();
 
   useEffect(() => {
     setInputValue(String(currentPage + 1));
@@ -79,7 +81,7 @@ export function PageNavigator({ currentPage, totalPages, onPageChange }: PageNav
         onClick={handlePrev}
         disabled={currentPage === 0}
         style={currentPage === 0 ? buttonDisabledStyle : buttonStyle}
-        title="이전 페이지"
+        title={t('pageNav.prev')}
         onMouseEnter={(e) => {
           if (currentPage > 0) {
             e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor;
@@ -146,7 +148,7 @@ export function PageNavigator({ currentPage, totalPages, onPageChange }: PageNav
         onClick={handleNext}
         disabled={currentPage === totalPages - 1}
         style={currentPage === totalPages - 1 ? buttonDisabledStyle : buttonStyle}
-        title="다음 페이지"
+        title={t('pageNav.next')}
         onMouseEnter={(e) => {
           if (currentPage < totalPages - 1) {
             e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor;

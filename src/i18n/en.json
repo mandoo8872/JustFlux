@@ -25,7 +25,11 @@
         "pages": "Pages",
         "open": "Open sidebar",
         "close": "Close sidebar",
-        "blankPage": "Add blank page"
+        "blankPage": "Add blank page",
+        "addPortrait": "Add portrait A4 page",
+        "addLandscape": "Add landscape A4 page",
+        "loading": "Loading...",
+        "pageLabel": "Page"
     },
     "tools": {
         "select": "Select",

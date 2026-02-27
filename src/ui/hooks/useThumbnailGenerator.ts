@@ -7,6 +7,7 @@
 
 import { useEffect, useState } from 'react';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
+import { t } from '../../i18n';
 import type { Page } from '../../core/model/types';
 import { generateThumbnail } from '../../core/pdf/pdfLoader';
 
@@ -68,7 +69,7 @@ export function useThumbnailGenerator({
                         try {
                             newThumbnails[page.id] = await generateThumbnail(pdfProxy, page.pdfRef.sourceIndex - 1, thumbnailWidth);
                         } catch {
-                            newThumbnails[page.id] = createPlaceholderThumbnail(thumbnailWidth, thumbnailHeight, 'PDF 페이지');
+                            newThumbnails[page.id] = createPlaceholderThumbnail(thumbnailWidth, thumbnailHeight, t('pageView.pdfPage'));
                         }
                     }
                     // Inserted PDF page
@@ -78,15 +79,15 @@ export function useThumbnailGenerator({
                             try {
                                 newThumbnails[page.id] = await generateThumbnail(proxy, page.pdfRef.sourceIndex - 1, thumbnailWidth);
                             } catch {
-                                newThumbnails[page.id] = createPlaceholderThumbnail(thumbnailWidth, thumbnailHeight, 'PDF 페이지');
+                                newThumbnails[page.id] = createPlaceholderThumbnail(thumbnailWidth, thumbnailHeight, t('pageView.pdfPage'));
                             }
                         } else {
-                            newThumbnails[page.id] = createPlaceholderThumbnail(thumbnailWidth, thumbnailHeight, 'PDF 페이지');
+                            newThumbnails[page.id] = createPlaceholderThumbnail(thumbnailWidth, thumbnailHeight, t('pageView.pdfPage'));
                         }
                     }
                     // Blank page
                     else {
-                        newThumbnails[page.id] = createPlaceholderThumbnail(thumbnailWidth, thumbnailHeight, '빈 페이지');
+                        newThumbnails[page.id] = createPlaceholderThumbnail(thumbnailWidth, thumbnailHeight, t('pageView.blankPage'));
                     }
                 } catch (error) {
                     console.error(`Failed to generate thumbnail for page ${page.index + 1}:`, error);

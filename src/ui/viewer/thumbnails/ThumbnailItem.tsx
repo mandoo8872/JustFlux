@@ -8,6 +8,7 @@ import type { Page } from '../../../core/model/types';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import { PageContextMenu } from '../PageContextMenu';
 import { usePageStore } from '../../../state/stores/PageStore';
+import { useTranslation } from '../../../i18n';
 
 interface ThumbnailItemProps {
   page: Page;
@@ -36,6 +37,7 @@ export function ThumbnailItem({
   const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
   const itemRef = useRef<HTMLDivElement>(null);
   const updatePage = usePageStore(state => state.updatePage);
+  const { t } = useTranslation();
 
   const handleRotateRight = useCallback(() => {
     const newRotation = ((page.rotation + 90) % 360) as 0 | 90 | 180 | 270;
@@ -142,7 +144,7 @@ export function ThumbnailItem({
         onContextMenu={handleContextMenu}
       >
         {isLoading ? (
-          <div style={{ color: '#666' }}>로딩 중...</div>
+          <div style={{ color: '#666' }}>{t('sidebar.loading')}</div>
         ) : thumbnail ? (
           <img
             src={thumbnail}
@@ -158,7 +160,7 @@ export function ThumbnailItem({
           />
         ) : (
           <div style={{ color: '#666', textAlign: 'center' }}>
-            <div>페이지 {page.index + 1}</div>
+            <div>{t('sidebar.pageLabel')} {page.index + 1}</div>
             <div style={{ fontSize: '12px', marginTop: 4 }}>
               {page.width} × {page.height}
             </div>

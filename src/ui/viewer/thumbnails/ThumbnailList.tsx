@@ -169,7 +169,7 @@ export function ThumbnailList({
                 style={addButtonStyle('48px', '68px')}
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
-                title="세로 A4 페이지 추가"
+                title={t('sidebar.addPortrait')}
               >
                 {plusIcon(18)}
               </div>
@@ -178,7 +178,7 @@ export function ThumbnailList({
                 style={addButtonStyle('68px', '48px')}
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
-                title="가로 A4 페이지 추가"
+                title={t('sidebar.addLandscape')}
               >
                 {plusIcon(18)}
               </div>
