@@ -23,13 +23,18 @@ export function useKeyboardShortcuts(): void {
 
             const mod = e.ctrlKey || e.metaKey;
 
-            // ── Ctrl+D: 선택된 객체 복제 ──
+            // ── Ctrl+D: 선택된 객체 복제 (그룹 인식) ──
             if (mod && e.key === 'd') {
                 e.preventDefault();
-                const { selection, cloneAnnotation } = useAnnotationStore.getState();
-                const selectedId = selection.selectedAnnotationIds[0];
-                if (selectedId) {
-                    cloneAnnotation(selectedId);
+                const { selection, cloneAnnotation, cloneGroup } = useAnnotationStore.getState();
+                const ids = selection.selectedAnnotationIds;
+                if (ids.length === 0) return;
+
+                if (ids.length >= 2) {
+                    // 다중 선택 / 그룹 전체 복제
+                    cloneGroup(ids);
+                } else {
+                    cloneAnnotation(ids[0]);
                 }
                 return;
             }

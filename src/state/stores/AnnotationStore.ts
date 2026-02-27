@@ -39,9 +39,9 @@ interface AnnotationStore {
   // ── CRUD ──
   addAnnotation: (annotation: Annotation) => void;
   updateAnnotation: (id: string, updates: Partial<Annotation>) => void;
-  /** 주석 삭제 + 선택 해제 (통합) */
   removeAnnotation: (annotationId: string) => void;
   cloneAnnotation: (id: string) => void;
+  cloneGroup: (ids: string[]) => void;
   moveAnnotation: (id: string, deltaX: number, deltaY: number) => void;
   resizeAnnotation: (id: string, newWidth: number, newHeight: number) => void;
   updateAnnotationStyle: (id: string, style: Partial<Annotation['style']>) => void;
@@ -190,6 +190,34 @@ export const useAnnotationStore = create<AnnotationStore>()(
       });
     },
 
+    cloneGroup: (ids: string[]) => {
+      set((state) => {
+        const targets = state.annotations.filter(a => ids.includes(a.id));
+        if (targets.length === 0) return;
+
+        // 그룹 멤버들인지 확인
+        const firstGroupId = targets[0].groupId;
+        const isGroup = firstGroupId && targets.every(a => a.groupId === firstGroupId);
+        const newGroupId = isGroup ? generateAnnotationId() : undefined;
+
+        const newIds: string[] = [];
+        for (const annotation of targets) {
+          const newId = generateAnnotationId();
+          newIds.push(newId);
+          state.annotations.push({
+            ...annotation,
+            id: newId,
+            groupId: newGroupId,
+            bbox: { ...annotation.bbox, x: annotation.bbox.x + 10, y: annotation.bbox.y + 10 },
+          });
+        }
+
+        // 복제된 객체들을 선택
+        state.selection.selectedAnnotationIds = newIds;
+        state.selection.editingGroupId = null;
+      });
+    },
+
     moveAnnotation: (id: string, deltaX: number, deltaY: number) => {
       set((state) => {
         const annotation = state.annotations.find((annotation) => annotation.id === id);
@@ -284,10 +312,28 @@ export const useAnnotationStore = create<AnnotationStore>()(
 
     removeAnnotation: (annotationId: string) => {
       set((state) => {
+        // 삭제 전 그룹 정보 확인
+        const target = state.annotations.find(a => a.id === annotationId);
+        const targetGroupId = target?.groupId;
+
         state.annotations = state.annotations.filter((a) => a.id !== annotationId);
         state.selection.selectedAnnotationIds = state.selection.selectedAnnotationIds.filter(
           (id) => id !== annotationId
         );
+
+        // 그룹 멤버가 1개만 남으면 자동 그룹 해제
+        if (targetGroupId) {
+          const remaining = state.annotations.filter(a => a.groupId === targetGroupId);
+          if (remaining.length <= 1) {
+            for (const a of remaining) {
+              a.groupId = undefined;
+            }
+            // 편집 중이던 그룹이면 편집 모드 해제
+            if (state.selection.editingGroupId === targetGroupId) {
+              state.selection.editingGroupId = null;
+            }
+          }
+        }
       });
     },
 

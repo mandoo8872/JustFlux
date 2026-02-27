@@ -300,6 +300,23 @@ export function AnnotationManager({
       if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') return;
       if ((document.activeElement as HTMLElement)?.isContentEditable) return;
 
+      // Escape: 그룹 편집 모드 → 그룹 전체 선택 복귀 / 일반 → 선택 해제
+      if (e.key === 'Escape') {
+        const { selection, selectAnnotations, exitGroupEdit, clearSelection, annotations } = useAnnotationStore.getState();
+        if (selection.editingGroupId) {
+          // 그룹 편집 모드 → 그룹 전체 선택으로 복귀
+          const groupMembers = annotations
+            .filter(a => a.groupId === selection.editingGroupId)
+            .map(a => a.id);
+          exitGroupEdit();
+          selectAnnotations(groupMembers);
+        } else {
+          clearSelection();
+        }
+        e.preventDefault();
+        return;
+      }
+
       // Delete/Backspace
       if (e.key === 'Delete' || e.key === 'Backspace') {
         if (selectedAnnotationIds.length > 0) {
