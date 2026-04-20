@@ -6,7 +6,6 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import type { Document } from '../core/model/types';
-// import { createDocument } from '../core/model/factories'; // FileService에서 사용
 
 // ============================================
 // Store State Interface
