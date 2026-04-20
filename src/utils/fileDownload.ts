@@ -31,8 +31,7 @@ export function downloadUint8Array(
   mimeType: string
 ): void {
   // TypeScript strict mode workaround for Uint8Array -> Blob conversion
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const blob = new Blob([bytes as any], { type: mimeType });
+  const blob = new Blob([bytes as unknown as BlobPart], { type: mimeType });
   downloadBlob(blob, filename);
 }
 
