@@ -147,14 +147,15 @@ export const useLayerStore = create<LayerStore>()(
     
     mergeLayers: (layerIds: string[]) => {
       set((state) => {
-        const layersToMerge = state.layers.filter(l => layerIds.includes(l.id));
+        const idSet = new Set(layerIds);
+        const layersToMerge = state.layers.filter(l => idSet.has(l.id));
         if (layersToMerge.length > 1) {
           // 첫 번째 레이어를 기준으로 병합
           const baseLayer = layersToMerge[0];
           // 병합 로직 구현 (레이어 타입에 따라 다름)
           
           // 나머지 레이어들 제거
-          state.layers = state.layers.filter(l => !layerIds.includes(l.id) || l.id === baseLayer.id);
+          state.layers = state.layers.filter(l => !idSet.has(l.id) || l.id === baseLayer.id);
         }
       });
     },
