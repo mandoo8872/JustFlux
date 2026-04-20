@@ -194,14 +194,14 @@ export class ImageExporter {
    */
   private async renderAnnotations(ctx: CanvasRenderingContext2D, annotations: any[], scale: number): Promise<void> {
     for (const annotation of annotations) {
-      await this.renderAnnotation(ctx, annotation, scale);
+      this.renderAnnotation(ctx, annotation, scale);
     }
   }
 
   /**
    * 개별 주석 렌더링
    */
-  private async renderAnnotation(ctx: CanvasRenderingContext2D, annotation: any, scale: number): Promise<void> {
+  private renderAnnotation(ctx: CanvasRenderingContext2D, annotation: any, scale: number): void {
     const { type } = annotation;
     
     ctx.save();
