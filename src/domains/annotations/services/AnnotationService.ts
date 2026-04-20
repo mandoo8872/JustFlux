@@ -5,13 +5,13 @@ import { logger } from '../../../utils/logger';
  */
 
 import { annotationRegistry } from './AnnotationRegistry';
-import type { Annotation } from '../../../core/model/types';
+import type { Annotation, AnnotationStyle } from '../../../core/model/types';
 
 export class AnnotationService {
   /**
    * 주석 생성
    */
-  createAnnotation(type: string, pageId: string, props: any, style?: any): Annotation | null {
+  createAnnotation(type: string, pageId: string, props: Partial<Annotation>, style?: Partial<AnnotationStyle>): Annotation | null {
     logger.debug(`📝 [AnnotationService] Creating annotation of type: ${type}`);
 
     const renderer = annotationRegistry.getRenderer(type);
@@ -58,7 +58,7 @@ export class AnnotationService {
       return null;
     }
 
-    return updatedAnnotation as any;
+    return updatedAnnotation as Annotation;
   }
 
   /**
