@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bboxContainsPoint } from "./coordMapper";
+import { bboxContainsPoint, unionBBox } from "./coordMapper";
 import type { BBox } from "../model/types";
 
 describe("bboxContainsPoint", () => {
@@ -85,5 +85,48 @@ describe("bboxContainsPoint", () => {
       expect(bboxContainsPoint(pointBBox, 10, 20)).toBe(true);
       expect(bboxContainsPoint(pointBBox, 10.1, 20)).toBe(false);
     });
+  });
+});
+
+describe("unionBBox", () => {
+  it("should return the correct union for non-overlapping bboxes", () => {
+    const a: BBox = { x: 0, y: 0, width: 10, height: 10 };
+    const b: BBox = { x: 20, y: 20, width: 10, height: 10 };
+    expect(unionBBox(a, b)).toEqual({ x: 0, y: 0, width: 30, height: 30 });
+  });
+
+  it("should return the correct union for overlapping bboxes", () => {
+    const a: BBox = { x: 0, y: 0, width: 20, height: 20 };
+    const b: BBox = { x: 10, y: 10, width: 20, height: 20 };
+    expect(unionBBox(a, b)).toEqual({ x: 0, y: 0, width: 30, height: 30 });
+  });
+
+  it("should return the larger bbox if one is completely inside another", () => {
+    const a: BBox = { x: 0, y: 0, width: 50, height: 50 };
+    const b: BBox = { x: 10, y: 10, width: 20, height: 20 };
+    expect(unionBBox(a, b)).toEqual({ x: 0, y: 0, width: 50, height: 50 });
+    // test commutativity
+    expect(unionBBox(b, a)).toEqual({ x: 0, y: 0, width: 50, height: 50 });
+  });
+
+  it("should handle bboxes touching on edges", () => {
+    const a: BBox = { x: 0, y: 0, width: 10, height: 10 };
+    const b: BBox = { x: 10, y: 0, width: 10, height: 10 };
+    expect(unionBBox(a, b)).toEqual({ x: 0, y: 0, width: 20, height: 10 });
+  });
+
+  it("should handle identical bboxes", () => {
+    const a: BBox = { x: 5, y: 5, width: 15, height: 15 };
+    expect(unionBBox(a, a)).toEqual({ x: 5, y: 5, width: 15, height: 15 });
+  });
+
+  it("should work with zero-width/height bboxes", () => {
+    const a: BBox = { x: 10, y: 10, width: 0, height: 0 };
+    const b: BBox = { x: 20, y: 20, width: 0, height: 0 };
+    expect(unionBBox(a, b)).toEqual({ x: 10, y: 10, width: 10, height: 10 });
+
+    const c: BBox = { x: 0, y: 5, width: 10, height: 0 };
+    const d: BBox = { x: 5, y: 0, width: 0, height: 10 };
+    expect(unionBBox(c, d)).toEqual({ x: 0, y: 0, width: 10, height: 10 });
   });
 });
