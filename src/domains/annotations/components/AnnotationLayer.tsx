@@ -28,7 +28,6 @@ export const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
     const renderer = annotationRegistry.getRenderer(annotation.type);
 
     if (!renderer) {
-        // console.warn(`No renderer found for type: ${annotation.type}`);
         return null;
     }
 
