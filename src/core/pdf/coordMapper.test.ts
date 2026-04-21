@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { bboxContainsPoint } from "./coordMapper";
-import { BBox } from "../model/types";
+import type { BBox } from "../model/types";
 
 describe("bboxContainsPoint", () => {
   const bbox: BBox = { x: 10, y: 20, width: 100, height: 50 };
