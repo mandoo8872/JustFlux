@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bboxContainsPoint } from "./coordMapper";
+import { bboxContainsPoint, bboxIntersects } from "./coordMapper";
 import type { BBox } from "../model/types";
 
 describe("bboxContainsPoint", () => {
@@ -84,6 +84,99 @@ describe("bboxContainsPoint", () => {
       const pointBBox: BBox = { x: 10, y: 20, width: 0, height: 0 };
       expect(bboxContainsPoint(pointBBox, 10, 20)).toBe(true);
       expect(bboxContainsPoint(pointBBox, 10.1, 20)).toBe(false);
+    });
+  });
+});
+
+describe("bboxIntersects", () => {
+  const bbox1: BBox = { x: 10, y: 10, width: 50, height: 50 };
+
+  describe("intersecting", () => {
+    it("should return true for identical bboxes", () => {
+      expect(bboxIntersects(bbox1, bbox1)).toBe(true);
+    });
+
+    it("should return true for partial intersection", () => {
+      const bbox2: BBox = { x: 30, y: 30, width: 50, height: 50 };
+      expect(bboxIntersects(bbox1, bbox2)).toBe(true);
+      expect(bboxIntersects(bbox2, bbox1)).toBe(true);
+    });
+
+    it("should return true for one completely inside another", () => {
+      const bbox2: BBox = { x: 20, y: 20, width: 10, height: 10 };
+      expect(bboxIntersects(bbox1, bbox2)).toBe(true);
+      expect(bboxIntersects(bbox2, bbox1)).toBe(true);
+    });
+  });
+
+  describe("touching", () => {
+    it("should return true when touching on the left/right edge", () => {
+      const bbox2: BBox = { x: 60, y: 10, width: 50, height: 50 };
+      expect(bboxIntersects(bbox1, bbox2)).toBe(true);
+      expect(bboxIntersects(bbox2, bbox1)).toBe(true);
+    });
+
+    it("should return true when touching on the top/bottom edge", () => {
+      const bbox2: BBox = { x: 10, y: 60, width: 50, height: 50 };
+      expect(bboxIntersects(bbox1, bbox2)).toBe(true);
+      expect(bboxIntersects(bbox2, bbox1)).toBe(true);
+    });
+
+    it("should return true when touching at a corner", () => {
+      const bbox2: BBox = { x: 60, y: 60, width: 50, height: 50 };
+      expect(bboxIntersects(bbox1, bbox2)).toBe(true);
+      expect(bboxIntersects(bbox2, bbox1)).toBe(true);
+    });
+  });
+
+  describe("non-intersecting", () => {
+    it("should return false when completely to the right/left", () => {
+      const bbox2: BBox = { x: 70, y: 10, width: 50, height: 50 };
+      expect(bboxIntersects(bbox1, bbox2)).toBe(false);
+      expect(bboxIntersects(bbox2, bbox1)).toBe(false);
+    });
+
+    it("should return false when completely below/above", () => {
+      const bbox2: BBox = { x: 10, y: 70, width: 50, height: 50 };
+      expect(bboxIntersects(bbox1, bbox2)).toBe(false);
+      expect(bboxIntersects(bbox2, bbox1)).toBe(false);
+    });
+
+    it("should return false when diagonally separated", () => {
+      const bbox2: BBox = { x: 70, y: 70, width: 50, height: 50 };
+      expect(bboxIntersects(bbox1, bbox2)).toBe(false);
+      expect(bboxIntersects(bbox2, bbox1)).toBe(false);
+    });
+  });
+
+  describe("special bboxes", () => {
+    it("should work with zero-width (vertical line)", () => {
+      const line1: BBox = { x: 10, y: 10, width: 0, height: 50 };
+      const line2: BBox = { x: 10, y: 30, width: 0, height: 50 };
+      expect(bboxIntersects(line1, line2)).toBe(true);
+
+      const line3: BBox = { x: 11, y: 10, width: 0, height: 50 };
+      expect(bboxIntersects(line1, line3)).toBe(false);
+    });
+
+    it("should work with zero-height (horizontal line)", () => {
+      const line1: BBox = { x: 10, y: 10, width: 50, height: 0 };
+      const line2: BBox = { x: 30, y: 10, width: 50, height: 0 };
+      expect(bboxIntersects(line1, line2)).toBe(true);
+
+      const line3: BBox = { x: 10, y: 11, width: 50, height: 0 };
+      expect(bboxIntersects(line1, line3)).toBe(false);
+    });
+
+    it("should work with zero-size (point)", () => {
+      const point1: BBox = { x: 10, y: 10, width: 0, height: 0 };
+      const point2: BBox = { x: 10, y: 10, width: 0, height: 0 };
+      expect(bboxIntersects(point1, point2)).toBe(true);
+
+      const point3: BBox = { x: 11, y: 10, width: 0, height: 0 };
+      expect(bboxIntersects(point1, point3)).toBe(false);
+
+      expect(bboxIntersects(bbox1, point1)).toBe(true);
     });
   });
 });
