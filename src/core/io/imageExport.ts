@@ -36,27 +36,39 @@ export async function exportAsPng(
   } else {
     // Multiple pages - return array of blobs
     logger.debug(`  Rendering ${pageIndices.length} pages...`);
-    const blobs: Blob[] = [];
+    const blobs = new Array<Blob>(pageIndices.length);
+    const MAX_CONCURRENCY = 5;
+    let currentIndex = 0;
 
-    for (let i = 0; i < pageIndices.length; i++) {
-      const pageIndex = pageIndices[i];
-      const page = pages[pageIndex];
-      
-      logger.debug(`  Rendering page ${i + 1}/${pageIndices.length}...`);
-      const canvas = await renderPageToCanvas(page, pdfProxy, options);
+    const worker = async () => {
+      while (currentIndex < pageIndices.length) {
+        const i = currentIndex++;
+        const pageIndex = pageIndices[i];
+        const page = pages[pageIndex];
 
-      const blob = await new Promise<Blob>((resolve, reject) => {
-        canvas.toBlob((b) => {
-          if (b) {
-            resolve(b);
-          } else {
-            reject(new Error(`Failed to convert page ${pageIndex + 1} to blob`));
-          }
-        }, 'image/png');
-      });
+        logger.debug(`  Rendering page ${i + 1}/${pageIndices.length}...`);
+        const canvas = await renderPageToCanvas(page, pdfProxy, options);
 
-      blobs.push(blob);
+        const blob = await new Promise<Blob>((resolve, reject) => {
+          canvas.toBlob((b) => {
+            if (b) {
+              resolve(b);
+            } else {
+              reject(new Error(`Failed to convert page ${pageIndex + 1} to blob`));
+            }
+          }, 'image/png');
+        });
+
+        blobs[i] = blob;
+      }
+    };
+
+    const workers: Promise<void>[] = [];
+    for (let i = 0; i < Math.min(MAX_CONCURRENCY, pageIndices.length); i++) {
+      workers.push(worker());
     }
+
+    await Promise.all(workers);
 
     logger.debug(`✅ [PNG Export] Complete! ${blobs.length} pages rendered`);
     return blobs;
@@ -98,31 +110,43 @@ export async function exportAsJpeg(
   } else {
     // Multiple pages - return array of blobs
     logger.debug(`  Rendering ${pageIndices.length} pages...`);
-    const blobs: Blob[] = [];
+    const blobs = new Array<Blob>(pageIndices.length);
+    const MAX_CONCURRENCY = 5;
+    let currentIndex = 0;
 
-    for (let i = 0; i < pageIndices.length; i++) {
-      const pageIndex = pageIndices[i];
-      const page = pages[pageIndex];
-      
-      logger.debug(`  Rendering page ${i + 1}/${pageIndices.length}...`);
-      const canvas = await renderPageToCanvas(page, pdfProxy, options);
+    const worker = async () => {
+      while (currentIndex < pageIndices.length) {
+        const i = currentIndex++;
+        const pageIndex = pageIndices[i];
+        const page = pages[pageIndex];
 
-      const blob = await new Promise<Blob>((resolve, reject) => {
-        canvas.toBlob(
-          (b) => {
-            if (b) {
-              resolve(b);
-            } else {
-              reject(new Error(`Failed to convert page ${pageIndex + 1} to blob`));
-            }
-          },
-          'image/jpeg',
-          quality
-        );
-      });
+        logger.debug(`  Rendering page ${i + 1}/${pageIndices.length}...`);
+        const canvas = await renderPageToCanvas(page, pdfProxy, options);
 
-      blobs.push(blob);
+        const blob = await new Promise<Blob>((resolve, reject) => {
+          canvas.toBlob(
+            (b) => {
+              if (b) {
+                resolve(b);
+              } else {
+                reject(new Error(`Failed to convert page ${pageIndex + 1} to blob`));
+              }
+            },
+            'image/jpeg',
+            quality
+          );
+        });
+
+        blobs[i] = blob;
+      }
+    };
+
+    const workers: Promise<void>[] = [];
+    for (let i = 0; i < Math.min(MAX_CONCURRENCY, pageIndices.length); i++) {
+      workers.push(worker());
     }
+
+    await Promise.all(workers);
 
     logger.debug(`✅ [JPEG Export] Complete! ${blobs.length} pages rendered`);
     return blobs;
