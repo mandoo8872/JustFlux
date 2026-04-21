@@ -6,23 +6,13 @@ import { flags } from '../../../../flags';
 let centersWorldCache: Position[] | null = null;
 let cacheReady = false;
 
-// TODO: Replace with real DB grid config when available.
-// Here we probe settings for presence; if absent, v2 will be a no-op.
-function ensureCacheReady() {
-  if (cacheReady) return;
-  // In this codebase we don't yet have explicit DB grid config types.
-  // We treat absence as no-op by leaving centersWorldCache null.
-  centersWorldCache = null;
-  cacheReady = true;
-}
-
 // Public API: returns nearest center if v2 DB grid is available, otherwise null.
 export function getDBSnapPosition(anchorWorld: Position): Position | null {
   if (!flags.useCellCenterSnapV2) return null;
   const { settings } = useAdminConfigStore.getState();
   const snapOn = settings?.admin?.gridSnapEnabled ?? false;
   if (!snapOn) return null;
-  ensureCacheReady();
+  if (!cacheReady) return null;
   if (!centersWorldCache || centersWorldCache.length === 0) return null;
   // Find nearest center in O(n). Screen-radius thresholding is handled by caller.
   let best: Position | null = null;
@@ -53,7 +43,7 @@ export function findSnapCandidate(
   const { settings } = useAdminConfigStore.getState();
   const snapOn = settings?.admin?.gridSnapEnabled ?? false;
   if (!snapOn) return null;
-  ensureCacheReady();
+  if (!cacheReady) return null;
   if (!centersWorldCache || centersWorldCache.length === 0) return null;
 
   // 반경 자동 산정: 주변 이웃 간 거리(화면 px) 기반, 8~24px 클램프
@@ -106,7 +96,7 @@ export function findSnapCandidate(
   return result;
 }
 
-// Placeholder API to be called when DB grid config is loaded/changed in future.
+// API to be called when DB grid config is loaded/changed.
 export function setDBGridCentersWorld(centers: Position[] | null) {
   centersWorldCache = centers;
   cacheReady = true;
