@@ -72,11 +72,11 @@ export function ThumbnailList({
         page={page}
         isSelected={page.id === currentPageId}
         pdfProxy={pdfProxy}
-        onSelect={() => onPageSelect(page.id)}
-        onDuplicate={() => onDuplicate(page.id)}
-        onDelete={() => onDelete(page.id)}
-        onAddBlankPage={(width, height) => onAddBlankPage(page.id, width, height)}
-        onAddPdfPages={(file) => onAddPdfPages(page.id, file)}
+        onSelect={onPageSelect}
+        onDuplicate={onDuplicate}
+        onDelete={onDelete}
+        onAddBlankPage={onAddBlankPage}
+        onAddPdfPages={onAddPdfPages}
       />
     ));
   }, [visiblePages, currentPageId, pdfProxy, onPageSelect, onDuplicate, onDelete, onAddBlankPage, onAddPdfPages]);
