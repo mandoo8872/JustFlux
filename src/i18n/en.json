@@ -10,7 +10,9 @@
         "rotateCW": "Rotate All CW (90°)",
         "rotateCCW": "Rotate All CCW (90°)",
         "undo": "Undo (Ctrl+Z)",
-        "redo": "Redo (Ctrl+Y)"
+        "redo": "Redo (Ctrl+Y)",
+        "openFile": "Open File",
+        "export": "Export"
     },
     "theme": {
         "system": "System",
