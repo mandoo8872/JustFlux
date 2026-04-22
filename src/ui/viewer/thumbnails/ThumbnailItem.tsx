@@ -15,14 +15,14 @@ interface ThumbnailItemProps {
   page: Page;
   isSelected: boolean;
   pdfProxy: PDFDocumentProxy | null;
-  onSelect: () => void;
-  onDuplicate: () => void;
-  onDelete: () => void;
-  onAddBlankPage: (width: number, height: number) => void;
-  onAddPdfPages: (file: File) => void;
+  onSelect: (pageId: string) => void;
+  onDuplicate: (pageId: string) => void;
+  onDelete: (pageId: string) => void;
+  onAddBlankPage: (afterPageId: string, width: number, height: number) => void;
+  onAddPdfPages: (afterPageId: string, file: File) => void;
 }
 
-export function ThumbnailItem({
+export const ThumbnailItem = React.memo(function ThumbnailItem({
   page,
   isSelected,
   pdfProxy,
@@ -112,17 +112,29 @@ export function ThumbnailItem({
     setShowContextMenu(false);
   }, []);
 
+  const handleSelect = useCallback(() => {
+    onSelect(page.id);
+  }, [onSelect, page.id]);
+
+  const handleDuplicate = useCallback(() => {
+    onDuplicate(page.id);
+  }, [onDuplicate, page.id]);
+
+  const handleDelete = useCallback(() => {
+    onDelete(page.id);
+  }, [onDelete, page.id]);
+
   // 빈 페이지 추가
   const handleAddBlankPage = useCallback(() => {
-    onAddBlankPage(page.width, page.height);
+    onAddBlankPage(page.id, page.width, page.height);
     handleCloseContextMenu();
-  }, [onAddBlankPage, page.width, page.height, handleCloseContextMenu]);
+  }, [onAddBlankPage, page.id, page.width, page.height, handleCloseContextMenu]);
 
   // PDF 페이지 추가
   const handleAddPdfPages = useCallback((file: File) => {
-    onAddPdfPages(file);
+    onAddPdfPages(page.id, file);
     handleCloseContextMenu();
-  }, [onAddPdfPages, handleCloseContextMenu]);
+  }, [onAddPdfPages, page.id, handleCloseContextMenu]);
 
   return (
     <>
@@ -142,7 +154,7 @@ export function ThumbnailItem({
           justifyContent: 'center',
           overflow: 'hidden'
         }}
-        onClick={onSelect}
+        onClick={handleSelect}
         onContextMenu={handleContextMenu}
       >
         {isLoading ? (
@@ -199,10 +211,10 @@ export function ThumbnailItem({
           position={contextMenuPosition}
           pageId={page.id}
           onClose={handleCloseContextMenu}
-          onDuplicate={onDuplicate}
-          onDelete={onDelete}
+          onDuplicate={handleDuplicate}
+          onDelete={handleDelete}
           onAddBlankPage={handleAddBlankPage}
-          onAddPdfPage={(_afterPageId: string) => {
+          onAddPdfPage={() => {
             const file = new File([''], 'temp.pdf', { type: 'application/pdf' });
             handleAddPdfPages(file);
           }}
@@ -212,4 +224,4 @@ export function ThumbnailItem({
       )}
     </>
   );
-}
+});
