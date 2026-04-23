@@ -34,6 +34,7 @@ export const ThumbnailItem = React.memo(function ThumbnailItem({
 }: ThumbnailItemProps) {
   const [thumbnail, setThumbnail] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
   const itemRef = useRef<HTMLDivElement>(null);
@@ -60,9 +61,35 @@ export const ThumbnailItem = React.memo(function ThumbnailItem({
     });
   }, [page.id, page.rotation, page.width, page.height, updatePage]);
 
+
+  // Intersection Observer를 통한 지연 로딩 (Lazy Loading)
+  useEffect(() => {
+    const element = itemRef.current;
+    if (!element) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsVisible(true);
+            observer.disconnect(); // 한 번 보이면 계속 렌더링 유지
+          }
+        });
+      },
+      { rootMargin: '200px' } // 스크롤 전 미리 로딩하기 위해 여백 설정
+    );
+
+    observer.observe(element);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
   // 썸네일 생성
   useEffect(() => {
     const generateThumbnailAsync = async () => {
+      if (!isVisible) return;
       try {
         setIsLoading(true);
 
@@ -98,7 +125,7 @@ export const ThumbnailItem = React.memo(function ThumbnailItem({
     };
 
     generateThumbnailAsync();
-  }, [page.id, page.pdfRef, pdfProxy, globalRotation]);
+  }, [page.id, page.pdfRef, pdfProxy, globalRotation, isVisible]);
 
   // 컨텍스트 메뉴 처리
   const handleContextMenu = useCallback((event: React.MouseEvent) => {
