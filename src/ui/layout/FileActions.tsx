@@ -8,6 +8,7 @@ import {
   FileArrowUp,
   File,
 } from 'phosphor-react';
+import { useTranslation } from '../../i18n';
 
 interface FileActionsProps {
   onFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -18,6 +19,8 @@ export function FileActions({
   onFileSelect,
   onExport,
 }: FileActionsProps) {
+  const { t } = useTranslation();
+
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0px' }}>
       <label style={{
@@ -38,7 +41,16 @@ export function FileActions({
         onMouseLeave={(e) => {
           e.currentTarget.style.backgroundColor = 'transparent';
         }}
-        title="파일 열기"
+        title={t('header.openFile')}
+        role="button"
+        tabIndex={0}
+        aria-label={t('header.openFile')}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            e.currentTarget.querySelector('input')?.click();
+          }
+        }}
       >
         <FileArrowUp size={16} weight="regular" />
         <input
@@ -69,7 +81,8 @@ export function FileActions({
         onMouseLeave={(e) => {
           e.currentTarget.style.backgroundColor = 'transparent';
         }}
-        title="내보내기"
+        title={t('export.title')}
+        aria-label={t('export.title')}
       >
         <File size={16} weight="regular" />
       </button>
