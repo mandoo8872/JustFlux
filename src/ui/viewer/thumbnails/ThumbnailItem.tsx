@@ -34,6 +34,7 @@ export const ThumbnailItem = React.memo(function ThumbnailItem({
 }: ThumbnailItemProps) {
   const [thumbnail, setThumbnail] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
   const itemRef = useRef<HTMLDivElement>(null);
@@ -60,8 +61,32 @@ export const ThumbnailItem = React.memo(function ThumbnailItem({
     });
   }, [page.id, page.rotation, page.width, page.height, updatePage]);
 
-  // 썸네일 생성
+
+  // 지연 로딩을 위한 IntersectionObserver
   useEffect(() => {
+    const el = itemRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '200px' } // Load slightly ahead of scroll
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // 썸네일 생성
+
+  useEffect(() => {
+    if (!isVisible) return;
+
+    let isCancelled = false;
     const generateThumbnailAsync = async () => {
       try {
         setIsLoading(true);
@@ -76,7 +101,7 @@ export const ThumbnailItem = React.memo(function ThumbnailItem({
           canvas.width = viewport.width;
           canvas.height = viewport.height;
 
-          if (context) {
+          if (context && !isCancelled) {
             await pdfPage.render({
               canvasContext: context,
               viewport: viewport,
@@ -84,21 +109,22 @@ export const ThumbnailItem = React.memo(function ThumbnailItem({
             }).promise;
 
             const thumbnailData = canvas.toDataURL('image/png');
-            setThumbnail(thumbnailData);
+            if (!isCancelled) setThumbnail(thumbnailData);
           }
         } else {
-          setThumbnail(null);
+          if (!isCancelled) setThumbnail(null);
         }
       } catch (error) {
         console.error('Failed to generate thumbnail:', error);
-        setThumbnail(null);
+        if (!isCancelled) setThumbnail(null);
       } finally {
-        setIsLoading(false);
+        if (!isCancelled) setIsLoading(false);
       }
     };
 
     generateThumbnailAsync();
-  }, [page.id, page.pdfRef, pdfProxy, globalRotation]);
+    return () => { isCancelled = true; };
+  }, [page.id, page.pdfRef, pdfProxy, globalRotation, isVisible]);
 
   // 컨텍스트 메뉴 처리
   const handleContextMenu = useCallback((event: React.MouseEvent) => {
