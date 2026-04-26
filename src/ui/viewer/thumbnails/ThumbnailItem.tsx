@@ -40,6 +40,29 @@ export const ThumbnailItem = React.memo(function ThumbnailItem({
   const updatePage = usePageStore(state => state.updatePage);
   const globalRotation = usePDFStore(state => state.globalRotation);
   const { t } = useTranslation();
+  const [isVisible, setIsVisible] = useState(false);
+
+  // ⚡ Bolt Performance Optimization: Lazy Loading
+  // Use IntersectionObserver to defer thumbnail generation until the item
+  // is near the viewport. This significantly reduces initial CPU and memory
+  // load when opening PDFs with a large number of pages.
+  useEffect(() => {
+    const el = itemRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '200px' }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const handleRotateRight = useCallback(() => {
     const newRotation = ((page.rotation + 90) % 360) as 0 | 90 | 180 | 270;
@@ -62,6 +85,8 @@ export const ThumbnailItem = React.memo(function ThumbnailItem({
 
   // 썸네일 생성
   useEffect(() => {
+    if (!isVisible) return;
+
     const generateThumbnailAsync = async () => {
       try {
         setIsLoading(true);
@@ -98,7 +123,7 @@ export const ThumbnailItem = React.memo(function ThumbnailItem({
     };
 
     generateThumbnailAsync();
-  }, [page.id, page.pdfRef, pdfProxy, globalRotation]);
+  }, [page.id, page.pdfRef, pdfProxy, globalRotation, isVisible]);
 
   // 컨텍스트 메뉴 처리
   const handleContextMenu = useCallback((event: React.MouseEvent) => {
