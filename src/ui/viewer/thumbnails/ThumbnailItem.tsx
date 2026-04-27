@@ -62,13 +62,17 @@ export const ThumbnailItem = React.memo(function ThumbnailItem({
 
   // 썸네일 생성
   useEffect(() => {
+    let isMounted = true;
+
     const generateThumbnailAsync = async () => {
+      if (!isMounted) return;
       try {
         setIsLoading(true);
 
         if (pdfProxy && page.pdfRef) {
           // PDF 페이지 렌더링 (page.pdfRef.sourceIndex 사용)
           const pdfPage = await pdfProxy.getPage(page.pdfRef.sourceIndex);
+          if (!isMounted) return;
           const viewport = pdfPage.getViewport({ scale: 0.2, rotation: globalRotation });
 
           const canvas = document.createElement('canvas');
@@ -83,6 +87,7 @@ export const ThumbnailItem = React.memo(function ThumbnailItem({
               canvas: canvas
             }).promise;
 
+            if (!isMounted) return;
             const thumbnailData = canvas.toDataURL('image/png');
             setThumbnail(thumbnailData);
           }
@@ -90,14 +95,38 @@ export const ThumbnailItem = React.memo(function ThumbnailItem({
           setThumbnail(null);
         }
       } catch (error) {
+        if (!isMounted) return;
         console.error('Failed to generate thumbnail:', error);
         setThumbnail(null);
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
 
-    generateThumbnailAsync();
+    // ⚡ Bolt Optimization: Use IntersectionObserver to defer thumbnail rendering
+    // This prevents massive CPU/Memory spikes when mounting a document with many pages
+    const observer = new IntersectionObserver((entries) => {
+      const entry = entries[0];
+      if (entry.isIntersecting) {
+        generateThumbnailAsync();
+        if (itemRef.current) {
+          observer.unobserve(itemRef.current);
+        }
+      }
+    }, {
+      rootMargin: '200px'
+    });
+
+    if (itemRef.current) {
+      observer.observe(itemRef.current);
+    }
+
+    return () => {
+      isMounted = false;
+      observer.disconnect();
+    };
   }, [page.id, page.pdfRef, pdfProxy, globalRotation]);
 
   // 컨텍스트 메뉴 처리
