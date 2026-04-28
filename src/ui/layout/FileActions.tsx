@@ -18,6 +18,15 @@ export function FileActions({
   onFileSelect,
   onExport,
 }: FileActionsProps) {
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLLabelElement>) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      fileInputRef.current?.click();
+    }
+  };
+
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0px' }}>
       <label style={{
@@ -39,13 +48,19 @@ export function FileActions({
           e.currentTarget.style.backgroundColor = 'transparent';
         }}
         title="파일 열기"
+        aria-label="파일 열기"
+        role="button"
+        tabIndex={0}
+        onKeyDown={handleKeyDown}
       >
         <FileArrowUp size={16} weight="regular" />
         <input
+          ref={fileInputRef}
           type="file"
           accept=".pdf,.md,.txt,.png,.jpg,.jpeg,.gif,.webp,application/pdf,text/plain,text/markdown,image/*"
           onChange={onFileSelect}
           style={{ display: 'none' }}
+          tabIndex={-1}
         />
       </label>
 
@@ -70,6 +85,7 @@ export function FileActions({
           e.currentTarget.style.backgroundColor = 'transparent';
         }}
         title="내보내기"
+        aria-label="내보내기"
       >
         <File size={16} weight="regular" />
       </button>
