@@ -26,12 +26,14 @@ export function ShapeControls({ style, isClosedShape, onUpdate }: ShapeControlsP
                         style={colorButtonStyle('transparent', style.stroke === 'transparent' || !style.stroke)}
                         onClick={() => onUpdate({ style: { ...style, stroke: 'transparent' } })}
                         title="투명 (선 없음)"
+                        aria-label="선 투명하게"
                     />
                     {COLORS.map((color) => (
                         <button
                             key={`s-${color}`}
                             style={colorButtonStyle(color, style.stroke === color)}
                             onClick={() => onUpdate({ style: { ...style, stroke: color } })}
+                            aria-label={`선 색상 ${color}`}
                         />
                     ))}
                 </div>
@@ -44,6 +46,7 @@ export function ShapeControls({ style, isClosedShape, onUpdate }: ShapeControlsP
                     <button
                         style={{ ...iconButtonStyle, width: '24px', height: '24px' }}
                         onClick={() => onUpdate({ style: { ...style, strokeWidth: Math.max(0.5, strokeWidth - 0.5) } })}
+                        aria-label="선 두께 감소"
                     >
                         <CaretDown size={10} />
                     </button>
@@ -51,6 +54,7 @@ export function ShapeControls({ style, isClosedShape, onUpdate }: ShapeControlsP
                     <button
                         style={{ ...iconButtonStyle, width: '24px', height: '24px' }}
                         onClick={() => onUpdate({ style: { ...style, strokeWidth: strokeWidth + 0.5 } })}
+                        aria-label="선 두께 증가"
                     >
                         <CaretUp size={10} />
                     </button>
@@ -81,6 +85,7 @@ export function ShapeControls({ style, isClosedShape, onUpdate }: ShapeControlsP
                                 }}
                                 onClick={() => onUpdate({ style: { ...style, strokeDasharray: value } })}
                                 title={label}
+                                aria-label={`선 스타일 ${label}`}
                             >
                                 <svg width="20" height="3" viewBox="0 0 20 3">
                                     <line
@@ -105,12 +110,14 @@ export function ShapeControls({ style, isClosedShape, onUpdate }: ShapeControlsP
                             style={colorButtonStyle('transparent', !style.fill || style.fill === 'transparent')}
                             onClick={() => onUpdate({ style: { ...style, fill: 'transparent' } })}
                             title="투명"
+                            aria-label="채우기 투명하게"
                         />
                         {COLORS.map((color) => (
                             <button
                                 key={`f-${color}`}
                                 style={colorButtonStyle(color, style.fill === color)}
                                 onClick={() => onUpdate({ style: { ...style, fill: color } })}
+                                aria-label={`채우기 색상 ${color}`}
                             />
                         ))}
                     </div>
@@ -127,6 +134,7 @@ export function ShapeControls({ style, isClosedShape, onUpdate }: ShapeControlsP
                             value={Math.round((style.opacity ?? 1) * 100)}
                             onChange={(e) => onUpdate({ style: { ...style, opacity: parseInt(e.target.value) / 100 } })}
                             style={{ flex: 1, height: '4px', cursor: 'pointer' }}
+                            aria-label="투명도 조절"
                         />
                         <span style={{ ...valueDisplayStyle, minWidth: '32px', fontSize: '11px' }}>
                             {Math.round((style.opacity ?? 1) * 100)}%
