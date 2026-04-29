@@ -192,6 +192,7 @@ export function ObjectPropertyPanel({
                                         borderColor: type === 'arrow' ? '#2563EB' : '#CBD5E1',
                                         fontSize: '11px', fontWeight: 600,
                                     }}
+                                    aria-label="화살촉 토글"
                                 >
                                     <ArrowUpRight size={14} weight={type === 'arrow' ? 'fill' : 'regular'} />
                                     {type === 'arrow' ? 'ON' : 'OFF'}
@@ -224,6 +225,7 @@ export function ObjectPropertyPanel({
                                     <button
                                         style={{ ...iconButtonStyle, width: '24px', height: '24px' }}
                                         onClick={() => onUpdate({ borderWidth: Math.max(0.5, ((selectedAnnotation as any).borderWidth || 1) - 0.5) })}
+                                        aria-label="테두리 두께 감소"
                                     >
                                         <CaretDown size={10} />
                                     </button>
@@ -231,6 +233,7 @@ export function ObjectPropertyPanel({
                                     <button
                                         style={{ ...iconButtonStyle, width: '24px', height: '24px' }}
                                         onClick={() => onUpdate({ borderWidth: ((selectedAnnotation as any).borderWidth || 1) + 0.5 })}
+                                        aria-label="테두리 두께 증가"
                                     >
                                         <CaretRight size={10} />
                                     </button>
@@ -240,7 +243,7 @@ export function ObjectPropertyPanel({
                                 <span style={{ ...labelStyle, margin: 0 }}>테두리 색상</span>
                                 <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                                     {['#000000', '#374151', '#6B7280', '#3B82F6', '#EF4444', '#22C55E'].map(color => (
-                                        <div
+                                        <button
                                             key={color}
                                             onClick={() => onUpdate({ borderColor: color })}
                                             style={{
@@ -249,7 +252,9 @@ export function ObjectPropertyPanel({
                                                 border: (selectedAnnotation as any).borderColor === color
                                                     ? '2px solid #3B82F6' : '1px solid #CBD5E1',
                                                 cursor: 'pointer',
+                                                padding: 0,
                                             }}
+                                            aria-label={`테두리 색상 ${color}`}
                                         />
                                     ))}
                                 </div>
@@ -290,6 +295,7 @@ export function ObjectPropertyPanel({
                     }}
                     onClick={onCopy}
                     title="복사"
+                    aria-label="복사"
                 >
                     <Copy size={14} weight="bold" /> 복사
                 </button>
@@ -305,6 +311,7 @@ export function ObjectPropertyPanel({
                     }}
                     onClick={onDelete}
                     title="삭제"
+                    aria-label="삭제"
                 >
                     <Trash size={14} weight="bold" /> 삭제
                 </button>

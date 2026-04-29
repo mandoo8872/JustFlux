@@ -19,6 +19,7 @@ export function LayerOrderButtons({ onMoveUp, onMoveDown, onMoveToTop, onMoveToB
                 style={{ ...iconButtonStyle, flex: 1 }}
                 onClick={onMoveToTop}
                 title="맨 앞으로"
+                aria-label="맨 앞으로"
             >
                 <CaretDoubleUp size={14} weight="bold" />
             </button>
@@ -26,6 +27,7 @@ export function LayerOrderButtons({ onMoveUp, onMoveDown, onMoveToTop, onMoveToB
                 style={{ ...iconButtonStyle, flex: 1 }}
                 onClick={onMoveUp}
                 title="앞으로"
+                aria-label="앞으로"
             >
                 <CaretUp size={14} />
             </button>
@@ -33,6 +35,7 @@ export function LayerOrderButtons({ onMoveUp, onMoveDown, onMoveToTop, onMoveToB
                 style={{ ...iconButtonStyle, flex: 1 }}
                 onClick={onMoveDown}
                 title="뒤로"
+                aria-label="뒤로"
             >
                 <CaretDown size={14} />
             </button>
@@ -40,6 +43,7 @@ export function LayerOrderButtons({ onMoveUp, onMoveDown, onMoveToTop, onMoveToB
                 style={{ ...iconButtonStyle, flex: 1 }}
                 onClick={onMoveToBottom}
                 title="맨 뒤로"
+                aria-label="맨 뒤로"
             >
                 <CaretDoubleDown size={14} weight="bold" />
             </button>

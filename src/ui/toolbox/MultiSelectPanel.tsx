@@ -76,6 +76,7 @@ export function MultiSelectPanel({
                                 style={{ ...iconButtonStyle, flex: 1 }}
                                 onClick={() => handleAlign(align)}
                                 title={tip}
+                                aria-label={tip}
                             >
                                 <Icon size={14} />
                             </button>
@@ -94,6 +95,7 @@ export function MultiSelectPanel({
                                     style={{ ...iconButtonStyle, flex: 1, gap: '4px', width: 'auto' }}
                                     onClick={() => handleDistribute('horizontal')}
                                     title="가로 균등 분포"
+                                    aria-label="가로 균등 분포"
                                 >
                                     <Columns size={14} /> 가로
                                 </button>
@@ -101,6 +103,7 @@ export function MultiSelectPanel({
                                     style={{ ...iconButtonStyle, flex: 1, gap: '4px', width: 'auto' }}
                                     onClick={() => handleDistribute('vertical')}
                                     title="세로 균등 분포"
+                                    aria-label="세로 균등 분포"
                                 >
                                     <Rows size={14} /> 세로
                                 </button>
@@ -119,6 +122,7 @@ export function MultiSelectPanel({
                                 key={color}
                                 style={colorButtonStyle(color, false)}
                                 onClick={() => handleStrokeColorChange(color)}
+                                aria-label={`색상 ${color}`}
                             />
                         ))}
                     </div>
@@ -139,6 +143,7 @@ export function MultiSelectPanel({
                             }}
                             onClick={() => groupAnnotations(ids)}
                             title="그룹화 (Ctrl+G)"
+                            aria-label="그룹화"
                         >
                             <LinkSimple size={14} weight="bold" />
                             {isGrouped ? '그룹됨' : '그룹'}
@@ -150,6 +155,7 @@ export function MultiSelectPanel({
                             }}
                             onClick={() => ungroupAnnotations(ids)}
                             title="그룹 해제 (Ctrl+Shift+G)"
+                            aria-label="그룹 해제"
                             disabled={!isGrouped}
                         >
                             <LinkBreak size={14} /> 해제
@@ -169,6 +175,7 @@ export function MultiSelectPanel({
                     }}
                     onClick={onCopyAll}
                     title="전체 복사"
+                    aria-label="전체 복사"
                 >
                     <Copy size={14} weight="bold" /> 복사
                 </button>
@@ -181,6 +188,7 @@ export function MultiSelectPanel({
                     }}
                     onClick={onDeleteAll}
                     title="전체 삭제"
+                    aria-label="전체 삭제"
                 >
                     <Trash size={14} weight="bold" /> 삭제
                 </button>
