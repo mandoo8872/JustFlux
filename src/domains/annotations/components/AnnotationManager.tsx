@@ -70,10 +70,18 @@ export function AnnotationManager({
         if (editingGroupId) {
           const groupMembers = pageAnnotations.filter(a => a.groupId === editingGroupId);
           if (groupMembers.length > 0) {
-            const gMinX = Math.min(...groupMembers.map(a => a.bbox.x));
-            const gMinY = Math.min(...groupMembers.map(a => a.bbox.y));
-            const gMaxX = Math.max(...groupMembers.map(a => a.bbox.x + a.bbox.width));
-            const gMaxY = Math.max(...groupMembers.map(a => a.bbox.y + a.bbox.height));
+            let gMinX = Infinity;
+            let gMinY = Infinity;
+            let gMaxX = -Infinity;
+            let gMaxY = -Infinity;
+
+            for (const a of groupMembers) {
+              const b = a.bbox;
+              if (b.x < gMinX) gMinX = b.x;
+              if (b.y < gMinY) gMinY = b.y;
+              if (b.x + b.width > gMaxX) gMaxX = b.x + b.width;
+              if (b.y + b.height > gMaxY) gMaxY = b.y + b.height;
+            }
 
             if (clickX >= gMinX && clickX <= gMaxX && clickY >= gMinY && clickY <= gMaxY) {
               // 그룹 영역 내부 빈 공간 → 그룹 전체 선택으로 복귀
@@ -436,10 +444,18 @@ export function AnnotationManager({
         if (editingGroupId) {
           const groupMembers = pageAnnotations.filter(a => a.groupId === editingGroupId);
           if (groupMembers.length >= 2) {
-            const minX = Math.min(...groupMembers.map(a => a.bbox.x));
-            const minY = Math.min(...groupMembers.map(a => a.bbox.y));
-            const maxX = Math.max(...groupMembers.map(a => a.bbox.x + a.bbox.width));
-            const maxY = Math.max(...groupMembers.map(a => a.bbox.y + a.bbox.height));
+            let minX = Infinity;
+            let minY = Infinity;
+            let maxX = -Infinity;
+            let maxY = -Infinity;
+
+            for (const a of groupMembers) {
+              const b = a.bbox;
+              if (b.x < minX) minX = b.x;
+              if (b.y < minY) minY = b.y;
+              if (b.x + b.width > maxX) maxX = b.x + b.width;
+              if (b.y + b.height > maxY) maxY = b.y + b.height;
+            }
             return (
               <div
                 style={{
@@ -471,10 +487,19 @@ export function AnnotationManager({
         if (selectedAnnotationIds.length >= 2) {
           const selected = pageAnnotations.filter(a => selectedAnnotationIds.includes(a.id));
           if (selected.length < 2) return null;
-          const minX = Math.min(...selected.map(a => a.bbox.x));
-          const minY = Math.min(...selected.map(a => a.bbox.y));
-          const maxX = Math.max(...selected.map(a => a.bbox.x + a.bbox.width));
-          const maxY = Math.max(...selected.map(a => a.bbox.y + a.bbox.height));
+
+          let minX = Infinity;
+          let minY = Infinity;
+          let maxX = -Infinity;
+          let maxY = -Infinity;
+          for (const a of selected) {
+            const b = a.bbox;
+            if (b.x < minX) minX = b.x;
+            if (b.y < minY) minY = b.y;
+            if (b.x + b.width > maxX) maxX = b.x + b.width;
+            if (b.y + b.height > maxY) maxY = b.y + b.height;
+          }
+
           const isGrouped = selected.every(a => a.groupId && a.groupId === selected[0]?.groupId);
           return (
             <div
