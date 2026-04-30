@@ -36,6 +36,7 @@ export const ThumbnailItem = React.memo(function ThumbnailItem({
   const [isLoading, setIsLoading] = useState(true);
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
+  const [isVisible, setIsVisible] = useState(false);
   const itemRef = useRef<HTMLDivElement>(null);
   const updatePage = usePageStore(state => state.updatePage);
   const globalRotation = usePDFStore(state => state.globalRotation);
@@ -60,9 +61,32 @@ export const ThumbnailItem = React.memo(function ThumbnailItem({
     });
   }, [page.id, page.rotation, page.width, page.height, updatePage]);
 
+  // 가시성 관찰
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '200px' }
+    );
+
+    if (itemRef.current) {
+      observer.observe(itemRef.current);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
   // 썸네일 생성
   useEffect(() => {
     const generateThumbnailAsync = async () => {
+      if (!isVisible) return;
+
       try {
         setIsLoading(true);
 
@@ -98,7 +122,7 @@ export const ThumbnailItem = React.memo(function ThumbnailItem({
     };
 
     generateThumbnailAsync();
-  }, [page.id, page.pdfRef, pdfProxy, globalRotation]);
+  }, [page.id, page.pdfRef, pdfProxy, globalRotation, isVisible]);
 
   // 컨텍스트 메뉴 처리
   const handleContextMenu = useCallback((event: React.MouseEvent) => {
