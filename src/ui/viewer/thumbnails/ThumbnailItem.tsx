@@ -62,13 +62,19 @@ export const ThumbnailItem = React.memo(function ThumbnailItem({
 
   // 썸네일 생성
   useEffect(() => {
+    let isMounted = true;
+    let observer: IntersectionObserver | null = null;
+
     const generateThumbnailAsync = async () => {
       try {
+        if (!isMounted) return;
         setIsLoading(true);
 
         if (pdfProxy && page.pdfRef) {
           // PDF 페이지 렌더링 (page.pdfRef.sourceIndex 사용)
           const pdfPage = await pdfProxy.getPage(page.pdfRef.sourceIndex);
+          if (!isMounted) return;
+
           const viewport = pdfPage.getViewport({ scale: 0.2, rotation: globalRotation });
 
           const canvas = document.createElement('canvas');
@@ -83,21 +89,51 @@ export const ThumbnailItem = React.memo(function ThumbnailItem({
               canvas: canvas
             }).promise;
 
+            if (!isMounted) return;
             const thumbnailData = canvas.toDataURL('image/png');
             setThumbnail(thumbnailData);
           }
         } else {
+          if (!isMounted) return;
           setThumbnail(null);
         }
       } catch (error) {
+        if (!isMounted) return;
         console.error('Failed to generate thumbnail:', error);
         setThumbnail(null);
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
 
-    generateThumbnailAsync();
+    const element = itemRef.current;
+    if (element) {
+      observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              generateThumbnailAsync();
+              observer?.unobserve(entry.target);
+            }
+          });
+        },
+        {
+          rootMargin: '100px', // 화면 밖 100px 전부터 로드 시작
+          threshold: 0.01,
+        }
+      );
+      observer.observe(element);
+    }
+
+    return () => {
+      isMounted = false;
+      if (observer && element) {
+        observer.unobserve(element);
+        observer.disconnect();
+      }
+    };
   }, [page.id, page.pdfRef, pdfProxy, globalRotation]);
 
   // 컨텍스트 메뉴 처리
