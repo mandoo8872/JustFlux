@@ -34,6 +34,7 @@ export const ThumbnailItem = React.memo(function ThumbnailItem({
 }: ThumbnailItemProps) {
   const [thumbnail, setThumbnail] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
   const itemRef = useRef<HTMLDivElement>(null);
@@ -60,11 +61,33 @@ export const ThumbnailItem = React.memo(function ThumbnailItem({
     });
   }, [page.id, page.rotation, page.width, page.height, updatePage]);
 
+  // 가시성 감지 (Intersection Observer)
+  useEffect(() => {
+    const el = itemRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '200px' } // 뷰포트 접근 200px 전부터 로드
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   // 썸네일 생성
   useEffect(() => {
+    if (!isVisible) return;
+
+    let isMounted = true;
     const generateThumbnailAsync = async () => {
       try {
-        setIsLoading(true);
+        if (isMounted) setIsLoading(true);
 
         if (pdfProxy && page.pdfRef) {
           // PDF 페이지 렌더링 (page.pdfRef.sourceIndex 사용)
@@ -84,21 +107,25 @@ export const ThumbnailItem = React.memo(function ThumbnailItem({
             }).promise;
 
             const thumbnailData = canvas.toDataURL('image/png');
-            setThumbnail(thumbnailData);
+            if (isMounted) setThumbnail(thumbnailData);
           }
         } else {
-          setThumbnail(null);
+          if (isMounted) setThumbnail(null);
         }
       } catch (error) {
         console.error('Failed to generate thumbnail:', error);
-        setThumbnail(null);
+        if (isMounted) setThumbnail(null);
       } finally {
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       }
     };
 
     generateThumbnailAsync();
-  }, [page.id, page.pdfRef, pdfProxy, globalRotation]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [page.id, page.pdfRef, pdfProxy, globalRotation, isVisible]);
 
   // 컨텍스트 메뉴 처리
   const handleContextMenu = useCallback((event: React.MouseEvent) => {
