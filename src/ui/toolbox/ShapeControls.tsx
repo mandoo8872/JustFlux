@@ -26,12 +26,17 @@ export function ShapeControls({ style, isClosedShape, onUpdate }: ShapeControlsP
                         style={colorButtonStyle('transparent', style.stroke === 'transparent' || !style.stroke)}
                         onClick={() => onUpdate({ style: { ...style, stroke: 'transparent' } })}
                         title="투명 (선 없음)"
+                        aria-label="투명 (선 없음)"
+                        aria-pressed={style.stroke === 'transparent' || !style.stroke}
                     />
                     {COLORS.map((color) => (
                         <button
                             key={`s-${color}`}
                             style={colorButtonStyle(color, style.stroke === color)}
                             onClick={() => onUpdate({ style: { ...style, stroke: color } })}
+                            title={color}
+                            aria-label={color}
+                            aria-pressed={style.stroke === color}
                         />
                     ))}
                 </div>
@@ -44,6 +49,8 @@ export function ShapeControls({ style, isClosedShape, onUpdate }: ShapeControlsP
                     <button
                         style={{ ...iconButtonStyle, width: '24px', height: '24px' }}
                         onClick={() => onUpdate({ style: { ...style, strokeWidth: Math.max(0.5, strokeWidth - 0.5) } })}
+                        title="선 두께 얇게"
+                        aria-label="선 두께 얇게"
                     >
                         <CaretDown size={10} />
                     </button>
@@ -51,6 +58,8 @@ export function ShapeControls({ style, isClosedShape, onUpdate }: ShapeControlsP
                     <button
                         style={{ ...iconButtonStyle, width: '24px', height: '24px' }}
                         onClick={() => onUpdate({ style: { ...style, strokeWidth: strokeWidth + 0.5 } })}
+                        title="선 두께 굵게"
+                        aria-label="선 두께 굵게"
                     >
                         <CaretUp size={10} />
                     </button>
@@ -81,8 +90,10 @@ export function ShapeControls({ style, isClosedShape, onUpdate }: ShapeControlsP
                                 }}
                                 onClick={() => onUpdate({ style: { ...style, strokeDasharray: value } })}
                                 title={label}
+                                aria-label={label}
+                                aria-pressed={isActive}
                             >
-                                <svg width="20" height="3" viewBox="0 0 20 3">
+                                <svg width="20" height="3" viewBox="0 0 20 3" aria-hidden="true">
                                     <line
                                         x1="0" y1="1.5" x2="20" y2="1.5"
                                         stroke={isActive ? 'white' : '#475569'}
@@ -105,12 +116,17 @@ export function ShapeControls({ style, isClosedShape, onUpdate }: ShapeControlsP
                             style={colorButtonStyle('transparent', !style.fill || style.fill === 'transparent')}
                             onClick={() => onUpdate({ style: { ...style, fill: 'transparent' } })}
                             title="투명"
+                            aria-label="투명"
+                            aria-pressed={!style.fill || style.fill === 'transparent'}
                         />
                         {COLORS.map((color) => (
                             <button
                                 key={`f-${color}`}
                                 style={colorButtonStyle(color, style.fill === color)}
                                 onClick={() => onUpdate({ style: { ...style, fill: color } })}
+                                title={color}
+                                aria-label={color}
+                                aria-pressed={style.fill === color}
                             />
                         ))}
                     </div>
