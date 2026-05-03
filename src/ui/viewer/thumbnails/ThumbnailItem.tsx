@@ -36,6 +36,10 @@ export const ThumbnailItem = React.memo(function ThumbnailItem({
   const [isLoading, setIsLoading] = useState(true);
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
+
+  // Performance optimization: only render thumbnails when visible
+  const [isVisible, setIsVisible] = useState(false);
+
   const itemRef = useRef<HTMLDivElement>(null);
   const updatePage = usePageStore(state => state.updatePage);
   const globalRotation = usePDFStore(state => state.globalRotation);
@@ -60,11 +64,42 @@ export const ThumbnailItem = React.memo(function ThumbnailItem({
     });
   }, [page.id, page.rotation, page.width, page.height, updatePage]);
 
-  // 썸네일 생성
+  // 성능 최적화: 화면에 보일 때만 썸네일 렌더링 시작 (IntersectionObserver 사용)
   useEffect(() => {
+    const element = itemRef.current;
+    if (!element) return;
+
+    // 이미 생성되었거나 화면에 보이면 관찰 중단
+    if (thumbnail || isVisible) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect(); // 한 번 보이면 계속 렌더링 유지
+        }
+      },
+      { rootMargin: '100px' } // 화면에 보이기 100px 전부터 로드
+    );
+
+    observer.observe(element);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [thumbnail, isVisible]);
+
+  // 썸네일 생성 (성능 향상을 위해 화면에 보일 때만 실행 + isMounted 플래그 추가)
+  useEffect(() => {
+    if (!isVisible) return;
+
+    let isMounted = true;
+
     const generateThumbnailAsync = async () => {
       try {
-        setIsLoading(true);
+        if (isMounted) {
+          setIsLoading(true);
+        }
 
         if (pdfProxy && page.pdfRef) {
           // PDF 페이지 렌더링 (page.pdfRef.sourceIndex 사용)
@@ -83,22 +118,28 @@ export const ThumbnailItem = React.memo(function ThumbnailItem({
               canvas: canvas
             }).promise;
 
-            const thumbnailData = canvas.toDataURL('image/png');
-            setThumbnail(thumbnailData);
+            if (isMounted) {
+              const thumbnailData = canvas.toDataURL('image/png');
+              setThumbnail(thumbnailData);
+            }
           }
         } else {
-          setThumbnail(null);
+          if (isMounted) setThumbnail(null);
         }
       } catch (error) {
         console.error('Failed to generate thumbnail:', error);
-        setThumbnail(null);
+        if (isMounted) setThumbnail(null);
       } finally {
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       }
     };
 
     generateThumbnailAsync();
-  }, [page.id, page.pdfRef, pdfProxy, globalRotation]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [page.id, page.pdfRef, pdfProxy, globalRotation, isVisible]);
 
   // 컨텍스트 메뉴 처리
   const handleContextMenu = useCallback((event: React.MouseEvent) => {

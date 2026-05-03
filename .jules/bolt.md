@@ -1,3 +1,6 @@
 ## 2024-04-22 - Prevent O(N) re-renders in ThumbnailList by memoizing ThumbnailItem
 **Learning:** React re-renders lists entirely when passing inline closures in loops. ThumbnailItem suffered from unnecessary re-renders when parent's state (like `currentPageId`) changed, as every item received a new callback reference.
 **Action:** Used `React.memo` for `ThumbnailItem`. Avoided inline callbacks by pushing the pageId into the child component callback invocation instead of closing over it inside `ThumbnailList`.
+## 2024-05-18 - [IntersectionObserver for PDF Thumbnail Generation]
+**Learning:** Loading all thumbnails concurrently on large PDFs caused excessive canvas mounting and PDF rendering operations at once, which could lead to severe UI blocking or memory spikes (and unmounted component state updates if not using `isMounted`). Deferring thumbnail creation with `IntersectionObserver` drastically reduces initial component load payload for PDF proxy instances containing many pages.
+**Action:** Use `IntersectionObserver` to defer expensive rendering operations, particularly involving `pdfjs-dist` or `canvas` rendering in lists. Always use the `isMounted` flag pattern in async operations within hooks to prevent state updates on unmounted components.
