@@ -14,10 +14,14 @@ interface FileActionsProps {
   onExport: () => void;
 }
 
+import { useTranslation } from '../../i18n';
+
 export function FileActions({
   onFileSelect,
   onExport,
 }: FileActionsProps) {
+  const { t } = useTranslation();
+
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0px' }}>
       <label style={{
@@ -38,7 +42,17 @@ export function FileActions({
         onMouseLeave={(e) => {
           e.currentTarget.style.backgroundColor = 'transparent';
         }}
-        title="파일 열기"
+        title={t('header.openFile')}
+        aria-label={t('header.openFile')}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            const input = e.currentTarget.querySelector('input');
+            if (input) input.click();
+          }
+        }}
       >
         <FileArrowUp size={16} weight="regular" />
         <input
@@ -69,7 +83,8 @@ export function FileActions({
         onMouseLeave={(e) => {
           e.currentTarget.style.backgroundColor = 'transparent';
         }}
-        title="내보내기"
+        title={t('export.title')}
+        aria-label={t('export.title')}
       >
         <File size={16} weight="regular" />
       </button>
