@@ -62,7 +62,10 @@ export const ThumbnailItem = React.memo(function ThumbnailItem({
 
   // 썸네일 생성
   useEffect(() => {
+    let isMounted = true;
+
     const generateThumbnailAsync = async () => {
+      if (!isMounted) return;
       try {
         setIsLoading(true);
 
@@ -84,20 +87,37 @@ export const ThumbnailItem = React.memo(function ThumbnailItem({
             }).promise;
 
             const thumbnailData = canvas.toDataURL('image/png');
-            setThumbnail(thumbnailData);
+            if (isMounted) setThumbnail(thumbnailData);
           }
         } else {
-          setThumbnail(null);
+          if (isMounted) setThumbnail(null);
         }
       } catch (error) {
         console.error('Failed to generate thumbnail:', error);
-        setThumbnail(null);
+        if (isMounted) setThumbnail(null);
       } finally {
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       }
     };
 
-    generateThumbnailAsync();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          generateThumbnailAsync();
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '200px' }
+    );
+
+    if (itemRef.current) {
+      observer.observe(itemRef.current);
+    }
+
+    return () => {
+      isMounted = false;
+      observer.disconnect();
+    };
   }, [page.id, page.pdfRef, pdfProxy, globalRotation]);
 
   // 컨텍스트 메뉴 처리
