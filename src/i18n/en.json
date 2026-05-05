@@ -4,6 +4,7 @@
     },
     "header": {
         "smooth": "Smooth",
+        "openFile": "Open file",
         "smoothOn": "Smooth rendering ON (softer but heavier)",
         "smoothOff": "Smooth rendering OFF (crisp and light)",
         "pages": "pages",

@@ -4,6 +4,7 @@
     },
     "header": {
         "smooth": "Smooth",
+        "openFile": "파일 열기",
         "smoothOn": "스무스 렌더링 ON (부드럽지만 무거움)",
         "smoothOff": "스무스 렌더링 OFF (선명하고 가벼움)",
         "pages": "페이지",
