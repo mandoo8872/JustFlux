@@ -412,11 +412,21 @@ export const useAnnotationStore = create<AnnotationStore>()(
         const targets = state.annotations.filter(a => ids.includes(a.id));
         if (targets.length < 2) return;
 
-        const bboxes = targets.map(a => a.bbox);
-        const minX = Math.min(...bboxes.map(b => b.x));
-        const maxX = Math.max(...bboxes.map(b => b.x + b.width));
-        const minY = Math.min(...bboxes.map(b => b.y));
-        const maxY = Math.max(...bboxes.map(b => b.y + b.height));
+        // ⚡ Bolt: Single-pass loop to calculate min/max bounding boxes instead of multiple map() and spreads
+        // Reduces array allocations from O(5N) to O(1) and prevents stack overflow on large selections
+        let minX = Infinity;
+        let maxX = -Infinity;
+        let minY = Infinity;
+        let maxY = -Infinity;
+
+        for (const a of targets) {
+          const { x, y, width, height } = a.bbox;
+          if (x < minX) minX = x;
+          if (x + width > maxX) maxX = x + width;
+          if (y < minY) minY = y;
+          if (y + height > maxY) maxY = y + height;
+        }
+
         const centerX = (minX + maxX) / 2;
         const centerY = (minY + maxY) / 2;
 
