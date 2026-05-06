@@ -70,10 +70,17 @@ export function AnnotationManager({
         if (editingGroupId) {
           const groupMembers = pageAnnotations.filter(a => a.groupId === editingGroupId);
           if (groupMembers.length > 0) {
-            const gMinX = Math.min(...groupMembers.map(a => a.bbox.x));
-            const gMinY = Math.min(...groupMembers.map(a => a.bbox.y));
-            const gMaxX = Math.max(...groupMembers.map(a => a.bbox.x + a.bbox.width));
-            const gMaxY = Math.max(...groupMembers.map(a => a.bbox.y + a.bbox.height));
+            let gMinX = Infinity;
+            let gMaxX = -Infinity;
+            let gMinY = Infinity;
+            let gMaxY = -Infinity;
+            for (const a of groupMembers) {
+              const { x, y, width, height } = a.bbox;
+              if (x < gMinX) gMinX = x;
+              if (x + width > gMaxX) gMaxX = x + width;
+              if (y < gMinY) gMinY = y;
+              if (y + height > gMaxY) gMaxY = y + height;
+            }
 
             if (clickX >= gMinX && clickX <= gMaxX && clickY >= gMinY && clickY <= gMaxY) {
               // 그룹 영역 내부 빈 공간 → 그룹 전체 선택으로 복귀
@@ -211,10 +218,16 @@ export function AnnotationManager({
 
               // Calculate bounding box from all points
               const allPoints = [{ x: startX, y: startY }, ...newPoints];
-              const minX = Math.min(...allPoints.map(p => p.x));
-              const minY = Math.min(...allPoints.map(p => p.y));
-              const maxX = Math.max(...allPoints.map(p => p.x));
-              const maxY = Math.max(...allPoints.map(p => p.y));
+              let minX = Infinity;
+              let maxX = -Infinity;
+              let minY = Infinity;
+              let maxY = -Infinity;
+              for (const p of allPoints) {
+                if (p.x < minX) minX = p.x;
+                if (p.x > maxX) maxX = p.x;
+                if (p.y < minY) minY = p.y;
+                if (p.y > maxY) maxY = p.y;
+              }
 
               onUpdate(createdAnnotationId, {
                 points: newPoints,
@@ -436,10 +449,17 @@ export function AnnotationManager({
         if (editingGroupId) {
           const groupMembers = pageAnnotations.filter(a => a.groupId === editingGroupId);
           if (groupMembers.length >= 2) {
-            const minX = Math.min(...groupMembers.map(a => a.bbox.x));
-            const minY = Math.min(...groupMembers.map(a => a.bbox.y));
-            const maxX = Math.max(...groupMembers.map(a => a.bbox.x + a.bbox.width));
-            const maxY = Math.max(...groupMembers.map(a => a.bbox.y + a.bbox.height));
+            let minX = Infinity;
+            let maxX = -Infinity;
+            let minY = Infinity;
+            let maxY = -Infinity;
+            for (const a of groupMembers) {
+              const { x, y, width, height } = a.bbox;
+              if (x < minX) minX = x;
+              if (x + width > maxX) maxX = x + width;
+              if (y < minY) minY = y;
+              if (y + height > maxY) maxY = y + height;
+            }
             return (
               <div
                 style={{
@@ -471,10 +491,17 @@ export function AnnotationManager({
         if (selectedAnnotationIds.length >= 2) {
           const selected = pageAnnotations.filter(a => selectedAnnotationIds.includes(a.id));
           if (selected.length < 2) return null;
-          const minX = Math.min(...selected.map(a => a.bbox.x));
-          const minY = Math.min(...selected.map(a => a.bbox.y));
-          const maxX = Math.max(...selected.map(a => a.bbox.x + a.bbox.width));
-          const maxY = Math.max(...selected.map(a => a.bbox.y + a.bbox.height));
+          let minX = Infinity;
+          let maxX = -Infinity;
+          let minY = Infinity;
+          let maxY = -Infinity;
+          for (const a of selected) {
+            const { x, y, width, height } = a.bbox;
+            if (x < minX) minX = x;
+            if (x + width > maxX) maxX = x + width;
+            if (y < minY) minY = y;
+            if (y + height > maxY) maxY = y + height;
+          }
           const isGrouped = selected.every(a => a.groupId && a.groupId === selected[0]?.groupId);
           return (
             <div
