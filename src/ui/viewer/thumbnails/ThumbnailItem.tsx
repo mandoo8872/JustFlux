@@ -62,9 +62,15 @@ export const ThumbnailItem = React.memo(function ThumbnailItem({
 
   // 썸네일 생성
   useEffect(() => {
+    let isMounted = true;
+    let observer: IntersectionObserver | null = null;
+    let isGenerated = false;
+
     const generateThumbnailAsync = async () => {
+      if (isGenerated) return;
+
       try {
-        setIsLoading(true);
+        if (isMounted) setIsLoading(true);
 
         if (pdfProxy && page.pdfRef) {
           // PDF 페이지 렌더링 (page.pdfRef.sourceIndex 사용)
@@ -84,20 +90,53 @@ export const ThumbnailItem = React.memo(function ThumbnailItem({
             }).promise;
 
             const thumbnailData = canvas.toDataURL('image/png');
-            setThumbnail(thumbnailData);
+            if (isMounted) {
+              setThumbnail(thumbnailData);
+              isGenerated = true;
+            }
           }
         } else {
-          setThumbnail(null);
+          if (isMounted) {
+            setThumbnail(null);
+            isGenerated = true;
+          }
         }
       } catch (error) {
         console.error('Failed to generate thumbnail:', error);
-        setThumbnail(null);
+        if (isMounted) {
+          setThumbnail(null);
+          isGenerated = true;
+        }
       } finally {
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       }
     };
 
-    generateThumbnailAsync();
+    if (itemRef.current) {
+      observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !isGenerated) {
+            generateThumbnailAsync();
+          }
+        });
+      }, {
+        root: null,
+        rootMargin: '100px', // Load slightly before coming into view
+        threshold: 0.1,
+      });
+
+      observer.observe(itemRef.current);
+    } else {
+      // Fallback if ref is somehow null
+      generateThumbnailAsync();
+    }
+
+    return () => {
+      isMounted = false;
+      if (observer) {
+        observer.disconnect();
+      }
+    };
   }, [page.id, page.pdfRef, pdfProxy, globalRotation]);
 
   // 컨텍스트 메뉴 처리
