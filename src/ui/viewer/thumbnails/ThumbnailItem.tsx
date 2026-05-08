@@ -62,9 +62,11 @@ export const ThumbnailItem = React.memo(function ThumbnailItem({
 
   // 썸네일 생성
   useEffect(() => {
+    let isMounted = true;
+
     const generateThumbnailAsync = async () => {
       try {
-        setIsLoading(true);
+        if (isMounted) setIsLoading(true);
 
         if (pdfProxy && page.pdfRef) {
           // PDF 페이지 렌더링 (page.pdfRef.sourceIndex 사용)
@@ -84,21 +86,55 @@ export const ThumbnailItem = React.memo(function ThumbnailItem({
             }).promise;
 
             const thumbnailData = canvas.toDataURL('image/png');
-            setThumbnail(thumbnailData);
+            if (isMounted) setThumbnail(thumbnailData);
           }
         } else {
-          setThumbnail(null);
+          if (isMounted) setThumbnail(null);
         }
       } catch (error) {
         console.error('Failed to generate thumbnail:', error);
-        setThumbnail(null);
+        if (isMounted) setThumbnail(null);
       } finally {
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       }
     };
 
-    generateThumbnailAsync();
-  }, [page.id, page.pdfRef, pdfProxy, globalRotation]);
+    // Use IntersectionObserver to defer thumbnail generation
+    const currentItem = itemRef.current;
+
+    // Only use IntersectionObserver if we don't have a thumbnail yet and have a valid ref
+    if (!thumbnail && currentItem) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            // Start generating when item is close to being visible
+            generateThumbnailAsync();
+            // Once generation starts, we can stop observing
+            if (currentItem) observer.unobserve(currentItem);
+          }
+        });
+      }, {
+        rootMargin: '100px' // Load when 100px away from viewport
+      });
+
+      observer.observe(currentItem);
+
+      return () => {
+        isMounted = false;
+        if (currentItem) observer.unobserve(currentItem);
+        observer.disconnect();
+      };
+    } else if (thumbnail) {
+      // If we already have a thumbnail (e.g., from a previous render),
+      // but rotation changed, we need to regenerate
+      generateThumbnailAsync();
+    }
+
+    return () => {
+      isMounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page.id, page.pdfRef, pdfProxy, globalRotation]); // intentionally leaving out thumbnail to avoid infinite loops, relying on id/ref changes
 
   // 컨텍스트 메뉴 처리
   const handleContextMenu = useCallback((event: React.MouseEvent) => {
