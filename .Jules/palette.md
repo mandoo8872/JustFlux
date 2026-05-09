@@ -1,3 +1,7 @@
 ## 2023-10-27 - Add ARIA Labels and Titles to Color Pickers
 **Learning:** Native `<button>` elements styled as color pickers (common in properties panels) are already keyboard accessible, but missing `aria-label` makes them opaque to screen readers. For clickable `<div>` elements acting as buttons, `role="button"` and `tabIndex={0}` are necessary for accessibility.
 **Action:** Next time I identify clickable elements without text content, verify if they are native interactive elements. If native (like `<button>`), add `aria-label` and `title`. If non-native (like `<div>`), ensure `role="button"`, `tabIndex={0}`, and `aria-label`/`title` are added, and note that `onKeyDown` is additionally needed for full interaction (Space/Enter).
+
+## 2024-05-23 - [Keyboard Accessibility for File Input Wrappers]
+**Learning:** Custom file upload buttons implemented via a visually hidden `<input type="file">` wrapped in a `<label>` lack keyboard focus and trigger capabilities by default, making them inaccessible to keyboard users (unlike standard `<button>` elements).
+**Action:** When implementing this pattern, always add `role="button"`, `tabIndex={0}`, and an `onKeyDown` handler to the `<label>` to intercept 'Enter' and 'Space' keypresses, then programmatically trigger a `.click()` on the underlying hidden `<input>` via a ref. Also remember to include `aria-label` or `title` on the label for screen reader clarity.
