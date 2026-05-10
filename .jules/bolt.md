@@ -1,3 +1,3 @@
-## 2024-04-22 - Prevent O(N) re-renders in ThumbnailList by memoizing ThumbnailItem
-**Learning:** React re-renders lists entirely when passing inline closures in loops. ThumbnailItem suffered from unnecessary re-renders when parent's state (like `currentPageId`) changed, as every item received a new callback reference.
-**Action:** Used `React.memo` for `ThumbnailItem`. Avoided inline callbacks by pushing the pageId into the child component callback invocation instead of closing over it inside `ThumbnailList`.
+## 2025-02-18 - [Math.max/min with Array Spread causing RangeError and Memory Spikes]
+**Learning:** Using `Math.max(...arr.map(...))` and `Math.min(...arr.map(...))` on large datasets, such as annotation bounding boxes (`bboxes`), causes a significant performance bottleneck due to O(N) intermediate array allocations from `.map()` and pushing excessive items onto the call stack via the spread operator, which can cause `RangeError: Maximum call stack size exceeded`.
+**Action:** Always use a single-pass `for...of` loop or a traditional `for` loop to compute minimum and maximum limits for potentially large data arrays. This avoids large stack allocations and redundant `.map()` intermediate array allocations.

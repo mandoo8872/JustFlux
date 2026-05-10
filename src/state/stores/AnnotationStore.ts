@@ -413,10 +413,24 @@ export const useAnnotationStore = create<AnnotationStore>()(
         if (targets.length < 2) return;
 
         const bboxes = targets.map(a => a.bbox);
-        const minX = Math.min(...bboxes.map(b => b.x));
-        const maxX = Math.max(...bboxes.map(b => b.x + b.width));
-        const minY = Math.min(...bboxes.map(b => b.y));
-        const maxY = Math.max(...bboxes.map(b => b.y + b.height));
+        let minX = Infinity;
+        for (const b of bboxes) {
+          if (b.x < minX) minX = b.x;
+        }
+        let maxX = -Infinity;
+        for (const b of bboxes) {
+          const val = b.x + b.width;
+          if (val > maxX) maxX = val;
+        }
+        let minY = Infinity;
+        for (const b of bboxes) {
+          if (b.y < minY) minY = b.y;
+        }
+        let maxY = -Infinity;
+        for (const b of bboxes) {
+          const val = b.y + b.height;
+          if (val > maxY) maxY = val;
+        }
         const centerX = (minX + maxX) / 2;
         const centerY = (minY + maxY) / 2;
 

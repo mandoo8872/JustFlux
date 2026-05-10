@@ -103,7 +103,10 @@ export class SVGExporter {
     const { backgroundColor, transparent } = options;
 
     // 전체 문서 크기 계산
-    const totalWidth = Math.max(...document.pages.map(p => p.width));
+    let totalWidth = -Infinity;
+    for (const p of document.pages) {
+      if (p.width > totalWidth) totalWidth = p.width;
+    }
     const totalHeight = document.pages.reduce((sum, p) => sum + p.height, 0);
 
     let svgContent = `<?xml version="1.0" encoding="UTF-8"?>
