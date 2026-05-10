@@ -60,15 +60,23 @@ export const ThumbnailItem = React.memo(function ThumbnailItem({
     });
   }, [page.id, page.rotation, page.width, page.height, updatePage]);
 
-  // 썸네일 생성
+  // 썸네일 생성 (IntersectionObserver로 지연 로딩 및 isMounted 패턴 적용)
   useEffect(() => {
+    let isMounted = true;
+    let observer: IntersectionObserver | null = null;
+    let isGenerating = false;
+
     const generateThumbnailAsync = async () => {
+      if (isGenerating) return;
+      isGenerating = true;
       try {
-        setIsLoading(true);
+        if (isMounted) setIsLoading(true);
 
         if (pdfProxy && page.pdfRef) {
           // PDF 페이지 렌더링 (page.pdfRef.sourceIndex 사용)
           const pdfPage = await pdfProxy.getPage(page.pdfRef.sourceIndex);
+          if (!isMounted) return;
+
           const viewport = pdfPage.getViewport({ scale: 0.2, rotation: globalRotation });
 
           const canvas = document.createElement('canvas');
@@ -83,21 +91,43 @@ export const ThumbnailItem = React.memo(function ThumbnailItem({
               canvas: canvas
             }).promise;
 
+            if (!isMounted) return;
             const thumbnailData = canvas.toDataURL('image/png');
             setThumbnail(thumbnailData);
           }
         } else {
-          setThumbnail(null);
+          if (isMounted) setThumbnail(null);
         }
       } catch (error) {
         console.error('Failed to generate thumbnail:', error);
-        setThumbnail(null);
+        if (isMounted) setThumbnail(null);
       } finally {
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
+        isGenerating = false;
       }
     };
 
-    generateThumbnailAsync();
+    if (itemRef.current) {
+      observer = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting) {
+          generateThumbnailAsync();
+          if (observer && itemRef.current) {
+            observer.unobserve(itemRef.current);
+          }
+        }
+      }, { rootMargin: '200px' });
+
+      observer.observe(itemRef.current);
+    } else {
+      generateThumbnailAsync();
+    }
+
+    return () => {
+      isMounted = false;
+      if (observer) {
+        observer.disconnect();
+      }
+    };
   }, [page.id, page.pdfRef, pdfProxy, globalRotation]);
 
   // 컨텍스트 메뉴 처리
