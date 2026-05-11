@@ -224,6 +224,8 @@ export function ObjectPropertyPanel({
                                     <button
                                         style={{ ...iconButtonStyle, width: '24px', height: '24px' }}
                                         onClick={() => onUpdate({ borderWidth: Math.max(0.5, ((selectedAnnotation as any).borderWidth || 1) - 0.5) })}
+                                        aria-label="테두리 두께 줄이기"
+                                        title="테두리 두께 줄이기"
                                     >
                                         <CaretDown size={10} />
                                     </button>
@@ -231,6 +233,8 @@ export function ObjectPropertyPanel({
                                     <button
                                         style={{ ...iconButtonStyle, width: '24px', height: '24px' }}
                                         onClick={() => onUpdate({ borderWidth: ((selectedAnnotation as any).borderWidth || 1) + 0.5 })}
+                                        aria-label="테두리 두께 늘리기"
+                                        title="테두리 두께 늘리기"
                                     >
                                         <CaretRight size={10} />
                                     </button>
@@ -242,7 +246,17 @@ export function ObjectPropertyPanel({
                                     {['#000000', '#374151', '#6B7280', '#3B82F6', '#EF4444', '#22C55E'].map(color => (
                                         <div
                                             key={color}
+                                            role="button"
+                                            tabIndex={0}
+                                            aria-label={`테두리 색상 ${color} 선택`}
+                                            title={`테두리 색상 ${color} 선택`}
                                             onClick={() => onUpdate({ borderColor: color })}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' || e.key === ' ') {
+                                                    e.preventDefault();
+                                                    onUpdate({ borderColor: color });
+                                                }
+                                            }}
                                             style={{
                                                 width: 18, height: 18, borderRadius: 3,
                                                 backgroundColor: color,
