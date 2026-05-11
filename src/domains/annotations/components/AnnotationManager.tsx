@@ -70,10 +70,13 @@ export function AnnotationManager({
         if (editingGroupId) {
           const groupMembers = pageAnnotations.filter(a => a.groupId === editingGroupId);
           if (groupMembers.length > 0) {
-            const gMinX = Math.min(...groupMembers.map(a => a.bbox.x));
-            const gMinY = Math.min(...groupMembers.map(a => a.bbox.y));
-            const gMaxX = Math.max(...groupMembers.map(a => a.bbox.x + a.bbox.width));
-            const gMaxY = Math.max(...groupMembers.map(a => a.bbox.y + a.bbox.height));
+            let gMinX = Infinity, gMinY = Infinity, gMaxX = -Infinity, gMaxY = -Infinity;
+            for (const a of groupMembers) {
+              if (a.bbox.x < gMinX) gMinX = a.bbox.x;
+              if (a.bbox.y < gMinY) gMinY = a.bbox.y;
+              if (a.bbox.x + a.bbox.width > gMaxX) gMaxX = a.bbox.x + a.bbox.width;
+              if (a.bbox.y + a.bbox.height > gMaxY) gMaxY = a.bbox.y + a.bbox.height;
+            }
 
             if (clickX >= gMinX && clickX <= gMaxX && clickY >= gMinY && clickY <= gMaxY) {
               // 그룹 영역 내부 빈 공간 → 그룹 전체 선택으로 복귀
@@ -211,10 +214,13 @@ export function AnnotationManager({
 
               // Calculate bounding box from all points
               const allPoints = [{ x: startX, y: startY }, ...newPoints];
-              const minX = Math.min(...allPoints.map(p => p.x));
-              const minY = Math.min(...allPoints.map(p => p.y));
-              const maxX = Math.max(...allPoints.map(p => p.x));
-              const maxY = Math.max(...allPoints.map(p => p.y));
+              let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+              for (const p of allPoints) {
+                if (p.x < minX) minX = p.x;
+                if (p.y < minY) minY = p.y;
+                if (p.x > maxX) maxX = p.x;
+                if (p.y > maxY) maxY = p.y;
+              }
 
               onUpdate(createdAnnotationId, {
                 points: newPoints,
@@ -436,10 +442,13 @@ export function AnnotationManager({
         if (editingGroupId) {
           const groupMembers = pageAnnotations.filter(a => a.groupId === editingGroupId);
           if (groupMembers.length >= 2) {
-            const minX = Math.min(...groupMembers.map(a => a.bbox.x));
-            const minY = Math.min(...groupMembers.map(a => a.bbox.y));
-            const maxX = Math.max(...groupMembers.map(a => a.bbox.x + a.bbox.width));
-            const maxY = Math.max(...groupMembers.map(a => a.bbox.y + a.bbox.height));
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+            for (const a of groupMembers) {
+              if (a.bbox.x < minX) minX = a.bbox.x;
+              if (a.bbox.y < minY) minY = a.bbox.y;
+              if (a.bbox.x + a.bbox.width > maxX) maxX = a.bbox.x + a.bbox.width;
+              if (a.bbox.y + a.bbox.height > maxY) maxY = a.bbox.y + a.bbox.height;
+            }
             return (
               <div
                 style={{
@@ -471,10 +480,13 @@ export function AnnotationManager({
         if (selectedAnnotationIds.length >= 2) {
           const selected = pageAnnotations.filter(a => selectedAnnotationIds.includes(a.id));
           if (selected.length < 2) return null;
-          const minX = Math.min(...selected.map(a => a.bbox.x));
-          const minY = Math.min(...selected.map(a => a.bbox.y));
-          const maxX = Math.max(...selected.map(a => a.bbox.x + a.bbox.width));
-          const maxY = Math.max(...selected.map(a => a.bbox.y + a.bbox.height));
+          let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+          for (const a of selected) {
+            if (a.bbox.x < minX) minX = a.bbox.x;
+            if (a.bbox.y < minY) minY = a.bbox.y;
+            if (a.bbox.x + a.bbox.width > maxX) maxX = a.bbox.x + a.bbox.width;
+            if (a.bbox.y + a.bbox.height > maxY) maxY = a.bbox.y + a.bbox.height;
+          }
           const isGrouped = selected.every(a => a.groupId && a.groupId === selected[0]?.groupId);
           return (
             <div
